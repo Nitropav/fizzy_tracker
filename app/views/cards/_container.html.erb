@@ -40,5 +40,7 @@
 
   <% if card.published? %>
     <%= render "cards/container/footer/published", card: card %>
+    <%= render "cards/container/code_links", card: card %>
+    <%= render "cards/container/resolution_record", card: card %>
   <% end %>
 </section>

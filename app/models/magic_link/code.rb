@@ -1,9 +1,10 @@
 module MagicLink::Code
+  ALPHABET = %w[0 1 2 3 4 5 6 7 8 9 A B C D E F G H J K M N P Q R S T U V W X Y Z].freeze
   CODE_SUBSTITUTIONS = { "O" => "0", "I" => "1", "L" => "1" }.freeze
 
   class << self
     def generate(length)
-      SecureRandom.base32(length)
+      Array.new(length) { ALPHABET[SecureRandom.random_number(ALPHABET.length)] }.join
     end
 
     def sanitize(code)
@@ -24,7 +25,7 @@ module MagicLink::Code
       end
 
       def remove_invalid_characters(code)
-        code.gsub(/[^#{SecureRandom::BASE32_ALPHABET.join}]/, "")
+        code.gsub(/[^#{ALPHABET.join}]/, "")
       end
   end
 end

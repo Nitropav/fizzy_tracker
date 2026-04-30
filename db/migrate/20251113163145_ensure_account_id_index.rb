@@ -79,7 +79,7 @@ class EnsureAccountIdIndex < ActiveRecord::Migration[8.2]
     # `board_id`.
     add_index :webhooks, :account_id
     remove_index :webhooks, :subscribed_actions
-    add_index :webhooks, [:board_id, :subscribed_actions], length: { subscribed_actions: 255 }
+    add_index :webhooks, [:board_id, :subscribed_actions], **limited_index_options(subscribed_actions: 255)
     remove_index :webhooks, :board_id
 
     # Rails models
@@ -88,4 +88,10 @@ class EnsureAccountIdIndex < ActiveRecord::Migration[8.2]
     add_index :active_storage_blobs, :account_id
     add_index :active_storage_variant_records, :account_id
   end
+
+  private
+
+    def limited_index_options(lengths)
+      {}
+    end
 end

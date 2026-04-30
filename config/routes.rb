@@ -26,6 +26,8 @@ Rails.application.routes.draw do
   end
 
   resources :boards do
+    resource :bug_report, only: %i[ new create ], module: :boards
+
     scope module: :boards do
       resource :subscriptions
       resource :involvement
@@ -76,7 +78,9 @@ Rails.application.routes.draw do
     scope module: :cards do
       resource :draft, only: :show
       resource :board
+      resource :ai_review, only: :create
       resource :closure
+      resource :gate_one_answer, only: :update
       resource :column
       resource :goldness
       resource :image
@@ -84,6 +88,8 @@ Rails.application.routes.draw do
       resource :pin
       resource :publish
       resource :reading
+      resource :resolution, only: :create
+      resource :resolution_record, only: :update
       resource :triage
       resource :watch
       resource :reading
@@ -120,6 +126,7 @@ Rails.application.routes.draw do
   end
 
   resource :search
+  resources :cactus_queues, only: :index
   namespace :searches do
     resources :queries
   end
@@ -130,6 +137,21 @@ Rails.application.routes.draw do
         resource :settings_refresh, only: :create
       end
     end
+  end
+
+  resources :training_examples, only: %i[ index show ] do
+    collection do
+      get :export
+    end
+
+    member do
+      post :approve
+      post :reject
+    end
+  end
+
+  namespace :github do
+    resource :webhook, only: :create
   end
 
   resources :events, only: :index

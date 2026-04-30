@@ -2,9 +2,6 @@ class CreateSearchRecordShards < ActiveRecord::Migration[8.2]
   SHARD_COUNT = 16
 
   def change
-    # Skip for SQLite - it uses a single search_records table instead
-    return if connection.adapter_name == "SQLite"
-
     # Create 16 sharded search_records tables
     SHARD_COUNT.times do |shard_id|
       create_table "search_records_#{shard_id}", id: :uuid do |t|
@@ -19,7 +16,6 @@ class CreateSearchRecordShards < ActiveRecord::Migration[8.2]
 
         t.index [:searchable_type, :searchable_id], unique: true
         t.index :account_id
-        t.index [:content, :title], type: :fulltext
       end
     end
 
@@ -35,7 +31,6 @@ class CreateSearchRecordShards < ActiveRecord::Migration[8.2]
         t.datetime :created_at, null: false
 
         t.index [:searchable_type, :searchable_id], unique: true, name: "idx_si#{shard_id}_type_id"
-        t.index [:content, :title], type: :fulltext, name: "idx_si#{shard_id}_fulltext"
       end
     end
   end

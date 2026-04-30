@@ -2,9 +2,12 @@ class Account < ApplicationRecord
   include Account::Storage, Cancellable, Entropic, Incineratable, MultiTenantable, Searchable, Seedeable
 
   has_one :join_code, dependent: :destroy
+  has_many :ai_runs, dependent: :destroy
   has_many :users, dependent: :destroy
   has_many :boards, dependent: :destroy
   has_many :cards, dependent: :destroy
+  has_many :card_code_links, class_name: "Card::CodeLink", dependent: :destroy
+  has_many :training_examples, dependent: :destroy
   has_many :webhooks, dependent: :destroy
   has_many :tags, dependent: :destroy
   has_many :columns, dependent: :destroy

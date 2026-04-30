@@ -51,14 +51,14 @@ bin/ci
 
 ### Database configuration
 
-Fizzy works with SQLite by default and supports MySQL too. You can switch adapters with the `DATABASE_ADAPTER` environment variable. For example, to develop locally against MySQL:
+Fizzy runs on PostgreSQL only. The development Docker stack includes a `db` service and the Rails app reads `config/database.postgres.yml`.
 
 ```sh
-DATABASE_ADAPTER=mysql bin/setup --reset
-DATABASE_ADAPTER=mysql bin/ci
+docker compose up db web
+bin/rails db:prepare
 ```
 
-The remote CI pipeline will run tests against both SQLite and MySQL.
+Use `.env.example` as the local environment template when overriding database credentials.
 
 ### Outbound Emails
 
@@ -71,10 +71,4 @@ bin/rails dev:email
 ```
 
 Under the hood, this will create or remove `tmp/email-dev.txt`.
-
-## SaaS gem
-
-37signals bundles Fizzy with [`fizzy-saas`](https://github.com/basecamp/fizzy/tree/main/saas), a companion gem that links Fizzy with our billing system and contains our production setup.
-
-This gem depends on some private git repositories and it is not meant to be used by third parties. But we hope it can serve as inspiration for anyone wanting to run fizzy on their own infrastructure.
 

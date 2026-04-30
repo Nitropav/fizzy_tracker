@@ -7,6 +7,11 @@
     <kbd class="hide-on-touch">C</kbd>
   <% end %>
 
+  <%= link_to new_board_bug_report_path(board), class: "btn btn--link", data: { turbo_frame: "_top" } do %>
+    <%= icon_tag "lifebuoy", class: "show-on-touch" %>
+    <span>Report bug</span>
+  <% end %>
+
   <footer>
     <%= access_involvement_advance_button(board, Current.user, show_watchers: true) %>
   </footer>

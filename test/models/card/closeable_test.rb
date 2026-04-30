@@ -22,6 +22,97 @@ class Card::CloseableTest < ActiveSupport::TestCase
     assert_equal users(:kevin), cards(:logo).closed_by
   end
 
+  test "close cards without a resolution record remains allowed" do
+    card = cards(:logo)
+    assert_nil card.resolution_record
+
+    card.close
+
+    assert card.closed?
+  end
+
+  test "close is blocked when resolution record has incomplete gate two" do
+    card = cards(:logo)
+    card.create_resolution_record!(root_cause: "Known cause")
+
+    error = assert_raises Card::Closeable::GateTwoIncomplete do
+      card.close
+    end
+
+    assert_match "Complete Gate 2", error.message
+    assert_not card.closed?
+  end
+
+  test "close is allowed when resolution record has complete gate two" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable"
+    )
+
+    card.close
+
+    assert card.closed?
+  end
+
+  test "close generates training example when both gates are complete" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      problem_description: "Logo is unreadable",
+      reproduction_steps: "Open the card",
+      expected_behavior: "Logo should be readable",
+      actual_behavior: "Logo is too small",
+      environment_context: "Fizzy card page",
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable"
+    )
+
+    assert_difference -> { card.training_examples.count }, +1 do
+      card.close
+    end
+
+    assert card.training_examples.last.pending_review?
+  end
+
+  test "resolve closes card and generates training example when both gates are complete" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      problem_description: "Logo is unreadable",
+      reproduction_steps: "Open the card",
+      expected_behavior: "Logo should be readable",
+      actual_behavior: "Logo is too small",
+      environment_context: "Fizzy card page",
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable"
+    )
+
+    training_example = nil
+    assert_difference -> { card.training_examples.count }, +1 do
+      training_example = card.resolve
+    end
+
+    assert card.closed?
+    assert training_example.pending_review?
+  end
+
+  test "close does not generate training example when gate one is incomplete" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable"
+    )
+
+    assert_no_difference -> { card.training_examples.count } do
+      card.close
+    end
+
+    assert card.closed?
+  end
+
   test "reopen cards" do
     assert cards(:shipping).closed?
 

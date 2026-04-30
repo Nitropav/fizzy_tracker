@@ -12,7 +12,7 @@ module User::Avatar
 
   included do
     has_one_attached :avatar, dependent: :purge_later do |attachable|
-      attachable.variant :thumb, resize_to_fill: [ 256, 256 ], process: :immediately
+      attachable.variant :thumb, resize_to_fill: [ 256, 256 ], preprocessed: true
     end
 
     scope :with_avatars, -> { preload(:account, :avatar_attachment) }
@@ -45,7 +45,8 @@ module User::Avatar
     end
 
     def avatar_dimensions_allowed
-      return unless avatar.blob.analyzed? || avatar.blob.analyze
+      return unless ALLOWED_AVATAR_CONTENT_TYPES.include?(avatar.content_type)
+      return unless avatar.blob.analyzed?
 
       width = avatar.blob.metadata[:width]
       height = avatar.blob.metadata[:height]

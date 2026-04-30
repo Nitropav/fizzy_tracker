@@ -61,6 +61,62 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "show renders gate one guidance when card needs reporter info" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      problem_description: "Logo is unreadable"
+    )
+
+    get card_path(card)
+
+    assert_response :success
+    assert_match "Needs reporter information", response.body
+    assert_match "List the exact steps needed to reproduce it", response.body
+    assert_select "form[action=?]", card_gate_one_answer_path(card)
+    assert_select "input[name='gate_one_answer[field]'][value='reproduction_steps']"
+    assert_match "Show all missing Gate 1 items", response.body
+  end
+
+  test "show renders mark resolved action when cactus workflow needs review" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      problem_description: "Logo is unreadable",
+      reproduction_steps: "Open the card",
+      expected_behavior: "Logo should be readable",
+      actual_behavior: "Logo is too small",
+      environment_context: "Fizzy card page",
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable"
+    )
+
+    get card_path(card)
+
+    assert_response :success
+    assert_select "form[action=?]", card_resolution_path(card)
+    assert_match "Mark resolved", response.body
+  end
+
+  test "show links pending training example after resolution" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      problem_description: "Logo is unreadable",
+      reproduction_steps: "Open the card",
+      expected_behavior: "Logo should be readable",
+      actual_behavior: "Logo is too small",
+      environment_context: "Fizzy card page",
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable"
+    )
+    training_example = card.resolve(user: users(:kevin))
+
+    get card_path(card)
+
+    assert_response :success
+    assert_select "a[href=?]", training_example_path(training_example), text: "Review example"
+  end
+
   test "edit" do
     get edit_card_path(cards(:logo))
     assert_response :success
@@ -205,6 +261,8 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal "My new card", card.title
     assert_equal "Big if true", card.description.to_plain_text
+    assert_includes card.resolution_record.problem_description, "My new card"
+    assert_includes card.resolution_record.problem_description, "Big if true"
   end
 
   test "create as JSON with custom created_at" do

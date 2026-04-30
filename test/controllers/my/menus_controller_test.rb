@@ -12,6 +12,29 @@ class My::MenusControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "show includes training examples for admins" do
+    get my_menu_path
+
+    assert_response :success
+    assert_select "a[href='#{training_examples_path}']", text: /Training Examples/
+  end
+
+  test "show includes cactus queue" do
+    get my_menu_path
+
+    assert_response :success
+    assert_select "a[href='#{cactus_queues_path}']", text: /Cactus Queue/
+  end
+
+  test "show hides training examples from non admins" do
+    logout_and_sign_in_as :david
+
+    get my_menu_path
+
+    assert_response :success
+    assert_select "a[href='#{training_examples_path}']", count: 0
+  end
+
   test "etag invalidates when filters change" do
     get my_menu_path
     assert_response :success

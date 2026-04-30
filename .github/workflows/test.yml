@@ -2,10 +2,6 @@ name: Test
 
 on:
   workflow_call:
-    inputs:
-      saas:
-        type: boolean
-        required: true
     secrets:
       FIZZY_GH_TOKEN:
         required: false
@@ -15,46 +11,39 @@ permissions:
 
 jobs:
   test:
-    name: Tests (${{ matrix.mode }})
+    name: Tests (PostgreSQL)
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        include:
-          - mode: SQLite
-            db_adapter: sqlite
-          - mode: MySQL
-            db_adapter: mysql
-
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:16
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: fizzy_test
+          POSTGRES_DB: fizzy_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="pg_isready -U postgres"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
 
     env:
       RAILS_ENV: test
-      DATABASE_ADAPTER: ${{ matrix.db_adapter }}
-      ${{ inputs.saas && 'SAAS' || 'SAAS_DISABLED' }}: ${{ inputs.saas && '1' || '' }}
-      BUNDLE_GEMFILE: ${{ inputs.saas && 'Gemfile.saas' || 'Gemfile' }}
-      MYSQL_HOST: 127.0.0.1
-      MYSQL_PORT: 3306
-      MYSQL_USER: root
-      FIZZY_DB_HOST: 127.0.0.1
-      FIZZY_DB_PORT: 3306
-      BUNDLE_GITHUB__COM: ${{ inputs.saas && format('x-access-token:{0}', secrets.FIZZY_GH_TOKEN) || '' }} # zizmor: ignore[secrets-outside-env]
+      DATABASE_ADAPTER: postgres
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_TEST_DB: fizzy_test
+      POSTGRES_TEST_CABLE_DB: fizzy_test_cable
+      POSTGRES_TEST_QUEUE_DB: fizzy_test_queue
+      POSTGRES_TEST_CACHE_DB: fizzy_test_cache
 
     steps:
       - name: Install system packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libsqlite3-0 libvips curl ffmpeg
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips curl ffmpeg chromium-browser
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -69,4 +58,6 @@ jobs:
         run: bin/rails db:setup test
 
       - name: Run system tests
-        run: bin/rails test:system
+        env:
+          CHROME_BIN: /usr/bin/chromium-browser
+        run: PARALLEL_WORKERS=1 bin/rails test:system

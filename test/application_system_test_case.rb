@@ -3,7 +3,10 @@ require "test_helper"
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   browser_options = Selenium::WebDriver::Chrome::Options.new.tap do |opts|
     opts.add_argument("--window-size=1200,800")
+    opts.binary = ENV["CHROME_BIN"] if ENV["CHROME_BIN"].present?
     opts.add_argument("--disable-extensions")
+    opts.add_argument("--disable-dev-shm-usage")
+    opts.add_argument("--no-sandbox")
     # Disable non-foreground tabs from getting a lower process priority
     opts.add_argument("--disable-renderer-backgrounding")
     # Normally, Chrome will treat a 'foreground' tab instead as backgrounded if the surrounding

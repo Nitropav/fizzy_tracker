@@ -5,3 +5,7 @@ db/schema.rb linguist-generated
 
 # Mark any vendored files as having been vendored.
 vendor/* linguist-vendored
+
+# Keep executable scripts Unix-compatible inside containers.
+bin/* text eol=lf
+*.sh text eol=lf

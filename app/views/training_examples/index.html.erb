@@ -1,0 +1,57 @@
+<% @page_title = "Training Examples" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Home", root_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap">
+  <header class="flex align-center justify-between gap">
+    <div>
+      <h1 class="txt-x-large font-weight-black margin-none">Training Examples</h1>
+      <p class="txt-small txt-subtle margin-none">Review generated bug-resolution snapshots before they enter the training corpus.</p>
+    </div>
+
+    <nav class="flex gap-half txt-small" aria-label="Training example filters">
+      <%= link_to "All", training_examples_path, class: "btn" %>
+      <% TrainingExample::STATUSES.each do |status| %>
+        <%= link_to status.humanize, training_examples_path(status: status), class: "btn" %>
+      <% end %>
+      <%= link_to "Export approved JSONL", export_training_examples_path, class: "btn" %>
+    </nav>
+  </header>
+
+  <% if @training_examples.any? %>
+    <div class="overflow-auto">
+      <table class="full-width">
+        <thead>
+          <tr>
+            <th class="txt-align-start">Card</th>
+            <th class="txt-align-start">Status</th>
+            <th class="txt-align-start">Domain</th>
+            <th class="txt-align-start">Severity</th>
+            <th class="txt-align-start">Reviewed by</th>
+            <th class="txt-align-start">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @training_examples.each do |training_example| %>
+            <tr>
+              <td>
+                <%= link_to "##{training_example.card.number} #{training_example.card.title}", training_example, class: "txt-link" %>
+              </td>
+              <td><%= training_example.status.humanize %></td>
+              <td><%= training_example.metadata["domain"].presence || "N/A" %></td>
+              <td><%= training_example.metadata["severity"].presence || "N/A" %></td>
+              <td><%= training_example.reviewed_by&.name || "N/A" %></td>
+              <td><%= local_datetime_tag training_example.created_at, style: :shortdate %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="txt-subtle margin-none">No training examples found.</p>
+  <% end %>
+</section>

@@ -1,0 +1,30 @@
+<% code_links = card.code_links.chronologically %>
+
+<% if code_links.any? %>
+  <section id="<%= dom_id(card, :code_links) %>" class="card__code-links panel flex flex-column gap-half margin-block-start">
+    <header>
+      <h2 class="txt-large margin-none">Code evidence</h2>
+      <p class="txt-small txt-subtle margin-none">Commits and pull requests linked automatically from GitHub references like CT-<%= card.number %>.</p>
+    </header>
+
+    <ul class="list-unstyled margin-none flex flex-column gap-half">
+      <% code_links.each do |code_link| %>
+        <li class="flex align-center justify-between gap">
+          <div class="flex flex-column">
+            <strong><%= code_link.external_type.humanize %>: <%= code_link.title.presence || code_link.external_id %></strong>
+            <span class="txt-small txt-subtle">
+              <%= code_link.repository.presence || "GitHub" %>
+              <% if code_link.sha.present? %>
+                · <%= code_link.sha.first(12) %>
+              <% end %>
+            </span>
+          </div>
+
+          <% if code_link.url.present? %>
+            <%= link_to "Open", code_link.url, class: "btn txt-small", target: "_blank", rel: "noopener" %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

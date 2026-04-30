@@ -1,0 +1,82 @@
+class Card::ResolutionRecord < ApplicationRecord
+  STATUSES = %w[ incomplete complete ].freeze
+
+  GATE_ONE_REQUIRED_FIELDS = %i[
+    problem_description
+    reproduction_steps
+    expected_behavior
+    actual_behavior
+    environment_context
+  ].freeze
+
+  GATE_TWO_REQUIRED_FIELDS = %i[
+    root_cause
+    fix_summary
+    verification_steps
+  ].freeze
+
+  belongs_to :account, default: -> { card&.account }
+  belongs_to :card, class_name: "::Card", touch: true
+  belongs_to :verified_by, class_name: "User", optional: true
+
+  enum :gate_one_status, STATUSES.index_by(&:itself), prefix: :gate_one_status, default: :incomplete
+  enum :gate_two_status, STATUSES.index_by(&:itself), prefix: :gate_two_status, default: :incomplete
+
+  attribute :suggested_primitives, default: -> { [] }
+  attribute :linked_commit_shas, default: -> { [] }
+  attribute :linked_pr_urls, default: -> { [] }
+
+  before_validation :sync_gate_statuses
+
+  validates :account, :card, presence: true
+  validates :card_id, uniqueness: true
+  validate :account_matches_card
+
+  def missing_gate_one_fields
+    missing_fields(GATE_ONE_REQUIRED_FIELDS)
+  end
+
+  def missing_gate_two_fields
+    missing_fields(GATE_TWO_REQUIRED_FIELDS)
+  end
+
+  def gate_one_complete?
+    missing_gate_one_fields.empty?
+  end
+
+  def gate_two_complete?
+    missing_gate_two_fields.empty?
+  end
+
+  def linked_commit_shas
+    Array(super).compact_blank
+  end
+
+  def linked_pr_urls
+    Array(super).compact_blank
+  end
+
+  def suggested_primitives
+    Array(super).compact_blank
+  end
+
+  def code_evidence_present?
+    linked_commit_shas.any? || linked_pr_urls.any?
+  end
+
+  private
+    def sync_gate_statuses
+      self.gate_one_status = gate_one_complete? ? "complete" : "incomplete"
+      self.gate_two_status = gate_two_complete? ? "complete" : "incomplete"
+    end
+
+    def missing_fields(fields)
+      fields.select { public_send(it).blank? }
+    end
+
+    def account_matches_card
+      return if account.blank? || card.blank? || account_id == card.account_id
+
+      errors.add(:account, "must match the card account")
+    end
+end

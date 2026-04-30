@@ -1,14 +1,12 @@
 source "https://rubygems.org"
 
-git_source(:bc) { |repo| "https://github.com/basecamp/#{repo}" }
-
-gem "rails", github: "rails/rails", branch: "main"
+gem "rails", "8.1.2"
 
 # Assets & front end
 gem "importmap-rails"
 gem "propshaft"
 gem "stimulus-rails"
-gem "turbo-rails", github: "hotwired/turbo-rails", branch: "offline-cache"
+gem "turbo-rails", "2.0.23"
 
 # Deployment and drivers
 gem "bootsnap", require: false
@@ -17,9 +15,8 @@ gem "puma", ">= 5.0"
 gem "solid_cable", ">= 3.0"
 gem "solid_cache", "~> 1.0"
 gem "solid_queue", "~> 1.3"
-gem "sqlite3", ">= 2.0"
+gem "pg", "~> 1.5"
 gem "thruster", require: false
-gem "trilogy", "~> 2.10"
 
 # Features
 gem "bcrypt", "~> 3.1.22"
@@ -35,7 +32,7 @@ gem "web-push"
 gem "net-http-persistent"
 gem "zip_kit"
 gem "mittens"
-gem "useragent", bc: "useragent"
+gem "useragent", "0.16.11"
 
 # Operations
 gem "autotuner"
@@ -54,7 +51,7 @@ group :development, :test do
 end
 
 group :development do
-  gem "web-console", github: "rails/web-console"
+  gem "web-console", "4.3.0"
 end
 
 group :test do

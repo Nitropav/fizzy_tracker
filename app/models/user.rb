@@ -12,6 +12,8 @@ class User < ApplicationRecord
 
   has_many :filters, foreign_key: :creator_id, inverse_of: :creator, dependent: :destroy
   has_many :closures, dependent: :nullify
+  has_many :ai_runs, dependent: :nullify
+  has_many :reviewed_training_examples, class_name: "TrainingExample", foreign_key: :reviewed_by_id, dependent: :nullify
   has_many :pins, dependent: :destroy
   has_many :pinned_cards, through: :pins, source: :card
   has_many :data_exports, class_name: "User::DataExport", dependent: :destroy

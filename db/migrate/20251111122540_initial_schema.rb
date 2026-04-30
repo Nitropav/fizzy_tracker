@@ -230,7 +230,7 @@ class InitialSchema < ActiveRecord::Migration[8.2]
       t.uuid "creator_id", null: false
       t.uuid "eventable_id", null: false
       t.string "eventable_type", limit: 255, null: false
-      t.json "particulars", default: -> { "(json_object())" }
+      t.json "particulars", default: empty_json_default
       t.datetime "updated_at", null: false
       t.index ["action"], name: "index_events_on_summary_id_and_action"
       t.index ["board_id", "action", "created_at"], name: "index_events_on_board_id_and_action_and_created_at"
@@ -243,7 +243,7 @@ class InitialSchema < ActiveRecord::Migration[8.2]
       t.uuid "account_id"
       t.datetime "created_at", null: false
       t.uuid "creator_id", null: false
-      t.json "fields", default: -> { "(json_object())" }, null: false
+      t.json "fields", default: empty_json_default, null: false
       t.string "params_digest", limit: 255, null: false
       t.datetime "updated_at", null: false
       t.index ["creator_id", "params_digest"], name: "index_filters_on_creator_id_and_params_digest", unique: true
@@ -366,7 +366,7 @@ class InitialSchema < ActiveRecord::Migration[8.2]
       t.string "terms", limit: 2000, null: false
       t.datetime "updated_at", null: false
       t.uuid "user_id", null: false
-      t.index ["user_id", "terms"], name: "index_search_queries_on_user_id_and_terms", length: { terms: 255 }
+      t.index ["user_id", "terms"], name: "index_search_queries_on_user_id_and_terms", **limited_index_options(terms: 255)
       t.index ["user_id", "updated_at"], name: "index_search_queries_on_user_id_and_updated_at", unique: true
       t.index ["user_id"], name: "index_search_queries_on_user_id"
     end
@@ -478,7 +478,7 @@ class InitialSchema < ActiveRecord::Migration[8.2]
       t.datetime "updated_at", null: false
       t.text "url", null: false
       t.index ["board_id"], name: "index_webhooks_on_board_id"
-      t.index ["subscribed_actions"], name: "index_webhooks_on_subscribed_actions", length: 255
+      t.index ["subscribed_actions"], name: "index_webhooks_on_subscribed_actions", **limited_index_options(255)
     end
 
     add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -517,4 +517,23 @@ class InitialSchema < ActiveRecord::Migration[8.2]
     add_foreign_key "webhook_deliveries", "webhooks"
     add_foreign_key "webhooks", "boards"
   end
+
+  private
+    def create_table(table_name, **options, &block)
+      options = options.except(:charset, :collation)
+      super(table_name, **options, &block)
+    end
+
+    def add_index(table_name, column_name, **options)
+      options = options.except(:length)
+      super(table_name, column_name, **options)
+    end
+
+    def limited_index_options(length)
+      {}
+    end
+
+    def empty_json_default
+      {}
+    end
 end

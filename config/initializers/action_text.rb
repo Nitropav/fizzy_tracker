@@ -7,7 +7,7 @@ module ActionText
         # This overrides the default :embeds association!
         has_many_attached :embeds do |attachable|
           ::Attachments::VARIANTS.each do |variant_name, variant_options|
-            attachable.variant variant_name, **variant_options, process: :immediately
+            attachable.variant variant_name, **variant_options, preprocessed: true
           end
         end
       end

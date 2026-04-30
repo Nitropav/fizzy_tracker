@@ -32,6 +32,46 @@ class Card::TriageableTest < ActiveSupport::TestCase
     assert card.triaged?
   end
 
+  test "triage cards without a resolution record remains allowed" do
+    card = cards(:buy_domain)
+    column = columns(:writebook_in_progress)
+
+    assert_nil card.resolution_record
+
+    card.triage_into(column)
+
+    assert_equal column, card.reload.column
+  end
+
+  test "triage is blocked when resolution record has incomplete gate one" do
+    card = cards(:buy_domain)
+    column = columns(:writebook_in_progress)
+    card.create_resolution_record!(problem_description: "Known problem")
+
+    error = assert_raises Card::Triageable::GateOneIncomplete do
+      card.triage_into(column)
+    end
+
+    assert_match "Complete Gate 1", error.message
+    assert_nil card.reload.column
+  end
+
+  test "triage is allowed when resolution record has complete gate one" do
+    card = cards(:buy_domain)
+    column = columns(:writebook_in_progress)
+    card.create_resolution_record!(
+      problem_description: "Logo is unreadable",
+      reproduction_steps: "Open the card",
+      expected_behavior: "Logo should be readable",
+      actual_behavior: "Logo is too small",
+      environment_context: "Fizzy card page"
+    )
+
+    card.triage_into(column)
+
+    assert_equal column, card.reload.column
+  end
+
   test "cannot triage into a column from a different board" do
     card = cards(:buy_domain)
     other_board_column = Column.create!(

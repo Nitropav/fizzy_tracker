@@ -8,6 +8,6 @@ class QrCodesController < ApplicationController
       .new(QrCodeLink.from_signed(params[:id]).url)
       .as_svg(viewbox: true, fill: :white, color: :black, offset: 16)
 
-    render svg: qr_code_svg
+    render plain: qr_code_svg, content_type: "image/svg+xml"
   end
 end

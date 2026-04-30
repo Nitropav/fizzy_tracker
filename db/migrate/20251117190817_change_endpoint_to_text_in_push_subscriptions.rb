@@ -8,7 +8,13 @@ class ChangeEndpointToTextInPushSubscriptions < ActiveRecord::Migration[8.2]
     change_column :push_subscriptions, :endpoint, :text
 
     # Re-add the index and foreign key
-    add_index :push_subscriptions, [:user_id, :endpoint], unique: true, length: { endpoint: 255 }
+    add_index :push_subscriptions, [:user_id, :endpoint], unique: true, **limited_index_options(endpoint: 255)
     add_foreign_key :push_subscriptions, :users
   end
+
+  private
+
+    def limited_index_options(lengths)
+      {}
+    end
 end

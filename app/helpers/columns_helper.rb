@@ -1,11 +1,14 @@
 module ColumnsHelper
   def button_to_set_column(card, column)
+    disabled = card.triage_blocked_by_resolution_record? || (column == card.column && card.open?)
+
     button_to \
       tag.span(column.name, class: "overflow-ellipsis"),
       card_triage_path(card, column_id: column),
       method: :post,
       class: [ "card__column-name btn", { "card__column-name--current": column == card.column && card.open? } ],
-      disabled: column == card.column && card.open?,
+      disabled: disabled,
+      title: ("Complete Gate 1 before moving this card into work" if card.triage_blocked_by_resolution_record?),
       style: "--column-color: #{column.color}",
       form_class: "flex gap-half",
       data: { turbo_frame: "_top", scroll_to_target: column == card.column && card.open? ? "target" : nil }

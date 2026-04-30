@@ -34,7 +34,7 @@ class CommentTest < ActiveSupport::TestCase
 
     Attachments::VARIANTS.each_key do |variant_name|
       variant = embed.variant(variant_name)
-      assert variant.processed?, "Expected #{variant_name} variant to be processed immediately"
+      assert variant.processed, "Expected #{variant_name} variant to be processed immediately"
     end
   end
 end

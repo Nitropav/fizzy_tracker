@@ -3,6 +3,7 @@ class Cards::PublishesController < ApplicationController
 
   def create
     @card.publish
+    CardResolutionRecords::IntakeSeeder.new(@card).seed!
 
     respond_to do |format|
       format.html do

@@ -1,0 +1,181 @@
+<% record = card.resolution_record || card.build_resolution_record %>
+
+<section id="<%= dom_id(card, :resolution_record) %>" class="card__resolution-record flex flex-column gap margin-block-start">
+  <header class="flex align-center justify-between gap">
+    <div>
+      <h2 class="txt-large margin-none">Bug training data</h2>
+      <p class="txt-small txt-subtle margin-none">Structured Gate 1 and Gate 2 fields used for review, AI context, and training examples.</p>
+    </div>
+
+    <div class="flex align-center gap-half txt-small">
+      <span class="badge">State: <%= card.cactus_workflow_state_label %></span>
+      <span class="badge">Gate 1: <%= record.gate_one_complete? ? "Complete" : "Incomplete" %></span>
+      <span class="badge">Gate 2: <%= record.gate_two_complete? ? "Complete" : "Incomplete" %></span>
+      <%= button_to "Review quality", card_ai_review_path(card), class: "btn txt-small" %>
+    </div>
+  </header>
+
+  <% if (latest_review = card.ai_runs.card_quality_reviews.completed.latest_first.first) %>
+    <div class="panel txt-small">
+      <strong>Latest quality review:</strong>
+      <%= latest_review.output["summary"] %>
+
+      <% if latest_review.output["warnings"].present? %>
+        <p class="margin-block-end-none">Warnings: <%= latest_review.output["warnings"].to_sentence %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if card.cactus_workflow_state == "needs_info" %>
+    <% guidance = CardResolutionRecords::GateOneGuidance.new(card) %>
+
+    <% unless guidance.complete? %>
+      <div class="panel flex flex-column gap-half">
+        <div>
+          <strong>Needs reporter information</strong>
+          <p class="txt-small txt-subtle margin-none">
+            Gate 1 is incomplete. Ask for the next missing detail before triage.
+          </p>
+        </div>
+
+        <% if (next_item = guidance.next_item) %>
+          <%= form_with url: card_gate_one_answer_path(card), scope: :gate_one_answer, method: :patch,
+                class: "flex flex-column gap-half",
+                data: { controller: "form" } do |form| %>
+            <%= form.hidden_field :field, value: next_item.field %>
+
+            <div class="txt-small">
+              <strong>Next question:</strong>
+              <%= next_item.prompt %>
+            </div>
+
+            <%= form.label :value, next_item.label, class: "txt-small txt-bold" %>
+            <%= form.text_area :value, rows: 3, class: "input input--textarea full-width", placeholder: "Add the missing detail here." %>
+
+            <div class="flex justify-end">
+              <%= form.submit "Save answer", class: "btn btn--reversed txt-small" %>
+            </div>
+          <% end %>
+        <% end %>
+
+        <details class="txt-small">
+          <summary>Show all missing Gate 1 items</summary>
+
+          <ul class="margin-block-end-none">
+            <% guidance.missing_items.each do |item| %>
+              <li>
+                <strong><%= item.label %>:</strong>
+                <%= item.prompt %>
+              </li>
+            <% end %>
+          </ul>
+        </details>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if card.cactus_workflow_state == "needs_review" %>
+    <div class="panel flex align-center justify-between gap">
+      <div>
+        <strong>Ready to resolve</strong>
+        <p class="txt-small txt-subtle margin-none">Gate 1 and Gate 2 are complete. Resolving this card will create a training example for review.</p>
+      </div>
+      <%= button_to "Mark resolved", card_resolution_path(card), class: "btn btn--reversed" %>
+    </div>
+  <% elsif card.closed? && card.training_examples.pending_review.any? %>
+    <div class="panel flex align-center justify-between gap">
+      <div>
+        <strong>Training example pending review</strong>
+        <p class="txt-small txt-subtle margin-none">This resolved card generated a candidate training example.</p>
+      </div>
+      <%= link_to "Review example", training_example_path(card.training_examples.pending_review.latest_first.first), class: "btn" %>
+    </div>
+  <% end %>
+
+  <%= form_with model: record, scope: :card_resolution_record, url: card_resolution_record_path(card), method: :put,
+        class: "flex flex-column gap",
+        data: { controller: "form" } do |form| %>
+    <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));">
+      <fieldset class="panel flex flex-column gap-half">
+        <legend class="txt-small txt-bold">Gate 1 - Reporter side</legend>
+
+        <%= form.label :problem_description, "Problem description", class: "txt-small txt-bold" %>
+        <%= form.text_area :problem_description, rows: 3, class: "input input--textarea full-width", placeholder: "What is broken or confusing?" %>
+
+        <%= form.label :reproduction_steps, "Reproduction steps", class: "txt-small txt-bold" %>
+        <%= form.text_area :reproduction_steps, rows: 3, class: "input input--textarea full-width", placeholder: "Step-by-step path to reproduce" %>
+
+        <%= form.label :expected_behavior, "Expected behavior", class: "txt-small txt-bold" %>
+        <%= form.text_area :expected_behavior, rows: 2, class: "input input--textarea full-width" %>
+
+        <%= form.label :actual_behavior, "Actual behavior", class: "txt-small txt-bold" %>
+        <%= form.text_area :actual_behavior, rows: 2, class: "input input--textarea full-width" %>
+
+        <%= form.label :environment_context, "Environment context", class: "txt-small txt-bold" %>
+        <%= form.text_area :environment_context, rows: 2, class: "input input--textarea full-width", placeholder: "Product, UI, customer account, browser, etc." %>
+      </fieldset>
+
+      <fieldset class="panel flex flex-column gap-half">
+        <legend class="txt-small txt-bold">Gate 2 - Developer side</legend>
+
+        <%= form.label :root_cause, "Root cause", class: "txt-small txt-bold" %>
+        <%= form.text_area :root_cause, rows: 3, class: "input input--textarea full-width", placeholder: "Plain-language technical cause" %>
+
+        <%= form.label :fix_summary, "Fix summary", class: "txt-small txt-bold" %>
+        <%= form.text_area :fix_summary, rows: 3, class: "input input--textarea full-width", placeholder: "What changed and why" %>
+
+        <%= form.label :verification_steps, "Verification steps", class: "txt-small txt-bold" %>
+        <%= form.text_area :verification_steps, rows: 3, class: "input input--textarea full-width", placeholder: "How the fix was checked" %>
+
+        <%= form.label :linked_commit_shas, "Linked commit SHAs", class: "txt-small txt-bold" %>
+        <%= form.text_field :linked_commit_shas, value: record.linked_commit_shas.join(", "), name: "card_resolution_record[linked_commit_shas][]", class: "input full-width", placeholder: "abc123, def456" %>
+
+        <%= form.label :linked_pr_urls, "Linked PR URLs", class: "txt-small txt-bold" %>
+        <%= form.text_field :linked_pr_urls, value: record.linked_pr_urls.join(", "), name: "card_resolution_record[linked_pr_urls][]", class: "input full-width", placeholder: "https://github.com/org/repo/pull/123" %>
+      </fieldset>
+    </div>
+
+    <fieldset class="panel flex flex-column gap-half">
+      <legend class="txt-small txt-bold">Classification</legend>
+
+      <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
+        <div class="flex flex-column gap-half">
+          <%= form.label :category, class: "txt-small txt-bold" %>
+          <%= form.text_field :category, class: "input full-width", placeholder: "bug, feature request, question" %>
+        </div>
+
+        <div class="flex flex-column gap-half">
+          <%= form.label :domain, class: "txt-small txt-bold" %>
+          <%= form.text_field :domain, class: "input full-width", placeholder: "pricing, glass visibility, assembly config" %>
+        </div>
+
+        <div class="flex flex-column gap-half">
+          <%= form.label :severity, class: "txt-small txt-bold" %>
+          <%= form.text_field :severity, class: "input full-width", placeholder: "blocks ordering, cosmetic, etc." %>
+        </div>
+      </div>
+
+      <%= form.label :structured_summary, "Structured summary", class: "txt-small txt-bold" %>
+      <%= form.text_area :structured_summary, rows: 3, class: "input input--textarea full-width" %>
+
+      <%= form.label :suggested_primitives, "Suggested primitives/components", class: "txt-small txt-bold" %>
+      <%= form.text_field :suggested_primitives, value: record.suggested_primitives.join(", "), name: "card_resolution_record[suggested_primitives][]", class: "input full-width", placeholder: "assembly config, pricing rules" %>
+    </fieldset>
+
+    <% if record.missing_gate_one_fields.any? || record.missing_gate_two_fields.any? %>
+      <div class="txt-small txt-subtle">
+        <% if record.missing_gate_one_fields.any? %>
+          <p class="margin-none">Gate 1 missing: <%= record.missing_gate_one_fields.map { it.to_s.humanize.downcase }.to_sentence %>.</p>
+        <% end %>
+
+        <% if record.missing_gate_two_fields.any? %>
+          <p class="margin-none">Gate 2 missing: <%= record.missing_gate_two_fields.map { it.to_s.humanize.downcase }.to_sentence %>.</p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="flex justify-end">
+      <%= form.submit "Save training data", class: "btn btn--reversed" %>
+    </div>
+  <% end %>
+</section>

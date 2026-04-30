@@ -1,0 +1,56 @@
+<% @page_title = "Cactus Queue" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Home", root_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap">
+  <header class="flex align-center justify-between gap">
+    <div>
+      <h1 class="txt-x-large font-weight-black margin-none">Cactus Queue</h1>
+      <p class="txt-small txt-subtle margin-none">Workflow queues derived from Gate 1, Gate 2, triage, close, and training review state.</p>
+    </div>
+  </header>
+
+  <nav class="flex gap-half txt-small flex-wrap" aria-label="Cactus workflow filters">
+    <%= link_to "All", cactus_queues_path, class: "btn" %>
+    <% Cards::CactusWorkflowQuery::STATES.each do |state| %>
+      <%= link_to state.humanize, cactus_queues_path(state: state), class: "btn" %>
+    <% end %>
+  </nav>
+
+  <% if @cards.any? %>
+    <div class="overflow-auto">
+      <table class="full-width">
+        <thead>
+          <tr>
+            <th class="txt-align-start">Card</th>
+            <th class="txt-align-start">State</th>
+            <th class="txt-align-start">Board</th>
+            <th class="txt-align-start">Column</th>
+            <th class="txt-align-start">Gate 1</th>
+            <th class="txt-align-start">Gate 2</th>
+            <th class="txt-align-start">Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @cards.each do |card| %>
+            <tr>
+              <td><%= link_to "##{card.number} #{card.title}", card, class: "txt-link" %></td>
+              <td><%= card.cactus_workflow_state_label %></td>
+              <td><%= card.board.name %></td>
+              <td><%= card.column&.name || "N/A" %></td>
+              <td><%= card.resolution_record&.gate_one_status&.humanize || "N/A" %></td>
+              <td><%= card.resolution_record&.gate_two_status&.humanize || "N/A" %></td>
+              <td><%= local_datetime_tag card.updated_at, style: :shortdate %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="txt-subtle margin-none">No cards in this queue.</p>
+  <% end %>
+</section>

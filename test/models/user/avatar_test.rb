@@ -31,7 +31,7 @@ class User::AvatarTest < ActiveSupport::TestCase
   test "thumb variant is processed immediately on attachment" do
     users(:david).avatar.attach(io: File.open(file_fixture("avatar.png")), filename: "avatar.png", content_type: "image/png")
 
-    assert users(:david).avatar.variant(:thumb).processed?
+    assert users(:david).avatar.variant(:thumb).processed
   end
 
   test "rejects images that are too wide" do

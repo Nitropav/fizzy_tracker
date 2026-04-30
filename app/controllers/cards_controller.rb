@@ -21,6 +21,7 @@ class CardsController < ApplicationController
 
       format.json do
         @card = @board.cards.create! card_params.merge(creator: Current.user, status: "published")
+        CardResolutionRecords::IntakeSeeder.new(@card).seed!
         render :show, status: :created, location: card_path(@card, format: :json)
       end
     end

@@ -1,13 +1,15 @@
-# Apply MySQL-compatible column limits when defining tables.
+# Apply explicit column limits when defining tables.
 #
-# For string columns: defaults to 255 (MySQL's VARCHAR default)
+# For string columns: defaults to 255.
 #
-# For text columns: converts MySQL's `size:` option to equivalent limits:
+# For text columns: converts legacy `size:` options to equivalent limits:
 #   - (blank/default): 65,535 (TEXT)
 #   - size: :tiny: 255 (TINYTEXT)
 #   - size: :medium: 16,777,215 (MEDIUMTEXT)
 #   - size: :long: 4,294,967,295 (LONGTEXT)
 #
+# PostgreSQL has native unlimited text/bytea semantics, so text sizes are
+# intentionally ignored there instead of being converted to invalid byte limits.
 
 module TableDefinitionColumnLimits
   TEXT_SIZE_TO_LIMIT = {
@@ -22,6 +24,11 @@ module TableDefinitionColumnLimits
   def column(name, type, **options)
     if type == :string
       options[:limit] ||= STRING_DEFAULT_LIMIT
+    end
+
+    if Fizzy.db_adapter.postgres? && (type == :text || type == :binary)
+      options.delete(:size)
+      return super
     end
 
     if type == :text || type == :binary
@@ -39,32 +46,6 @@ module TableDefinitionColumnLimits
   end
 end
 
-# For SQLite: append inline CHECK constraints to enforce string/text length limits.
-# since SQLite doesn't natively enforce VARCHAR/TEXT length limits.
-module SQLiteColumnLimitCheckConstraints
-  def add_column_options!(sql, options)
-    super
-
-    column = options[:column]
-    if column && column.limit && %i[string text].include?(column.type)
-      check_expr = if column.type == :string
-        # VARCHAR limits are in characters
-        %(length("#{column.name}") <= #{column.limit})
-      else
-        # TEXT limits are in bytes
-        %(length(CAST("#{column.name}" AS BLOB)) <= #{column.limit})
-      end
-      sql << " CHECK(#{check_expr})"
-    end
-
-    sql
-  end
-end
-
 ActiveSupport.on_load(:active_record) do
   ActiveRecord::ConnectionAdapters::TableDefinition.prepend(TableDefinitionColumnLimits)
-end
-
-ActiveSupport.on_load(:active_record_sqlite3adapter) do
-  ActiveRecord::ConnectionAdapters::SQLite3::SchemaCreation.prepend(SQLiteColumnLimitCheckConstraints)
 end

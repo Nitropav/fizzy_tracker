@@ -14,6 +14,28 @@ class Cards::ClosuresControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "create is blocked when resolution record has incomplete gate two" do
+    card = cards(:logo)
+    card.create_resolution_record!(root_cause: "Known cause")
+
+    assert_no_changes -> { card.reload.closed? } do
+      post card_closure_path(card), as: :turbo_stream
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "Complete Gate 2", response.body
+  end
+
+  test "create as JSON reports incomplete gate two" do
+    card = cards(:logo)
+    card.create_resolution_record!(root_cause: "Known cause")
+
+    post card_closure_path(card), as: :json
+
+    assert_response :unprocessable_entity
+    assert_equal [ "fix_summary", "verification_steps" ], @response.parsed_body["missing_gate_two_fields"]
+  end
+
   test "destroy" do
     card = cards(:shipping)
 

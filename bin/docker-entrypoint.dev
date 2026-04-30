@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+rm -f /rails/tmp/pids/server.pid
+
+if ! bundle check >/dev/null 2>&1; then
+  bundle install
+fi
+
+bundle exec rails db:prepare
+
+if [ "${RUN_DB_SEED:-false}" = "true" ]; then
+  bundle exec rails runner "exit(Account.exists? ? 0 : 1)" >/dev/null 2>&1 || bundle exec rails db:seed
+fi
+
+exec "$@"

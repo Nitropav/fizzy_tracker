@@ -2,8 +2,7 @@
 
 require_relative "../lib/fizzy"
 
-OSS_ENV = "SAAS=false BUNDLE_GEMFILE=Gemfile"
-SAAS_ENV = "SAAS=true BUNDLE_GEMFILE=Gemfile.saas"
+APP_ENV = "DATABASE_ADAPTER=postgres BUNDLE_GEMFILE=Gemfile"
 SYSTEM_TEST_ENV = "PARALLEL_WORKERS=1" # system tests can't run reliably in parallel
 
 CI.run do
@@ -17,15 +16,8 @@ CI.run do
   step "Security: Brakeman audit", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
   step "Security: Gitleaks audit", "bin/gitleaks-audit"
 
-  if Fizzy.saas?
-    step "Tests: SaaS",          "#{SAAS_ENV} bin/rails test"
-    step "Tests: SaaS System",   "#{SAAS_ENV} #{SYSTEM_TEST_ENV} bin/rails test:system"
-    step "Tests: OSS",           "#{OSS_ENV} bin/rails test"
-    step "Tests: OSS System",    "#{OSS_ENV} #{SYSTEM_TEST_ENV} bin/rails test:system"
-  else
-    step "Tests: SQLite",        "#{OSS_ENV} bin/rails test"
-    step "Tests: SQLite System", "#{OSS_ENV} #{SYSTEM_TEST_ENV} bin/rails test:system"
-  end
+  step "Tests: PostgreSQL",        "#{APP_ENV} bin/rails test"
+  step "Tests: PostgreSQL System", "#{APP_ENV} #{SYSTEM_TEST_ENV} bin/rails test:system"
 
   if success?
     step "Signoff: All systems go. Ready for merge and deploy.", "gh signoff"

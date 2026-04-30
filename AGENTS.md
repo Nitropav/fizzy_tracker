@@ -53,7 +53,6 @@ bin/kamal deploy             # Deploy (requires 1Password CLI for secrets)
 ## Deploy
 
 Default branch: `main`
-Pre-deploy: `bin/rails saas:enable`
 Deploy: `bin/kamal deploy -d <destination>`
 Destinations: production, staging, beta, beta1, beta2, beta3, beta4
 Note: `beta` is a template requiring `BETA_NUMBER` env var; typical targets are `beta1`-`beta4`.
@@ -138,9 +137,9 @@ Key recurring tasks (via `config/recurring.yml`):
 - Auto-postpone stale cards (hourly)
 - Cleanup jobs for expired links, deliveries
 
-### Sharded Full-Text Search
+### Sharded Search
 
-16-shard MySQL full-text search instead of Elasticsearch:
+16-shard PostgreSQL-backed search:
 - Shards determined by account ID hash (CRC32)
 - Search records denormalized for performance
 - Models in `app/models/search/`

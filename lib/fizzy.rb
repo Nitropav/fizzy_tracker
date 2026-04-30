@@ -1,33 +1,29 @@
 module Fizzy
   class << self
     def saas?
-      return @saas if defined?(@saas)
-      @saas = !!(((ENV["SAAS"] || File.exist?(File.expand_path("../tmp/saas.txt", __dir__))) && ENV["SAAS"] != "false"))
+      false
     end
 
     def db_adapter
-      @db_adapter ||= DbAdapter.new ENV.fetch("DATABASE_ADAPTER", saas? ? "mysql" : "sqlite")
+      @db_adapter ||= DbAdapter.new
     end
 
     def configure_bundle
-      if saas?
-        ENV["BUNDLE_GEMFILE"] = "Gemfile.saas"
-      end
+      nil
     end
   end
 
   class DbAdapter
-    def initialize(name)
-      @name = name.to_s
+    def initialize
+      @name = "postgres"
     end
 
     def to_s
       @name
     end
 
-    # Not using inquiry so that it works before Rails env loads.
-    def sqlite?
-      @name == "sqlite"
+    def postgres?
+      @name == "postgres"
     end
   end
 end

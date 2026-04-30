@@ -1,0 +1,79 @@
+<% @page_title = "Training Example ##{@training_example.card.number}" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Training Examples", training_examples_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap">
+  <header class="flex align-start justify-between gap">
+    <div>
+      <h1 class="txt-x-large font-weight-black margin-none">
+        <%= link_to "##{@training_example.card.number} #{@training_example.card.title}", @training_example.card, class: "txt-link" %>
+      </h1>
+      <p class="txt-small txt-subtle margin-none">
+        Status: <strong><%= @training_example.status.humanize %></strong>
+        <% if @training_example.reviewed_by %>
+          · Reviewed by <%= @training_example.reviewed_by.name %>
+        <% end %>
+      </p>
+    </div>
+
+    <% if @training_example.pending_review? || @training_example.rejected? %>
+      <div class="flex gap-half">
+        <%= button_to "Approve", approve_training_example_path(@training_example), class: "btn btn--reversed" %>
+        <%= button_to "Reject", reject_training_example_path(@training_example), class: "btn" %>
+      </div>
+    <% end %>
+  </header>
+
+  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));">
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Problem</h2>
+      <p class="margin-none"><%= simple_format @training_example.problem_summary %></p>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Resolution</h2>
+      <p class="margin-none"><strong>Root cause:</strong></p>
+      <%= simple_format @training_example.root_cause %>
+      <p class="margin-none"><strong>Fix:</strong></p>
+      <%= simple_format @training_example.resolution_summary %>
+      <p class="margin-none"><strong>Verification:</strong></p>
+      <%= simple_format @training_example.verification_steps %>
+    </section>
+  </div>
+
+  <section class="panel flex flex-column gap-half">
+    <h2 class="txt-large margin-none">Metadata</h2>
+    <dl class="grid gap-half" style="grid-template-columns: max-content 1fr;">
+      <dt>Domain</dt>
+      <dd class="margin-none"><%= @training_example.metadata["domain"].presence || "N/A" %></dd>
+      <dt>Category</dt>
+      <dd class="margin-none"><%= @training_example.metadata["category"].presence || "N/A" %></dd>
+      <dt>Severity</dt>
+      <dd class="margin-none"><%= @training_example.metadata["severity"].presence || "N/A" %></dd>
+      <dt>Commits</dt>
+      <dd class="margin-none"><%= Array(@training_example.metadata["commit_shas"]).presence&.join(", ") || "N/A" %></dd>
+      <dt>PRs</dt>
+      <dd class="margin-none"><%= Array(@training_example.metadata["pr_urls"]).presence&.join(", ") || "N/A" %></dd>
+    </dl>
+  </section>
+
+  <section class="panel flex flex-column gap-half">
+    <h2 class="txt-large margin-none">Review notes</h2>
+    <%= form_with url: approve_training_example_path(@training_example), class: "flex flex-column gap-half", data: { controller: "form" } do |form| %>
+      <%= form.text_area :review_notes, value: @training_example.review_notes, rows: 3, class: "input input--textarea full-width", placeholder: "Optional notes for approve/reject decision" %>
+      <div class="flex gap-half justify-end">
+        <%= form.submit "Approve with notes", class: "btn btn--reversed" %>
+        <%= form.submit "Reject with notes", formaction: reject_training_example_path(@training_example), class: "btn" %>
+      </div>
+    <% end %>
+  </section>
+
+  <details class="panel">
+    <summary class="txt-bold">Input context snapshot</summary>
+    <pre class="txt-small overflow-auto"><%= JSON.pretty_generate(@training_example.input_context) %></pre>
+  </details>
+</section>

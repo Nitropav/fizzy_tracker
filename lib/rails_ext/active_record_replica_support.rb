@@ -30,7 +30,7 @@ module ActiveRecordReplicaSupport
     # read/write splitting based on their database.yml configuration.
     #
     # Example:
-    #   ApplicationRecord.replica_configured? # => true for MySQL, false for SQLite
+    #   ApplicationRecord.replica_configured?
     def replica_configured?
       configurations.find_db_config("replica").present?
     end

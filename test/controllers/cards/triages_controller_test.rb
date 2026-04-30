@@ -16,6 +16,30 @@ class Cards::TriagesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "create is blocked when resolution record has incomplete gate one" do
+    card = cards(:buy_domain)
+    column = columns(:writebook_in_progress)
+    card.create_resolution_record!(problem_description: "Known problem")
+
+    assert_no_changes -> { card.reload.column } do
+      post card_triage_path(card, column_id: column.id), as: :turbo_stream
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "Complete Gate 1", response.body
+  end
+
+  test "create as JSON reports incomplete gate one" do
+    card = cards(:buy_domain)
+    column = columns(:writebook_in_progress)
+    card.create_resolution_record!(problem_description: "Known problem")
+
+    post card_triage_path(card, column_id: column.id), as: :json
+
+    assert_response :unprocessable_entity
+    assert_equal [ "reproduction_steps", "expected_behavior", "actual_behavior", "environment_context" ], @response.parsed_body["missing_gate_one_fields"]
+  end
+
   test "destroy" do
     card = cards(:shipping)
 

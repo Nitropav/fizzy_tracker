@@ -1,9 +1,6 @@
 require "test_helper"
 
 class ColumnLimitsTest < ActiveSupport::TestCase
-  # Database errors for exceeding column limits:
-  # - MySQL: ActiveRecord::ValueTooLong
-  # - SQLite: ActiveRecord::CheckViolation
   COLUMN_LIMIT_ERRORS = [ ActiveRecord::ValueTooLong, ActiveRecord::CheckViolation ]
 
   test "account name rejects strings over 255 characters" do
@@ -28,6 +25,8 @@ class ColumnLimitsTest < ActiveSupport::TestCase
 
   # Test text column limits (65535 bytes for TEXT)
   test "step content rejects text over 65535 bytes" do
+    skip "PostgreSQL text columns are intentionally unlimited" if postgres?
+
     step = Step.new(content: "a" * 65536, card: cards(:logo))
     assert_raises(*COLUMN_LIMIT_ERRORS) { step.save! }
   end
@@ -38,6 +37,8 @@ class ColumnLimitsTest < ActiveSupport::TestCase
   end
 
   test "step content counts bytes not characters for text columns" do
+    skip "PostgreSQL text columns are intentionally unlimited" if postgres?
+
     # 20000 emoji = 20000 chars but 80000 bytes (over 65535 limit)
     step = Step.new(content: "🎉" * 20000, card: cards(:logo))
     assert_raises(*COLUMN_LIMIT_ERRORS) { step.save! }
@@ -53,4 +54,9 @@ class ColumnLimitsTest < ActiveSupport::TestCase
     blob = ActiveStorage::Blob.new(filename: "a" * 256, key: "test-key", byte_size: 0, checksum: "test", service_name: "local")
     assert_raises(*COLUMN_LIMIT_ERRORS) { blob.save! }
   end
+
+  private
+    def postgres?
+      ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
+    end
 end

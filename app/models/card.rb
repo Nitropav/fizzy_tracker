@@ -1,13 +1,16 @@
 class Card < ApplicationRecord
-  include Accessible, Assignable, Attachments, Broadcastable, Closeable, Colored, Commentable,
+  include Accessible, Assignable, Attachments, Broadcastable, CactusWorkflow, Closeable, Colored, Commentable,
     Entropic, Eventable, Exportable, Golden, Mentions, Multistep, Pinnable, Postponable, Promptable,
-    Readable, Searchable, Stallable, Statuses, Storage::Tracked, Taggable, Triageable, Watchable
+    Readable, Resolvable, Searchable, Stallable, Statuses, Storage::Tracked, Taggable, Triageable, Watchable
 
   belongs_to :account, default: -> { board.account }
   belongs_to :board
   belongs_to :creator, class_name: "User", default: -> { Current.user }
 
   has_many :reactions, -> { order(:created_at) }, as: :reactable, dependent: :delete_all
+  has_many :ai_runs, dependent: :destroy
+  has_many :code_links, class_name: "Card::CodeLink", dependent: :destroy
+  has_many :training_examples, dependent: :destroy
   has_one_attached :image, dependent: :purge_later
 
   has_rich_text :description
@@ -72,16 +75,21 @@ class Card < ApplicationRecord
     end
 
     def handle_board_change
+      return if @handling_board_change
+
+      @handling_board_change = true
       old_board = account.boards.find_by(id: board_id_before_last_save)
 
       transaction do
-        update! column: nil
-        track_board_change_event(old_board.name)
+        update_column :column_id, nil
+        track_board_change_event(old_board.name) if old_board
         grant_access_to_assignees unless board.all_access?
       end
 
       remove_inaccessible_notifications_later
       clean_inaccessible_data_later
+    ensure
+      @handling_board_change = false
     end
 
     def track_board_change_event(old_board_name)
