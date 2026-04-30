@@ -4,11 +4,17 @@
 # or operating system, you probably want to add a global ignore instead:
 #   git config --global core.excludesfile '~/.gitignore_global'
 
-# Ignore bundler config.
+# Ignore local tool/editor state.
 /.bundle
+/.idea/
+/.vscode/
+/.cache/
+/.ruby-lsp/
+/.yardoc/
 
 # Ignore all environment files (except templates).
 /.env*
+!/.env.example
 !/.env*.erb
 
 # Ignore all logfiles and tempfiles.
@@ -30,6 +36,9 @@
 !/tmp/storage/
 !/tmp/storage/.keep
 /data
+/coverage/
+/node_modules/
+/vendor/bundle/
 
 *.sqlite3
 *.sqlite3_*
