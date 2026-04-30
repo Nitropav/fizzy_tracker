@@ -6,34 +6,23 @@ class SignupTest < ActiveSupport::TestCase
     assert_not signup.valid?(:identity_creation)
     assert signup.errors[:email_address].any?
 
-    signup = Signup.new(email_address: "valid@example.com")
+    signup = Signup.new(email_address: "valid@example.com", password: "password")
     assert signup.valid?(:identity_creation)
   end
 
   test "#create_identity" do
-    signup = Signup.new(email_address: "brian@example.com")
+    signup = Signup.new(email_address: "brian@example.com", password: "password")
 
-    magic_link = nil
     assert_difference -> { Identity.count }, 1 do
-      assert_difference -> { MagicLink.count }, 1 do
-        magic_link = signup.create_identity
+      assert_no_difference -> { MagicLink.count } do
+        signup.create_identity
       end
     end
 
-    assert_kind_of MagicLink, magic_link
     assert_empty signup.errors
     assert signup.identity
     assert signup.identity.persisted?
-
-    signup_existing = Signup.new(email_address: "brian@example.com")
-
-    assert_no_difference -> { Identity.count } do
-      assert_difference -> { MagicLink.count }, 1 do
-        magic_link = signup_existing.create_identity
-      end
-    end
-
-    assert_kind_of MagicLink, magic_link
+    assert signup.identity.authenticate("password")
 
     signup_invalid = Signup.new(email_address: "")
     assert_raises do

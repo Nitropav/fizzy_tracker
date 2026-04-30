@@ -18,6 +18,7 @@ class Cards::GateOneAnswersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "Open the card detail page", record.reload.reproduction_steps
+    assert_equal "needs_info", response.parsed_body["cactus_workflow_state"]
     assert_equal %i[ expected_behavior actual_behavior environment_context ], record.missing_gate_one_fields
   end
 
@@ -88,5 +89,27 @@ class Cards::GateOneAnswersControllerTest < ActionDispatch::IntegrationTest
 
     assert record.reload.gate_one_complete?
     assert_equal "open", @card.reload.cactus_workflow_state
+  end
+
+  test "update returns open state when gate one becomes complete" do
+    @card.update_column :column_id, nil
+    record = @card.create_resolution_record!(
+      problem_description: "Logo is unreadable",
+      reproduction_steps: "Open the card",
+      expected_behavior: "Logo should be readable",
+      actual_behavior: "Logo is too small"
+    )
+
+    patch card_gate_one_answer_path(@card), params: {
+      gate_one_answer: {
+        field: "environment_context",
+        value: "Fizzy card page"
+      }
+    }, as: :json
+
+    assert_response :success
+    assert record.reload.gate_one_complete?
+    assert_equal "open", response.parsed_body["cactus_workflow_state"]
+    assert_empty response.parsed_body["missing_gate_one_fields"]
   end
 end

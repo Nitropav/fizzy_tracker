@@ -1,0 +1,9 @@
+<h1 class="title">Reset your Fizzy password</h1>
+
+<p class="subtitle">Use the link below to set a new password for <%= @identity.email_address %>.</p>
+
+<p><%= link_to "Reset your password", edit_session_password_reset_url(token: @token, script_name: nil) %></p>
+
+<p>This link will work for <%= distance_of_time_in_words(PasswordMailer::RESET_TOKEN_EXPIRATION) %>.</p>
+
+<p class="footer">If you didn't request this, you can ignore this email.</p>

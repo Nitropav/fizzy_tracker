@@ -392,10 +392,14 @@ In progress. Initial Gate 1 guidance is implemented:
 - initial `problem_description` seeding from card title and description
 - board-scoped guided bug report form for creating cards with structured Gate 1 data
 - board UI entry point for `Report bug`
+- sparse customer submissions are accepted when they contain a title or any Gate 1 detail
+- empty submissions are rejected before creating a card
+- incomplete submissions stay in `needs_info` until Gate 1 is complete
 - card detail guidance panel when a card is in `needs_info`
 - next-question display plus full missing Gate 1 checklist
 - one-question answer flow for filling the next missing Gate 1 field from the card detail screen
 - narrow `Cards::GateOneAnswersController` endpoint that only updates allowed reporter-side fields
+- Gate 1 answer responses expose the derived workflow state so UI/API clients can tell when the card becomes `open`
 
 This is intentionally non-destructive and does not let AI silently write final structured fields. It gives support/customer-facing users a clear next question while keeping the saved structured record human-controlled.
 
@@ -435,6 +439,8 @@ In progress. Initial workflow queue UI is implemented:
 - `Cactus Queue` menu entry
 - queue filters for `draft`, `needs_info`, `open`, `in_progress`, `needs_review`, `resolved`, `closed`
 - account/access-scoped card list with Gate 1/Gate 2 status columns
+- `needs_info` rows show the next reporter-side question support should ask
+- `open` rows expose an inline triage action for moving complete Gate 1 cards into a board column
 
 ### UI Capabilities
 
@@ -471,6 +477,8 @@ In progress. Initial explicit resolution flow is implemented:
 - `Mark resolved` action appears when Cactus workflow reaches `needs_review`
 - resolving creates a pending review training example through the existing generator
 - resolved cards link directly to the generated training example review page
+- `in_progress` queue rows show missing Gate 2 fields and link directly to the structured resolution form
+- `needs_review` queue rows expose review and mark-resolved actions
 
 ### UI Capabilities
 

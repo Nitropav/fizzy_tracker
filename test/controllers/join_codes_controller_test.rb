@@ -31,12 +31,13 @@ class JoinCodesControllerTest < ActionDispatch::IntegrationTest
   test "create" do
     assert_difference -> { Identity.count }, 1 do
       assert_difference -> { User.count }, 1 do
-        post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: "new_user@example.com" }
+        post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: "new_user@example.com", password: "password" }
       end
     end
 
-    assert_redirected_to session_magic_link_url(script_name: nil)
-    assert_equal new_users_verification_url(script_name: @account.slug), session[:return_to_after_authenticating]
+    assert_redirected_to new_users_verification_url(script_name: @account.slug)
+    assert cookies.get_cookie("session_token").present?
+    assert Identity.find_by!(email_address: "new_user@example.com").authenticate("password")
   end
 
   test "create for existing identity" do
@@ -70,17 +71,44 @@ class JoinCodesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_users_verification_url(script_name: @account.slug)
   end
 
+  test "create for existing identity without password sets initial password" do
+    identity = identities(:mike)
+    identity.update_column(:password_digest, nil)
+
+    assert_no_difference -> { Identity.count } do
+      assert_difference -> { User.count }, 1 do
+        post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: identity.email_address, password: "new-password" }
+      end
+    end
+
+    assert_redirected_to new_users_verification_url(script_name: @account.slug)
+    assert identity.reload.authenticate("new-password")
+  end
+
+  test "create for existing identity rejects wrong password" do
+    identity = identities(:mike)
+
+    assert_no_difference -> { Identity.count } do
+      assert_no_difference -> { User.count } do
+        post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: identity.email_address, password: "wrong-password" }
+      end
+    end
+
+    assert_redirected_to new_session_path
+    assert_equal "Check your email and password.", flash[:alert]
+  end
+
   test "create for different identity terminates existing session" do
     sign_in_as :kevin
 
     assert_difference -> { Identity.count }, 1 do
       assert_difference -> { User.count }, 1 do
-        post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: "new_user@example.com" }
+        post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: "new_user@example.com", password: "password" }
       end
     end
 
-    assert_redirected_to session_magic_link_url(script_name: nil)
-    assert_not_predicate cookies[:session_token], :present?
+    assert_redirected_to new_users_verification_url(script_name: @account.slug)
+    assert cookies.get_cookie("session_token").present?
   end
 
   test "create with invalid email address" do
@@ -88,7 +116,7 @@ class JoinCodesControllerTest < ActionDispatch::IntegrationTest
     without_action_dispatch_exception_handling do
       assert_no_difference -> { Identity.count } do
         assert_no_difference -> { User.count } do
-          post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: "not-a-valid-email" }
+          post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: "not-a-valid-email", password: "password" }
         end
       end
       assert_response :unprocessable_entity
@@ -98,7 +126,7 @@ class JoinCodesControllerTest < ActionDispatch::IntegrationTest
   test "create is rate limited" do
     Rails.cache.stubs(:increment).returns(11)
 
-    post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: "test@example.com" }
+    post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: "test@example.com", password: "password" }
 
     assert_response :too_many_requests
   end

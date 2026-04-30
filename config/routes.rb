@@ -174,6 +174,8 @@ Rails.application.routes.draw do
 
   resource :session do
     scope module: :sessions do
+      resource :development_login, only: :create
+      resource :password_reset, only: %i[ new create edit update ]
       resources :transfers
       resource :magic_link
       resource :menu

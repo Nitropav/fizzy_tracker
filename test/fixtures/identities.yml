@@ -1,17 +1,22 @@
 david:
   email_address: david@37signals.com
+  password_digest: <%= BCrypt::Password.create("password") %>
   staff: true
 
 jz:
   email_address: jz@37signals.com
+  password_digest: <%= BCrypt::Password.create("password") %>
 
 jason:
   email_address: jason@37signals.com
+  password_digest: <%= BCrypt::Password.create("password") %>
   staff: true
 
 kevin:
   email_address: kevin@37signals.com
+  password_digest: <%= BCrypt::Password.create("password") %>
   staff: true
 
 mike:
   email_address: mike@37signals.com
+  password_digest: <%= BCrypt::Password.create("password") %>

@@ -10,6 +10,12 @@
       </label>
     </div>
 
+    <div class="flex align-center gap">
+      <label class="flex align-center gap input input--actor">
+        <%= form.password_field :password, required: true, minlength: 8, class: "input full-width", autocomplete: "current-password", placeholder: "Password" %>
+      </label>
+    </div>
+
     <button type="submit" id="log_in" class="btn btn--link center" data-form-target="submit">
       <span>Continue</span>
       <%= icon_tag "arrow-right" %>

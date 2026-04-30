@@ -218,7 +218,7 @@ class FlatJsonParamsTest < ActionDispatch::IntegrationTest
 
     untenanted do
       assert_difference -> { Identity.count }, +1 do
-        post signup_path, params: { email_address: email }, as: :json
+        post signup_path, params: { email_address: email, password: "password" }, as: :json
       end
     end
 
@@ -226,7 +226,7 @@ class FlatJsonParamsTest < ActionDispatch::IntegrationTest
   end
 
   test "complete signup with flat JSON" do
-    signup = Signup.new(email_address: "flatjson-#{SecureRandom.hex(6)}@example.com", full_name: "Flat User")
+    signup = Signup.new(email_address: "flatjson-#{SecureRandom.hex(6)}@example.com", password: "password", full_name: "Flat User")
     signup.create_identity || raise("Failed to create identity")
     logout_and_sign_in_as signup.identity
 

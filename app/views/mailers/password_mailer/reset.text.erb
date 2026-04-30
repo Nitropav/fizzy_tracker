@@ -1,0 +1,9 @@
+Reset your Fizzy password
+
+Use the link below to set a new password for <%= @identity.email_address %>:
+
+<%= edit_session_password_reset_url(token: @token, script_name: nil) %>
+
+This link will work for <%= distance_of_time_in_words(PasswordMailer::RESET_TOKEN_EXPIRATION) %>.
+
+If you didn't request this, you can ignore this email.

@@ -57,20 +57,50 @@ class Boards::BugReportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal %i[ reproduction_steps expected_behavior actual_behavior environment_context ], card.resolution_record.missing_gate_one_fields
   end
 
-  test "create requires problem description" do
+  test "create allows sparse report with title only" do
+    assert_difference -> { Card.count }, +1 do
+      assert_difference -> { Card::ResolutionRecord.count }, +1 do
+        post board_bug_report_path(@board), params: {
+          bug_report: {
+            title: "Checkout looks wrong",
+            problem_description: "",
+            reproduction_steps: "",
+            expected_behavior: "",
+            actual_behavior: "",
+            environment_context: ""
+          }
+        }
+      end
+    end
+
+    card = Card.last
+
+    assert_redirected_to card_path(card)
+    assert_equal "needs_info", card.cactus_workflow_state
+    assert_equal "Checkout looks wrong", card.title
+    assert_equal "Checkout looks wrong", card.description.to_plain_text
+    assert_equal %i[ problem_description reproduction_steps expected_behavior actual_behavior environment_context ],
+      card.resolution_record.missing_gate_one_fields
+  end
+
+  test "create requires at least one report detail" do
     assert_no_difference -> { Card.count } do
       assert_no_difference -> { Card::ResolutionRecord.count } do
         post board_bug_report_path(@board), params: {
           bug_report: {
-            title: "Missing details",
-            problem_description: ""
+            title: "",
+            problem_description: "",
+            reproduction_steps: "",
+            expected_behavior: "",
+            actual_behavior: "",
+            environment_context: ""
           }
         }
       end
     end
 
     assert_response :unprocessable_entity
-    assert_match "Problem description can&#39;t be blank", response.body
+    assert_match "Add a title or at least one bug detail", response.body
   end
 
   test "board show links to guided bug report form" do

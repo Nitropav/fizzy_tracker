@@ -25,12 +25,14 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
 
     untenanted do
       assert_difference -> { Identity.count }, +1 do
-        assert_difference -> { MagicLink.count }, +1 do
-          post signup_path, params: { signup: { email_address: email_address } }
+        assert_no_difference -> { MagicLink.count } do
+          post signup_path, params: { signup: { email_address: email_address, password: "password" } }
         end
       end
 
-      assert_redirected_to session_magic_link_path
+      assert_redirected_to new_signup_completion_path
+      assert cookies.get_cookie("session_token").present?
+      assert Identity.find_by!(email_address: email_address).authenticate("password")
     end
   end
 
@@ -39,7 +41,7 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
       untenanted do
         assert_no_difference -> { Identity.count } do
           assert_no_difference -> { MagicLink.count } do
-            post signup_path, params: { signup: { email_address: "not-a-valid-email" } }
+            post signup_path, params: { signup: { email_address: "not-a-valid-email", password: "password" } }
           end
         end
 
@@ -56,7 +58,7 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
       assert_no_difference -> { Identity.count } do
         assert_no_difference -> { MagicLink.count } do
           post signup_path,
-            params: { signup: { email_address: identity.email_address } }
+            params: { signup: { email_address: identity.email_address, password: "password" } }
         end
       end
 

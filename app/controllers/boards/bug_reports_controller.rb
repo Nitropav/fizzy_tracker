@@ -11,8 +11,8 @@ class Boards::BugReportsController < ApplicationController
     @card = build_card(attributes)
     @resolution_record = Card::ResolutionRecord.new(attributes.except(:title))
 
-    if @resolution_record.problem_description.blank?
-      @resolution_record.errors.add(:problem_description, "can't be blank")
+    if empty_report?(attributes)
+      @resolution_record.errors.add(:base, "Add a title or at least one bug detail")
       render :new, status: :unprocessable_entity
       return
     end
@@ -22,7 +22,7 @@ class Boards::BugReportsController < ApplicationController
       @card.create_resolution_record!(attributes.except(:title))
     end
 
-    redirect_to @card, notice: "Bug report created"
+    redirect_to @card, notice: creation_notice(@card.resolution_record)
   end
 
   private
@@ -42,11 +42,23 @@ class Boards::BugReportsController < ApplicationController
         creator: Current.user,
         status: :published,
         title: attributes[:title].presence || title_from(attributes[:problem_description]),
-        description: attributes[:problem_description]
+        description: attributes[:problem_description].presence || attributes[:title].to_s
       )
     end
 
     def title_from(problem_description)
       problem_description.to_s.lines.first.to_s.strip.truncate(80).presence || "Bug report"
+    end
+
+    def empty_report?(attributes)
+      attributes.values.all? { it.to_s.strip.blank? }
+    end
+
+    def creation_notice(record)
+      if record.gate_one_complete?
+        "Bug report created and ready for triage."
+      else
+        "Bug report created. Please answer the next reporter question before triage."
+      end
     end
 end

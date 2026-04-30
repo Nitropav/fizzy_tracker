@@ -2,12 +2,18 @@ class Cards::GateOneAnswersController < ApplicationController
   include CardScoped
 
   def update
-    @card.ensure_resolution_record.update!(field_name => answer_value)
+    record = @card.ensure_resolution_record
+    record.update!(field_name => answer_value)
 
     respond_to do |format|
       format.turbo_stream { render_card_replacement }
-      format.html { redirect_to @card, notice: "Reporter information saved" }
-      format.json { render json: @card.resolution_record.as_json, status: :ok }
+      format.html { redirect_to @card, notice: notice_for(record) }
+      format.json do
+        render json: record.as_json.merge(
+          cactus_workflow_state: @card.reload.cactus_workflow_state,
+          missing_gate_one_fields: record.missing_gate_one_fields
+        ), status: :ok
+      end
     end
   end
 
@@ -28,5 +34,13 @@ class Cards::GateOneAnswersController < ApplicationController
 
     def allowed_fields
       Card::ResolutionRecord::GATE_ONE_REQUIRED_FIELDS.map(&:to_s)
+    end
+
+    def notice_for(record)
+      if record.gate_one_complete?
+        "Gate 1 complete. This card is ready for triage."
+      else
+        "Reporter information saved."
+      end
     end
 end

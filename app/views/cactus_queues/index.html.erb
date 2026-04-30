@@ -32,6 +32,7 @@
             <th class="txt-align-start">Column</th>
             <th class="txt-align-start">Gate 1</th>
             <th class="txt-align-start">Gate 2</th>
+            <th class="txt-align-start">Next action</th>
             <th class="txt-align-start">Updated</th>
           </tr>
         </thead>
@@ -44,6 +45,48 @@
               <td><%= card.column&.name || "N/A" %></td>
               <td><%= card.resolution_record&.gate_one_status&.humanize || "N/A" %></td>
               <td><%= card.resolution_record&.gate_two_status&.humanize || "N/A" %></td>
+              <td>
+                <% case card.cactus_workflow_state %>
+                <% when "needs_info" %>
+                  <% guidance = CardResolutionRecords::GateOneGuidance.new(card) %>
+                  <% if (next_item = guidance.next_item) %>
+                    <div class="flex flex-column gap-half txt-small">
+                      <span><strong>Ask:</strong> <%= next_item.label %></span>
+                      <span class="txt-subtle"><%= next_item.prompt %></span>
+                      <%= link_to "Open card", card, class: "btn txt-small" %>
+                    </div>
+                  <% else %>
+                    <%= link_to "Review card", card, class: "btn txt-small" %>
+                  <% end %>
+                <% when "open" %>
+                  <% columns = card.board.columns.sorted %>
+                  <% if columns.any? %>
+                    <%= form_with url: card_triage_path(card), method: :post, class: "flex align-center gap-half" do |form| %>
+                      <%= form.select :column_id, options_from_collection_for_select(columns, :id, :name), { prompt: "Move to column..." }, class: "input txt-small" %>
+                      <%= form.submit "Triage", class: "btn txt-small" %>
+                    <% end %>
+                  <% else %>
+                    <span class="txt-small txt-subtle">No board columns</span>
+                  <% end %>
+                <% when "in_progress" %>
+                  <% missing_gate_two = card.resolution_record&.missing_gate_two_fields || [] %>
+                  <div class="flex flex-column gap-half txt-small">
+                    <% if missing_gate_two.any? %>
+                      <span><strong>Complete Gate 2:</strong> <%= missing_gate_two.map { it.to_s.humanize.downcase }.to_sentence %></span>
+                    <% else %>
+                      <span><strong>Review Gate 2 details</strong></span>
+                    <% end %>
+                    <%= link_to "Fill resolution", card_path(card, anchor: dom_id(card, :resolution_record)), class: "btn txt-small" %>
+                  </div>
+                <% when "needs_review" %>
+                  <div class="flex align-center gap-half">
+                    <%= link_to "Review resolution", card_path(card, anchor: dom_id(card, :resolution_record)), class: "btn txt-small" %>
+                    <%= button_to "Mark resolved", card_resolution_path(card), class: "btn btn--reversed txt-small" %>
+                  </div>
+                <% else %>
+                  <%= link_to "Open card", card, class: "btn txt-small" %>
+                <% end %>
+              </td>
               <td><%= local_datetime_tag card.updated_at, style: :shortdate %></td>
             </tr>
           <% end %>

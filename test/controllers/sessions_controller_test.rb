@@ -7,6 +7,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
+    assert_select "input[type=password][name=password]"
   end
 
   test "new redirects authenticated users" do
@@ -22,26 +23,41 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     identity = identities(:kevin)
 
     untenanted do
-      assert_difference -> { MagicLink.count }, 1 do
-        post session_path, params: { email_address: identity.email_address }
+      assert_no_difference -> { MagicLink.count } do
+        post session_path, params: { email_address: identity.email_address, password: "password" }
       end
 
-      assert_redirected_to session_magic_link_path
+      assert_redirected_to landing_path
+      assert cookies.get_cookie("session_token").present?
       assert_nil flash[:magic_link_code]
+    end
+  end
+
+  test "create rejects wrong password" do
+    identity = identities(:kevin)
+
+    untenanted do
+      assert_no_difference -> { MagicLink.count } do
+        post session_path, params: { email_address: identity.email_address, password: "wrong-password" }
+      end
+
+      assert_redirected_to new_session_path
+      assert_equal "Check your email and password.", flash[:alert]
+      assert_not cookies.get_cookie("session_token").present?
     end
   end
 
   test "create for a new user" do
     untenanted do
-      assert_difference -> { MagicLink.count }, +1 do
-        assert_difference -> { Identity.count }, +1 do
+      assert_no_difference -> { MagicLink.count } do
+        assert_no_difference -> { Identity.count } do
           post session_path,
-            params: { email_address: "nonexistent-#{SecureRandom.hex(6)}@example.com" }
+            params: { email_address: "nonexistent-#{SecureRandom.hex(6)}@example.com", password: "password" }
         end
       end
 
-      assert_redirected_to session_magic_link_path
-      assert MagicLink.last.for_sign_up?
+      assert_redirected_to new_session_path
+      assert_equal "Check your email and password.", flash[:alert]
     end
   end
 
@@ -51,11 +67,11 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
         assert_no_difference -> { MagicLink.count } do
           assert_no_difference -> { Identity.count } do
             post session_path,
-              params: { email_address: "nonexistent-#{SecureRandom.hex(6)}@example.com" }
+              params: { email_address: "nonexistent-#{SecureRandom.hex(6)}@example.com", password: "password" }
           end
         end
 
-        assert_redirected_to session_magic_link_path
+        assert_redirected_to new_session_path
       end
     end
   end
@@ -67,7 +83,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     without_action_dispatch_exception_handling do
       untenanted do
         assert_no_difference -> { Identity.count } do
-          post session_path, params: { email_address: "not-a-valid-email" }
+          post session_path, params: { email_address: "not-a-valid-email", password: "password" }
         end
 
         assert_response :redirect
@@ -89,8 +105,18 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
   test "create via JSON" do
     untenanted do
-      post session_path(format: :json), params: { email_address: identities(:david).email_address }
+      post session_path(format: :json), params: { email_address: identities(:david).email_address, password: "password" }
       assert_response :created
+      assert @response.parsed_body["session_token"].present?
+      assert_equal false, @response.parsed_body["requires_signup_completion"]
+    end
+  end
+
+  test "create via JSON rejects wrong password" do
+    untenanted do
+      post session_path(format: :json), params: { email_address: identities(:david).email_address, password: "wrong-password" }
+      assert_response :unauthorized
+      assert_equal "Check your email and password.", @response.parsed_body["message"]
     end
   end
 
@@ -98,23 +124,23 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     new_email = "new-user-#{SecureRandom.hex(6)}@example.com"
 
     untenanted do
-      assert_difference -> { Identity.count }, 1 do
-        assert_difference -> { MagicLink.count }, 1 do
-          post session_path(format: :json), params: { email_address: new_email }
+      assert_no_difference -> { Identity.count } do
+        assert_no_difference -> { MagicLink.count } do
+          post session_path(format: :json), params: { email_address: new_email, password: "password" }
         end
       end
-      assert_response :created
-      assert @response.parsed_body["pending_authentication_token"].present?
-      assert MagicLink.last.for_sign_up?
+      assert_response :unauthorized
+      assert_equal "Check your email and password.", @response.parsed_body["message"]
     end
   end
 
   test "create with invalid email address via JSON" do
     untenanted do
       assert_no_difference -> { Identity.count } do
-        post session_path(format: :json), params: { email_address: "not-a-valid-email" }
+        post session_path(format: :json), params: { email_address: "not-a-valid-email", password: "password" }
       end
-      assert_response :unprocessable_entity
+      assert_response :unauthorized
+      assert_equal "Check your email and password.", @response.parsed_body["message"]
     end
   end
 

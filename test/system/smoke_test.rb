@@ -6,15 +6,11 @@ class SmokeTest < ApplicationSystemTestCase
 
     visit join_url(code: account.join_code.code, script_name: account.slug)
     fill_in "Email address", with: "newbie@example.com"
+    fill_in "Password", with: "password"
     click_on "Continue"
 
-    assert_selector "h1", text: "Check your email"
-    identity = Identity.find_by!(email_address: "newbie@example.com")
-    code = identity.magic_links.active.first.code
-    fill_in "code", with: code
-    send_keys :enter
-
     assert_selector "input[id=user_name]"
+    identity = Identity.find_by!(email_address: "newbie@example.com")
     assert account.users.find_by!(identity:).verified?, "User was not properly verified"
     fill_in "Full name", with: "New Bee"
     click_on "Continue"

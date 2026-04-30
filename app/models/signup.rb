@@ -3,10 +3,12 @@ class Signup
   include ActiveModel::Attributes
   include ActiveModel::Validations
 
-  attr_accessor :full_name, :email_address, :identity, :skip_account_seeding
+  attr_accessor :full_name, :email_address, :identity, :password, :skip_account_seeding
   attr_reader :account, :user
 
   validates :email_address, format: { with: URI::MailTo::EMAIL_REGEXP }, on: :identity_creation
+  validates :password, length: { minimum: 8 }, on: :identity_creation
+  validate :email_address_available, on: :identity_creation
   validates :full_name, :identity, presence: true, on: :completion
   validates :full_name, length: { maximum: 240 }
 
@@ -17,8 +19,7 @@ class Signup
   end
 
   def create_identity
-    @identity = Identity.find_or_create_by!(email_address: email_address)
-    @identity.send_magic_link for: :sign_up
+    @identity = Identity.create!(email_address: email_address, password: password)
   end
 
   def complete
@@ -96,5 +97,9 @@ class Signup
         attributes[:user_agent]     = Current.user_agent
         attributes[:referrer]       = Current.referrer
       end
+    end
+
+    def email_address_available
+      errors.add(:email_address, :taken) if Identity.exists?(email_address: email_address)
     end
 end

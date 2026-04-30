@@ -14,15 +14,11 @@ module SessionTestHelper
       identity = identities(identity)
     end
 
-    identity.send_magic_link
-    magic_link = identity.magic_links.order(id: :desc).first
-
     untenanted do
-      post session_path, params: { email_address: identity.email_address }
-      post session_magic_link_url, params: { code: magic_link.code }
+      post session_development_login_path, params: { email_address: identity.email_address }
     end
 
-    assert_response :redirect, "Posting the Magic Link code should grant access"
+    assert_response :redirect, "Development login should grant access"
 
     cookie = cookies.get_cookie "session_token"
     assert_not_nil cookie, "Expected session_token cookie to be set after sign in"

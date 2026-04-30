@@ -10,7 +10,7 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     end
 
     untenanted do
-      post session_path, params: { email_address: "test@example.com" }
+      set_pending_authentication_for "test@example.com"
       get session_magic_link_url
 
       assert_response :success
@@ -22,7 +22,7 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     magic_link = MagicLink.create!(identity: identity)
 
     untenanted do
-      post session_path, params: { email_address: identity.email_address }
+      set_pending_authentication_for identity
       post session_magic_link_url, params: { code: magic_link.code }
 
       assert_response :redirect
@@ -37,7 +37,7 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     magic_link = MagicLink.create!(identity: identity, purpose: :sign_up)
 
     untenanted do
-      post session_path, params: { email_address: identity.email_address }
+      set_pending_authentication_for identity
       post session_magic_link_url, params: { code: magic_link.code }
 
       assert_response :redirect
@@ -53,7 +53,7 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     magic_link = MagicLink.create!(identity: other_identity)
 
     untenanted do
-      post session_path, params: { email_address: identity.email_address }
+      set_pending_authentication_for identity
       post session_magic_link_url, params: { code: magic_link.code }
 
       assert_redirected_to new_session_path
@@ -85,7 +85,7 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     magic_link = identity.send_magic_link
 
     untenanted do
-      post session_path(format: :json), params: { email_address: identity.email_address }
+      set_pending_authentication_for identity
       post session_magic_link_path(format: :json), params: { code: magic_link.code }
       assert_response :success
       assert @response.parsed_body["session_token"].present?
@@ -98,7 +98,7 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     magic_link = identity.send_magic_link(for: :sign_up)
 
     untenanted do
-      post session_path(format: :json), params: { email_address: identity.email_address }
+      set_pending_authentication_for identity
       post session_magic_link_path(format: :json), params: { code: magic_link.code }
       assert_response :success
       assert @response.parsed_body["session_token"].present?
@@ -121,7 +121,7 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     identity = identities(:david)
 
     untenanted do
-      post session_path(format: :json), params: { email_address: identity.email_address }
+      set_pending_authentication_for identity
       post session_magic_link_path(format: :json), params: { code: "INVALID" }
       assert_response :unauthorized
       assert_equal "Try another code.", @response.parsed_body["message"]
@@ -134,7 +134,7 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
     magic_link = other_identity.send_magic_link
 
     untenanted do
-      post session_path(format: :json), params: { email_address: identity.email_address }
+      set_pending_authentication_for identity
       post session_magic_link_path(format: :json), params: { code: magic_link.code }
       assert_response :unauthorized
       assert_equal "Something went wrong. Please try again.", @response.parsed_body["message"]
@@ -147,7 +147,7 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
 
     untenanted do
       travel_to 20.minutes.ago do
-        post session_path(format: :json), params: { email_address: identity.email_address }
+        set_pending_authentication_for identity
       end
 
       post session_magic_link_path(format: :json), params: { code: magic_link.code }
@@ -155,4 +155,14 @@ class Sessions::MagicLinksControllerTest < ActionDispatch::IntegrationTest
       assert_equal "Enter your email address to sign in.", @response.parsed_body["message"]
     end
   end
+
+  private
+    def set_pending_authentication_for(identity_or_email)
+      email_address = identity_or_email.respond_to?(:email_address) ? identity_or_email.email_address : identity_or_email
+
+      cookies[:pending_authentication_token] = Rails.application.message_verifier(:pending_authentication).generate(
+        email_address,
+        expires_at: MagicLink::EXPIRATION_TIME.from_now
+      )
+    end
 end

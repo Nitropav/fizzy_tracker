@@ -10,15 +10,10 @@ class ApiTest < ActionDispatch::IntegrationTest
     identity = identities(:david)
 
     untenanted do
-      post session_path(format: :json), params: { email_address: identity.email_address }
+      post session_path(format: :json), params: { email_address: identity.email_address, password: "password" }
       assert_response :created
-      pending_token = @response.parsed_body["pending_authentication_token"]
-      assert pending_token.present?
-
-      magic_link = MagicLink.last
-      post session_magic_link_path(format: :json), params: { code: magic_link.code, pending_authentication_token: pending_token }
-      assert_response :success
       assert @response.parsed_body["session_token"].present?
+      assert_equal false, @response.parsed_body["requires_signup_completion"]
     end
   end
 
@@ -26,12 +21,10 @@ class ApiTest < ActionDispatch::IntegrationTest
     identity = identities(:david)
 
     untenanted do
-      post session_path(format: :json), params: { email_address: identity.email_address }
-      magic_link = MagicLink.last
-
       assert_difference -> { identity.sessions.count }, +1 do
-        post session_magic_link_path(format: :json), params: { code: magic_link.code, pending_authentication_token: @response.parsed_body["pending_authentication_token"] }
+        post session_path(format: :json), params: { email_address: identity.email_address, password: "password" }
       end
+      assert_response :created
       assert cookies[:session_token].present?
 
       assert_difference -> { identity.sessions.count }, -1 do
