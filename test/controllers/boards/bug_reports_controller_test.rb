@@ -11,7 +11,7 @@ class Boards::BugReportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Report a bug"
-    assert_select "textarea[name='bug_report[problem_description]'][required]"
+    assert_select "textarea[name='bug_report[problem_description]']"
   end
 
   test "create makes published card with structured gate one record" do
@@ -100,7 +100,7 @@ class Boards::BugReportsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_match "Add a title or at least one bug detail", response.body
+    assert_match "Add a title or at least one issue detail", response.body
   end
 
   test "board show links to guided bug report form" do

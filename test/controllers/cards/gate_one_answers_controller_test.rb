@@ -112,4 +112,32 @@ class Cards::GateOneAnswersControllerTest < ActionDispatch::IntegrationTest
     assert_equal "open", response.parsed_body["cactus_workflow_state"]
     assert_empty response.parsed_body["missing_gate_one_fields"]
   end
+
+  test "update cannot answer inaccessible account card" do
+    other_account_card = create_other_account_card
+
+    assert_no_difference -> { Card::ResolutionRecord.count } do
+      patch card_gate_one_answer_path(other_account_card), params: {
+        gate_one_answer: {
+          field: "problem_description",
+          value: "Should not be saved"
+        }
+      }, as: :json
+    end
+
+    assert_response :not_found
+  end
+
+  private
+    def create_other_account_card
+      Current.with(account: accounts(:initech), session: sessions(:mike)) do
+        boards(:miltons_wish_list).cards.create!(
+          account: accounts(:initech),
+          creator: users(:mike),
+          status: :published,
+          number: 999,
+          title: "Other account card"
+        )
+      end
+    end
 end

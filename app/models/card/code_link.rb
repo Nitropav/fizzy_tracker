@@ -15,6 +15,7 @@ class Card::CodeLink < ApplicationRecord
   validate :account_matches_card
 
   scope :chronologically, -> { order(:created_at, :id) }
+  scope :latest_first, -> { order(created_at: :desc, id: :desc) }
   scope :commits, -> { where(external_type: "commit") }
   scope :pull_requests, -> { where(external_type: "pull_request") }
 

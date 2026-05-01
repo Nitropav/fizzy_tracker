@@ -1,0 +1,118 @@
+<% @page_title = "Gate 2 Resolution" %>
+<% @body_class = "compact-on-touch" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "My Work", cactus_work_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+
+  <h1 class="header__title" data-bridge--title-target="header">
+    <span class="overflow-ellipsis"><%= @page_title %></span>
+  </h1>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap txt-align-start">
+  <header class="flex flex-wrap align-center justify-between gap">
+    <div>
+      <h1 class="txt-x-large font-weight-black margin-none">Gate 2 resolution</h1>
+      <p class="txt-small txt-subtle margin-none">
+        Complete the developer-side fields before this issue can be resolved and converted into training data.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap align-center gap-half txt-small">
+      <span class="badge">Issue #<%= @card.number %></span>
+      <span class="badge">State: <%= @card.cactus_workflow_state_label %></span>
+      <span class="badge">Gate 2: <%= @resolution_record.gate_two_complete? ? "Complete" : "Incomplete" %></span>
+    </div>
+  </header>
+
+  <section class="panel border flex flex-column gap-half">
+    <h2 class="txt-large margin-none"><%= link_to @card.title, @card, class: "txt-link" %></h2>
+    <dl class="grid gap-half txt-small margin-none" style="grid-template-columns: max-content 1fr;">
+      <dt class="txt-subtle">Project</dt>
+      <dd class="margin-none"><%= @card.board.name %></dd>
+
+      <dt class="txt-subtle">Reporter context</dt>
+      <dd class="margin-none"><%= @resolution_record.structured_summary.presence || @resolution_record.problem_description.presence || "No reporter summary yet." %></dd>
+
+      <dt class="txt-subtle">Reproduction</dt>
+      <dd class="margin-none"><%= @resolution_record.reproduction_steps.presence || "Missing" %></dd>
+
+      <dt class="txt-subtle">Expected / actual</dt>
+      <dd class="margin-none">
+        <%= @resolution_record.expected_behavior.presence || "Missing expected behavior" %>
+        /
+        <%= @resolution_record.actual_behavior.presence || "missing actual behavior" %>
+      </dd>
+    </dl>
+  </section>
+
+  <% if @resolution_record.missing_gate_two_fields.any? %>
+    <div class="panel txt-small">
+      <strong>Missing Gate 2:</strong>
+      <%= @resolution_record.missing_gate_two_fields.map { it.to_s.humanize.downcase }.to_sentence %>.
+    </div>
+  <% end %>
+
+  <section class="panel flex flex-column gap-half">
+    <header>
+      <h2 class="txt-large margin-none">Linked code evidence</h2>
+      <p class="txt-small txt-subtle margin-none">
+        GitHub commits and pull requests linked through CT-<%= @card.number %> references. Use the manual fields below only when automatic evidence is missing.
+      </p>
+    </header>
+
+    <%= render "cards/code_links/list", code_links: @code_links %>
+  </section>
+
+  <%= form_with model: @resolution_record, scope: :card_resolution_record, url: card_resolution_record_path(@card), method: :put,
+        class: "flex flex-column gap",
+        data: { controller: "form" } do |form| %>
+    <%= hidden_field_tag :return_to, "gate_two" %>
+
+    <fieldset class="panel flex flex-column gap-half">
+      <legend class="txt-small txt-bold">Developer resolution</legend>
+
+      <%= form.label :root_cause, "Root cause", class: "txt-small txt-bold" %>
+      <%= form.text_area :root_cause, rows: 4, class: "input input--textarea full-width", placeholder: "Plain-language technical cause. Example: cached quote totals were reused after line item edits." %>
+
+      <%= form.label :fix_summary, "Fix summary", class: "txt-small txt-bold" %>
+      <%= form.text_area :fix_summary, rows: 4, class: "input input--textarea full-width", placeholder: "What changed and why." %>
+
+      <%= form.label :verification_steps, "Verification steps", class: "txt-small txt-bold" %>
+      <%= form.text_area :verification_steps, rows: 4, class: "input input--textarea full-width", placeholder: "How the fix was checked. Include manual and automated verification." %>
+    </fieldset>
+
+    <fieldset class="panel flex flex-column gap-half">
+      <legend class="txt-small txt-bold">Code evidence</legend>
+
+      <p class="txt-small txt-subtle margin-none">
+        Add commit SHAs or PR URLs when available. GitHub webhooks can populate this later, but manual links keep the training example grounded.
+      </p>
+
+      <%= form.label :linked_commit_shas, "Linked commit SHAs", class: "txt-small txt-bold" %>
+      <%= form.text_area :linked_commit_shas, value: @resolution_record.linked_commit_shas.join("\n"), name: "card_resolution_record[linked_commit_shas][]", rows: 3, class: "input input--textarea full-width", placeholder: "abc123\ndef456" %>
+
+      <%= form.label :linked_pr_urls, "Linked PR URLs", class: "txt-small txt-bold" %>
+      <%= form.text_area :linked_pr_urls, value: @resolution_record.linked_pr_urls.join("\n"), name: "card_resolution_record[linked_pr_urls][]", rows: 3, class: "input input--textarea full-width", placeholder: "https://github.com/org/repo/pull/123" %>
+    </fieldset>
+
+    <div class="flex flex-wrap align-center justify-between gap">
+      <%= link_to "Open full issue", @card, class: "btn" %>
+
+      <%= form.submit "Save Gate 2", class: "btn btn--reversed" %>
+    </div>
+  <% end %>
+
+  <% if @resolution_record.gate_two_complete? %>
+    <div class="panel flex flex-wrap align-center justify-between gap">
+      <div>
+        <strong>Ready to resolve</strong>
+        <p class="txt-small txt-subtle margin-none">Gate 2 is complete. Resolving this issue will generate a training example candidate.</p>
+      </div>
+
+      <%= button_to "Mark resolved", card_resolution_path(@card), class: "btn btn--reversed" %>
+    </div>
+  <% end %>
+</section>

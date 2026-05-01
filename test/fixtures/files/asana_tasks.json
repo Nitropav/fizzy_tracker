@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "gid": "asana-1",
+      "name": "Imported Asana issue",
+      "notes": "Customer cannot see glass in the quote preview",
+      "completed": false,
+      "created_at": "2025-01-01T10:00:00Z",
+      "modified_at": "2025-01-02T10:00:00Z",
+      "permalink_url": "https://app.asana.com/0/1/asana-1",
+      "workspace": { "name": "ES Windows" },
+      "projects": [ { "name": "Support" } ],
+      "tags": [ { "name": "glass_visibility" } ]
+    },
+    {
+      "gid": "asana-2",
+      "name": "Imported resolved issue",
+      "notes": "Old resolved pricing problem",
+      "completed": true,
+      "created_at": "2025-02-01T10:00:00Z",
+      "modified_at": "2025-02-02T10:00:00Z",
+      "permalink_url": "https://app.asana.com/0/1/asana-2",
+      "workspace": { "name": "ES Windows" },
+      "projects": [ { "name": "Pricing" } ],
+      "tags": [ { "name": "pricing" } ]
+    }
+  ]
+}

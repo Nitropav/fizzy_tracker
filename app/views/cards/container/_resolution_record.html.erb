@@ -1,13 +1,13 @@
 <% record = card.resolution_record || card.build_resolution_record %>
 
 <section id="<%= dom_id(card, :resolution_record) %>" class="card__resolution-record flex flex-column gap margin-block-start">
-  <header class="flex align-center justify-between gap">
+  <header class="flex flex-wrap align-center justify-between gap">
     <div>
       <h2 class="txt-large margin-none">Bug training data</h2>
       <p class="txt-small txt-subtle margin-none">Structured Gate 1 and Gate 2 fields used for review, AI context, and training examples.</p>
     </div>
 
-    <div class="flex align-center gap-half txt-small">
+    <div class="flex flex-wrap align-center gap-half txt-small">
       <span class="badge">State: <%= card.cactus_workflow_state_label %></span>
       <span class="badge">Gate 1: <%= record.gate_one_complete? ? "Complete" : "Incomplete" %></span>
       <span class="badge">Gate 2: <%= record.gate_two_complete? ? "Complete" : "Incomplete" %></span>
@@ -24,6 +24,50 @@
         <p class="margin-block-end-none">Warnings: <%= latest_review.output["warnings"].to_sentence %></p>
       <% end %>
     </div>
+  <% end %>
+
+  <% if record.legacy_import? %>
+    <section class="panel flex flex-column gap-half">
+      <div class="flex flex-wrap align-center justify-between gap">
+        <div>
+          <strong>Legacy import</strong>
+          <p class="txt-small txt-subtle margin-none">
+            Imported from <%= record.legacy_source %>
+            <% if record.legacy_external_id.present? %>
+              #<%= record.legacy_external_id %>
+            <% end %>
+            <% if record.legacy_imported_at.present? %>
+              on <%= local_datetime_tag record.legacy_imported_at, style: :shortdate %>
+            <% end %>
+          </p>
+        </div>
+
+        <div class="flex flex-wrap align-center gap-half txt-small">
+          <span class="badge"><%= record.gate_one_legacy? ? "Gate 1 legacy" : "Gate 1 native" %></span>
+          <span class="badge"><%= record.needs_structuring? ? "Needs structuring" : "Structured" %></span>
+        </div>
+      </div>
+
+      <% if record.needs_structuring? %>
+        <p class="txt-small margin-none">
+          Review the imported metadata and complete the required fields below.
+          Saving enough Gate data will automatically mark this legacy card as structured.
+        </p>
+      <% end %>
+
+      <% if (permalink = record.legacy_metadata["permalink_url"]).present? %>
+        <p class="txt-small margin-none">
+          <%= link_to "Open original task", permalink, class: "txt-link", target: "_blank", rel: "noopener noreferrer" %>
+        </p>
+      <% end %>
+
+      <% if record.legacy_metadata.present? %>
+        <details class="txt-small">
+          <summary>Show imported metadata</summary>
+          <pre class="overflow-auto"><%= JSON.pretty_generate(record.legacy_metadata) %></pre>
+        </details>
+      <% end %>
+    </section>
   <% end %>
 
   <% if card.cactus_workflow_state == "needs_info" %>

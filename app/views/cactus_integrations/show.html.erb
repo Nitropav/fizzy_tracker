@@ -1,0 +1,71 @@
+<% @page_title = "Cactus Integrations" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Cactus Home", cactus_home_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap">
+  <header class="flex flex-wrap align-center justify-between gap">
+    <div>
+      <h1 class="txt-x-large font-weight-black margin-none">Cactus Integrations</h1>
+      <p class="txt-small txt-subtle margin-none">
+        Admin setup for external systems that feed issue context and training evidence.
+      </p>
+    </div>
+
+    <nav class="flex flex-wrap gap-half txt-small" aria-label="Integration shortcuts">
+      <%= link_to "Pipeline dashboard", cactus_dashboard_path, class: "btn" %>
+      <%= link_to "Import Asana tasks", new_legacy_imports_asana_path, class: "btn" %>
+    </nav>
+  </header>
+
+  <section class="panel flex flex-column gap">
+    <header class="flex flex-wrap align-center justify-between gap">
+      <div>
+        <h2 class="txt-large margin-none">GitHub webhook</h2>
+        <p class="txt-small txt-subtle margin-none">
+          Links commits and pull requests to issues when commit messages, PR titles, or PR bodies reference CT-&lt;issue number&gt;.
+        </p>
+      </div>
+
+      <span class="badge"><%= @github_webhook_secret_configured ? "Secret configured" : "Secret missing" %></span>
+    </header>
+
+    <dl class="grid gap-half txt-small margin-none" style="grid-template-columns: max-content minmax(0, 1fr);">
+      <dt class="txt-subtle">Webhook URL</dt>
+      <dd class="margin-none overflow-auto"><code><%= @github_webhook_url %></code></dd>
+
+      <dt class="txt-subtle">Content type</dt>
+      <dd class="margin-none"><code>application/json</code></dd>
+
+      <dt class="txt-subtle">Secret source</dt>
+      <dd class="margin-none"><code>Rails credentials github.webhook_secret</code> or <code>GITHUB_WEBHOOK_SECRET</code></dd>
+
+      <dt class="txt-subtle">Events</dt>
+      <dd class="margin-none">Push and pull request.</dd>
+
+      <dt class="txt-subtle">Reference format</dt>
+      <dd class="margin-none"><code>CT-&lt;issue number&gt;</code>, for example <code>CT-1234</code>.</dd>
+    </dl>
+
+    <% unless @github_webhook_secret_configured %>
+      <div class="panel border txt-small">
+        Set <code>GITHUB_WEBHOOK_SECRET</code> or Rails credentials before enabling the webhook in GitHub.
+        Unsigned or incorrectly signed requests are rejected.
+      </div>
+    <% end %>
+  </section>
+
+  <section class="panel flex flex-column gap-half">
+    <h2 class="txt-large margin-none">Asana import</h2>
+    <p class="txt-small txt-subtle margin-none">
+      Import historical tasks as legacy issues, then structure Gate 1 and Gate 2 before using them as training candidates.
+    </p>
+
+    <div>
+      <%= link_to "Import Asana tasks", new_legacy_imports_asana_path, class: "btn" %>
+    </div>
+  </section>
+</section>

@@ -388,6 +388,15 @@
   .card-perma__actions--left { grid-area: actions-left; }
   .card-perma__actions--right { grid-area: actions-right; }
 
+  .card__code-links,
+  .card__resolution-record {
+    --panel-size: 100%;
+
+    grid-column: 2;
+    inline-size: 100%;
+    min-inline-size: 0;
+  }
+
   @media (max-width: 799px) {
     .card-perma__actions {
       display: flex;
@@ -398,6 +407,12 @@
     .card-perma__actions--right {
       inset-inline-end: 0;
       justify-content: flex-end;
+    }
+
+    .card__code-links,
+    .card__resolution-record {
+      grid-column: 1 / -1;
+      padding-inline: var(--padding-inline);
     }
   }
 

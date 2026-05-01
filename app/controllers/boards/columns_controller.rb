@@ -15,10 +15,15 @@ class Boards::ColumnsController < ApplicationController
     fresh_when etag: @page.records
   end
 
+  def new
+    @column = @board.columns.build
+  end
+
   def create
     @column = @board.columns.create!(column_params)
 
     respond_to do |format|
+      format.html { redirect_to @board, notice: "Column created." }
       format.turbo_stream
       format.json { render :show, status: :created, location: board_column_path(@board, @column, format: :json) }
     end

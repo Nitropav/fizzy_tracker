@@ -3,8 +3,6 @@
   <%= filter_place_menu_item user_path(Current.user), "My Profile", "person" %>
   <%= filter_place_menu_item notifications_path, "All notifications", "bell" %>
   <%= filter_place_menu_item notifications_settings_path, "Notification Settings", "settings" %>
-  <%= filter_place_menu_item cactus_queues_path, "Cactus Queue", "clipboard" %>
-  <%= filter_place_menu_item training_examples_path, "Training Examples", "clipboard" if Current.user.admin? %>
 
   <%= tag.li class: "popup__item", data: { filter_target: "item", navigable_list_target: "item" } do %>
     <%= icon_tag "logout", class: "popup__icon" %>

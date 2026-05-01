@@ -1,0 +1,33 @@
+<% @page_title = "New column" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= link_back_to_board(@board) %>
+  </div>
+<% end %>
+
+<section class="panel panel--centered center flex flex-column gap">
+  <header class="flex flex-column gap-half">
+    <h1 class="txt-x-large font-weight-black margin-none">New column</h1>
+    <p class="txt-small txt-subtle margin-none">Create a board column so Cactus Queue can triage open cards into active work.</p>
+  </header>
+
+  <%= form_with model: [@board, @column], class: "flex flex-column gap", data: { controller: "form", action: "submit->form#preventEmptySubmit", turbo: false } do |form| %>
+    <%= form.text_field :name, class: "input", placeholder: "Name this column", required: true, autocomplete: "off", pattern: ".*\\S.*", title: "Column name cannot be blank", autofocus: true %>
+
+    <div class="color-picker__colors">
+      <% Color::COLORS.each do |color| %>
+        <label class="btn txt-small borderless" style="--btn-background: <%= color %>" title="<%= color.name %>">
+          <%= form.radio_button :color, color.value, checked: color == Column::Colored::DEFAULT_COLOR %>
+          <%= icon_tag "check", class: "checked" %>
+          <span class="for-screen-reader"><%= color.name %></span>
+        </label>
+      <% end %>
+    </div>
+
+    <div class="flex align-center gap-half">
+      <%= form.submit "Create column", class: "btn btn--reversed" %>
+      <%= link_to "Cancel", @board, class: "btn" %>
+    </div>
+  <% end %>
+</section>

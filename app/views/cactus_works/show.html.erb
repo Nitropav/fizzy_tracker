@@ -1,0 +1,67 @@
+<% @page_title = "My Work" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Cactus Home", cactus_home_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap">
+  <header class="flex flex-column gap-half">
+    <h1 class="txt-x-large font-weight-black margin-none">My Work</h1>
+    <p class="txt-small txt-subtle margin-none">
+      Developer-focused issue queue for assigned work, Gate 2 completion, review, and claiming ready issues.
+    </p>
+  </header>
+
+  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
+    <article class="panel border flex flex-column gap-half">
+      <span class="txt-small txt-subtle">Assigned active</span>
+      <strong class="txt-large"><%= @assigned_cards.size %></strong>
+    </article>
+    <article class="panel border flex flex-column gap-half">
+      <span class="txt-small txt-subtle">Needs Gate 2</span>
+      <strong class="txt-large"><%= @needs_gate_two_cards.size %></strong>
+    </article>
+    <article class="panel border flex flex-column gap-half">
+      <span class="txt-small txt-subtle">Needs review</span>
+      <strong class="txt-large"><%= @needs_review_cards.size %></strong>
+    </article>
+    <article class="panel border flex flex-column gap-half">
+      <span class="txt-small txt-subtle">Ready to claim</span>
+      <strong class="txt-large"><%= @ready_to_claim_cards.size %></strong>
+    </article>
+  </div>
+
+  <%= render "section", title: "Needs Gate 2", cards: @needs_gate_two_cards, empty: "No assigned issues need Gate 2 right now." do |card| %>
+    <% missing = card.resolution_record&.missing_gate_two_fields || [] %>
+    <div class="flex flex-column gap-half txt-small">
+      <% if missing.any? %>
+        <span class="txt-subtle">Missing: <%= missing.map { it.to_s.humanize.downcase }.to_sentence %></span>
+      <% end %>
+      <%= link_to "Fill Gate 2", edit_card_resolution_record_path(card), class: "btn txt-small" %>
+    </div>
+  <% end %>
+
+  <%= render "section", title: "Needs Review", cards: @needs_review_cards, empty: "No assigned issues are ready for review." do |card| %>
+    <div class="flex align-center gap-half">
+      <%= link_to "Review", edit_card_resolution_record_path(card), class: "btn txt-small" %>
+      <%= button_to "Mark resolved", card_resolution_path(card), class: "btn btn--reversed txt-small" %>
+    </div>
+  <% end %>
+
+  <%= render "section", title: "Ready To Claim", cards: @ready_to_claim_cards, empty: "No unassigned ready issues." do |card| %>
+    <div class="flex align-center gap-half">
+      <%= button_to "Claim", card_self_assignment_path(card), class: "btn btn--reversed txt-small" %>
+      <%= link_to "Open", card, class: "btn txt-small" %>
+    </div>
+  <% end %>
+
+  <%= render "section", title: "Assigned Active Issues", cards: @assigned_cards, empty: "No active issues assigned to you." do |card| %>
+    <%= link_to "Open issue", card, class: "btn txt-small" %>
+  <% end %>
+
+  <%= render "section", title: "Recently Resolved", cards: @recently_resolved_cards, empty: "No recently resolved assigned issues." do |card| %>
+    <%= link_to "Open issue", card, class: "btn txt-small" %>
+  <% end %>
+</section>

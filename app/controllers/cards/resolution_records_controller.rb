@@ -1,17 +1,33 @@
 class Cards::ResolutionRecordsController < ApplicationController
   include CardScoped
 
+  def edit
+    @resolution_record = @card.ensure_resolution_record
+    @code_links = @card.code_links.latest_first
+  end
+
   def update
     @card.ensure_resolution_record.update!(resolution_record_params)
 
     respond_to do |format|
       format.turbo_stream { render_card_replacement }
-      format.html { redirect_to @card }
+      format.html { redirect_to html_redirect_path, notice: "Training data saved." }
       format.json { render json: @card.resolution_record.as_json, status: :ok }
     end
   end
 
   private
+    def html_redirect_path
+      case params[:return_to]
+      when "gate_two"
+        edit_card_resolution_record_path(@card)
+      when "cactus_queue"
+        params[:queue_state].present? ? cactus_queues_path(state: params[:queue_state]) : cactus_queues_path
+      else
+        @card
+      end
+    end
+
     def resolution_record_params
       permitted = params.expect(card_resolution_record: [
         :problem_description,

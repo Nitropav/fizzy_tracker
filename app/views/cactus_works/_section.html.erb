@@ -1,0 +1,36 @@
+<section class="flex flex-column gap-half">
+  <h2 class="txt-large margin-none"><%= title %></h2>
+
+  <% if cards.any? %>
+    <div class="overflow-auto">
+      <table class="full-width">
+        <thead>
+          <tr>
+            <th class="txt-align-start">Issue</th>
+            <th class="txt-align-start">Project</th>
+            <th class="txt-align-start">Column</th>
+            <th class="txt-align-start">State</th>
+            <th class="txt-align-start">Gate 1</th>
+            <th class="txt-align-start">Gate 2</th>
+            <th class="txt-align-start">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% cards.each do |card| %>
+            <tr>
+              <td><%= link_to "##{card.number} #{card.title}", card, class: "txt-link" %></td>
+              <td><%= card.board.name %></td>
+              <td><%= card.column&.name || "N/A" %></td>
+              <td><%= card.cactus_workflow_state_label %></td>
+              <td><%= card.resolution_record&.gate_one_status&.humanize || "N/A" %></td>
+              <td><%= card.resolution_record&.gate_two_status&.humanize || "N/A" %></td>
+              <td><%= yield card %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="txt-small txt-subtle margin-none"><%= empty %></p>
+  <% end %>
+</section>

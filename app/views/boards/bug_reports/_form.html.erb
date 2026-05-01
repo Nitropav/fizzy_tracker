@@ -1,0 +1,61 @@
+<% if resolution_record.errors.any? %>
+  <div class="panel txt-small">
+    <strong>Check the issue:</strong>
+    <%= resolution_record.errors.full_messages.to_sentence %>.
+  </div>
+<% end %>
+
+<%= form_with url: form_url, scope: form_scope, class: "flex flex-column gap", data: { controller: "form" } do |form| %>
+  <% if local_assigns[:projects].present? %>
+    <div class="flex flex-column gap-half">
+      <%= form.label :board_id, "Project", class: "txt-small txt-bold" %>
+      <%= form.collection_select :board_id, projects, :id, :name,
+            { selected: selected_project&.id, prompt: "Select project" },
+            { required: true, class: "input input--select full-width" } %>
+    </div>
+  <% end %>
+
+  <div class="flex flex-column gap-half">
+    <%= form.label :title, "Short title", class: "txt-small txt-bold" %>
+    <%= form.text_field :title, value: card.title, class: "input full-width", placeholder: "Example: Checkout total changes after refresh", autofocus: true %>
+  </div>
+
+  <div class="flex flex-column gap-half">
+    <%= form.label :problem_description, "What is the problem?", class: "txt-small txt-bold" %>
+    <%= form.text_area :problem_description, value: resolution_record.problem_description, rows: 4, class: "input input--textarea full-width", placeholder: "Describe what is broken, confusing, or not working." %>
+  </div>
+
+  <div class="flex flex-column gap-half">
+    <%= form.label :reproduction_steps, "How can we reproduce it?", class: "txt-small txt-bold" %>
+    <%= form.text_area :reproduction_steps, value: resolution_record.reproduction_steps, rows: 4, class: "input input--textarea full-width", placeholder: "Step 1...\nStep 2...\nStep 3..." %>
+  </div>
+
+  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));">
+    <div class="flex flex-column gap-half">
+      <%= form.label :expected_behavior, "Expected behavior", class: "txt-small txt-bold" %>
+      <%= form.text_area :expected_behavior, value: resolution_record.expected_behavior, rows: 3, class: "input input--textarea full-width", placeholder: "What should have happened?" %>
+    </div>
+
+    <div class="flex flex-column gap-half">
+      <%= form.label :actual_behavior, "Actual behavior", class: "txt-small txt-bold" %>
+      <%= form.text_area :actual_behavior, value: resolution_record.actual_behavior, rows: 3, class: "input input--textarea full-width", placeholder: "What actually happened?" %>
+    </div>
+  </div>
+
+  <div class="flex flex-column gap-half">
+    <%= form.label :environment_context, "Environment context", class: "txt-small txt-bold" %>
+    <%= form.text_area :environment_context, value: resolution_record.environment_context, rows: 3, class: "input input--textarea full-width", placeholder: "Product area, UI screen, customer account, browser, device, or relevant data." %>
+  </div>
+
+  <div class="flex align-center justify-between gap">
+    <%= link_to "Cancel", cancel_path, class: "btn" %>
+
+    <div class="flex flex-wrap align-center gap-half">
+      <% if local_assigns[:allow_draft] %>
+        <%= tag.button "Save draft", type: "submit", name: "#{form.object_name}[draft]", value: "true", class: "btn" %>
+      <% end %>
+
+      <%= form.submit submit_label, class: "btn btn--reversed" %>
+    </div>
+  </div>
+<% end %>

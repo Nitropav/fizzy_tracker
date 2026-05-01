@@ -7,13 +7,13 @@
 <% end %>
 
 <section class="panel panel--wide center flex flex-column gap">
-  <header class="flex align-center justify-between gap">
-    <div>
+  <header class="flex align-center justify-between flex-wrap gap">
+    <div class="min-width">
       <h1 class="txt-x-large font-weight-black margin-none">Training Examples</h1>
       <p class="txt-small txt-subtle margin-none">Review generated bug-resolution snapshots before they enter the training corpus.</p>
     </div>
 
-    <nav class="flex gap-half txt-small" aria-label="Training example filters">
+    <nav class="flex flex-wrap gap-half txt-small" aria-label="Training example filters">
       <%= link_to "All", training_examples_path, class: "btn" %>
       <% TrainingExample::STATUSES.each do |status| %>
         <%= link_to status.humanize, training_examples_path(status: status), class: "btn" %>

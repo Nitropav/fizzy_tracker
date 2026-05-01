@@ -160,6 +160,13 @@ module Ai
           "linked_commit_shas" => record.linked_commit_shas,
           "linked_pr_urls" => record.linked_pr_urls,
           "code_evidence_present" => record.code_evidence_present? || code_links.any?,
+          "legacy_import" => record.legacy_import?,
+          "legacy_source" => record.legacy_source,
+          "legacy_external_id" => record.legacy_external_id,
+          "legacy_metadata" => record.legacy_metadata,
+          "legacy_imported_at" => timestamp(record.legacy_imported_at),
+          "gate_one_legacy" => record.gate_one_legacy?,
+          "needs_structuring" => record.needs_structuring?,
           "verified_at" => timestamp(record.verified_at)
         }
       end

@@ -65,6 +65,43 @@ class Card::ResolutionRecordTest < ActiveSupport::TestCase
     assert_includes record.errors[:account], "must match the card account"
   end
 
+  test "legacy unresolved records stop needing structuring when gate one is complete" do
+    record = @card.create_resolution_record!(
+      legacy_import: true,
+      legacy_source: "asana",
+      legacy_external_id: "unresolved-1",
+      legacy_imported_at: Time.current,
+      legacy_metadata: { "completed" => false },
+      needs_structuring: true
+    )
+
+    record.update!(gate_one_attrs)
+
+    assert_not record.needs_structuring?
+    assert record.legacy_structuring_complete?
+  end
+
+  test "legacy resolved records need gate two before structuring is complete" do
+    record = @card.create_resolution_record!(
+      legacy_import: true,
+      legacy_source: "asana",
+      legacy_external_id: "resolved-1",
+      legacy_imported_at: Time.current,
+      legacy_metadata: { "completed" => true },
+      needs_structuring: true
+    )
+
+    record.update!(gate_one_attrs)
+
+    assert record.needs_structuring?
+    assert_not record.legacy_structuring_complete?
+
+    record.update!(gate_two_attrs)
+
+    assert_not record.needs_structuring?
+    assert record.legacy_structuring_complete?
+  end
+
   private
     def gate_one_attrs
       {

@@ -24,4 +24,27 @@ class Cards::AiReviewsControllerTest < ActionDispatch::IntegrationTest
     assert_response :created
     assert_equal "needs_work", @response.parsed_body["status"]
   end
+
+  test "create cannot review inaccessible account card" do
+    other_account_card = create_other_account_card
+
+    assert_no_difference -> { AiRun.count } do
+      post card_ai_review_path(other_account_card), as: :json
+    end
+
+    assert_response :not_found
+  end
+
+  private
+    def create_other_account_card
+      Current.with(account: accounts(:initech), session: sessions(:mike)) do
+        boards(:miltons_wish_list).cards.create!(
+          account: accounts(:initech),
+          creator: users(:mike),
+          status: :published,
+          number: 999,
+          title: "Other account card"
+        )
+      end
+    end
 end

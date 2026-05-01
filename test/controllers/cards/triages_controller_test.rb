@@ -69,4 +69,26 @@ class Cards::TriagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :no_content
     assert_nil card.reload.column
   end
+
+  test "create cannot triage inaccessible account card" do
+    other_account_card = create_other_account_card
+
+    post card_triage_path(other_account_card, column_id: columns(:writebook_in_progress).id), as: :json
+
+    assert_response :not_found
+    assert_nil other_account_card.reload.column
+  end
+
+  private
+    def create_other_account_card
+      Current.with(account: accounts(:initech), session: sessions(:mike)) do
+        boards(:miltons_wish_list).cards.create!(
+          account: accounts(:initech),
+          creator: users(:mike),
+          status: :published,
+          number: 999,
+          title: "Other account card"
+        )
+      end
+    end
 end

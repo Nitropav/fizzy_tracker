@@ -10,12 +10,30 @@ class Boards::ColumnsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "new" do
+    get new_board_column_path(boards(:writebook))
+
+    assert_response :success
+    assert_select "h1", text: "New column"
+    assert_select "form[action=?][method=?]", board_columns_path(boards(:writebook)), "post"
+    assert_select "input[name='column[name]']"
+  end
+
   test "create" do
     assert_difference -> { boards(:writebook).columns.count }, +1 do
       post board_columns_path(boards(:writebook)), params: { column: { name: "New Column" } }, as: :turbo_stream
       assert_response :success
     end
 
+    assert_equal "New Column", boards(:writebook).columns.last.name
+  end
+
+  test "create as HTML redirects back to board" do
+    assert_difference -> { boards(:writebook).columns.count }, +1 do
+      post board_columns_path(boards(:writebook)), params: { column: { name: "New Column" } }
+    end
+
+    assert_redirected_to board_path(boards(:writebook))
     assert_equal "New Column", boards(:writebook).columns.last.name
   end
 

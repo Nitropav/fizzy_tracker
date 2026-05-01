@@ -89,7 +89,7 @@ Rails.application.routes.draw do
       resource :publish
       resource :reading
       resource :resolution, only: :create
-      resource :resolution_record, only: :update
+      resource :resolution_record, only: %i[ edit update ]
       resource :triage
       resource :watch
       resource :reading
@@ -126,6 +126,11 @@ Rails.application.routes.draw do
   end
 
   resource :search
+  resource :cactus_home, only: :show
+  resources :cactus_issues, only: %i[ new create ]
+  resource :cactus_work, only: :show
+  resource :cactus_dashboard, only: :show
+  resource :cactus_integrations, only: :show
   resources :cactus_queues, only: :index
   namespace :searches do
     resources :queries
@@ -148,6 +153,10 @@ Rails.application.routes.draw do
       post :approve
       post :reject
     end
+  end
+
+  namespace :legacy_imports do
+    resource :asana, only: %i[ new create ]
   end
 
   namespace :github do

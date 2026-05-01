@@ -7,6 +7,7 @@ This document is the master implementation roadmap for implementing the Cactus B
 It combines:
 
 - the functional and technical target from [cactus_bug_tracker_mvp.pdf](/D:/work/fizzy_tracker/docs/cactus_bug_tracker_mvp.pdf)
+- the final product/UI target from [CACTUS_BUG_TRACKER_FINAL_PRODUCT_PLAN.md](/D:/work/fizzy_tracker/docs/CACTUS_BUG_TRACKER_FINAL_PRODUCT_PLAN.md)
 - the already completed PostgreSQL stabilization work
 - the previously discussed AI/training-data direction
 
@@ -794,6 +795,20 @@ Done for the initial MVP path:
 
 Turn old issue systems into training candidates where possible.
 
+### Status
+
+In progress. Initial legacy import foundation is implemented:
+
+- legacy import metadata on `Card::ResolutionRecord`
+- explicit `legacy_import`, `legacy_source`, `legacy_external_id`, `legacy_imported_at`, `gate_one_legacy`, and `needs_structuring` flags
+- idempotent `LegacyImports::CardImporter` for creating normal Fizzy `Card` records from external tasks
+- `LegacyImports::AsanaTaskImporter` for Asana-shaped task payloads
+- admin-only Asana JSON upload screen for creating legacy cards
+- AI/card context includes legacy import metadata
+- Cactus Queue identifies legacy imports that still need structuring
+- card detail pages show legacy metadata and the original external task link
+- saving enough Gate data automatically clears `needs_structuring` for legacy cards
+
 ### Sources
 
 - Asana first
@@ -817,6 +832,21 @@ Turn old issue systems into training candidates where possible.
 
 Measure whether the system is actually useful.
 
+### Status
+
+In progress. Initial admin dashboard is implemented:
+
+- account-scoped `CactusPipelineMetrics` service
+- admin-only `Cactus Dashboard` screen
+- workflow state counts
+- Gate 1 / Gate 2 coverage counts
+- missing Gate field counts
+- training example lifecycle counts and review rate
+- top structured domains
+- GitHub/code evidence counts and Gate 2 linkage rate
+- AI run status counts
+- legacy import structuring backlog
+
 ### Dashboard Areas
 
 - number of tickets by state
@@ -837,6 +867,17 @@ Measure whether the system is actually useful.
 ### Goal
 
 Make sure sensitive customer/engineering data is handled correctly.
+
+### Status
+
+In progress. Initial permission audit and test hardening is implemented:
+
+- [CACTUS_SECURITY_PERMISSION_MATRIX.md](/D:/work/fizzy_tracker/docs/CACTUS_SECURITY_PERMISSION_MATRIX.md)
+- admin-only access covered for dashboard, training review/export, and legacy imports
+- account-scope tests added for training example show/approve/reject/export
+- account-scope tests added for legacy import board selection
+- card-scoped Cactus actions covered against inaccessible account cards
+- signed GitHub webhook behavior is covered by controller tests
 
 ### Scope
 

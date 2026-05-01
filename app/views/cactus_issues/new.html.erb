@@ -1,0 +1,42 @@
+<% @page_title = "New Issue" %>
+<% @body_class = "compact-on-touch" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Cactus Home", cactus_home_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+
+  <h1 class="header__title" data-bridge--title-target="header">
+    <span class="overflow-ellipsis"><%= @page_title %></span>
+  </h1>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap txt-align-start">
+  <header>
+    <h1 class="txt-x-large font-weight-black margin-none">Create issue</h1>
+    <p class="txt-small txt-subtle margin-none">
+      Capture the reporter-side details needed before this issue can enter the Cactus queue.
+    </p>
+  </header>
+
+  <% if @boards.any? %>
+    <%= render "boards/bug_reports/form",
+      form_url: cactus_issues_path,
+      form_scope: :cactus_issue,
+      projects: @boards,
+      selected_project: @board,
+      card: @card,
+      resolution_record: @resolution_record,
+      cancel_path: cactus_home_path,
+      submit_label: "Create issue",
+      allow_draft: true %>
+  <% else %>
+    <div class="panel border flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Create a project first</h2>
+      <p class="txt-small txt-subtle margin-none">
+        Issues need a project so the queue can route them to support and developers.
+      </p>
+      <%= link_to "Create project", new_board_path, class: "btn btn--reversed txt-small" %>
+    </div>
+  <% end %>
+</section>

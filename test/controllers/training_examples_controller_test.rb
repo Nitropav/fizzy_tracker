@@ -65,6 +65,20 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     assert @training_example.reload.exported?
   end
 
+  test "export only includes current account approved examples" do
+    @training_example.approve!(reviewer: users(:kevin), notes: "Good example")
+    other_account_example = create_other_account_training_example
+    other_account_example.approve!(reviewer: users(:mike), notes: "Other account example")
+
+    get export_training_examples_path
+
+    assert_response :success
+    exported_ids = response.body.lines.map { JSON.parse(it).dig("metadata", "training_example_id") }
+    assert_equal [ @training_example.id ], exported_ids
+    assert @training_example.reload.exported?
+    assert other_account_example.reload.approved?
+  end
+
   test "non admins cannot access index" do
     logout_and_sign_in_as :david
 
@@ -73,18 +87,38 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test "non admins cannot export examples" do
+    logout_and_sign_in_as :david
+
+    get export_training_examples_path
+
+    assert_response :forbidden
+  end
+
   test "cannot access another account training example" do
-    other_account_example = TrainingExample.create!(
-      account: accounts(:initech),
-      card: cards(:radio),
-      status: :pending_review,
-      input_context: { "card" => { "id" => cards(:radio).id } },
-      metadata: { "domain" => "other" }
-    )
+    other_account_example = create_other_account_training_example
 
     get training_example_path(other_account_example)
 
     assert_response :not_found
+  end
+
+  test "cannot approve another account training example" do
+    other_account_example = create_other_account_training_example
+
+    post approve_training_example_path(other_account_example), params: { review_notes: "Should not work" }
+
+    assert_response :not_found
+    assert other_account_example.reload.pending_review?
+  end
+
+  test "cannot reject another account training example" do
+    other_account_example = create_other_account_training_example
+
+    post reject_training_example_path(other_account_example), params: { review_notes: "Should not work" }
+
+    assert_response :not_found
+    assert other_account_example.reload.pending_review?
   end
 
   private
@@ -105,5 +139,15 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
       )
 
       TrainingExamples::Generator.new(card).generate
+    end
+
+    def create_other_account_training_example
+      TrainingExample.create!(
+        account: accounts(:initech),
+        card: cards(:radio),
+        status: :pending_review,
+        input_context: { "card" => { "id" => cards(:radio).id } },
+        metadata: { "domain" => "other" }
+      )
     end
 end

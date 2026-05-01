@@ -37,6 +37,16 @@ class Cards::SelfAssignmentsControllerTest < ActionDispatch::IntegrationTest
     assert card.reload.assigned_to?(users(:kevin))
   end
 
+  test "create as HTML redirects back" do
+    card = cards(:layout)
+
+    assert_not card.assigned_to?(users(:kevin))
+
+    post card_self_assignment_path(card)
+    assert_redirected_to card_path(card)
+    assert card.reload.assigned_to?(users(:kevin))
+  end
+
   private
     def assert_meta_replaced(card)
       assert_turbo_stream action: :replace, target: dom_id(card, :meta)

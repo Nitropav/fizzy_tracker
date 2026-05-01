@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_30_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_01_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -267,10 +267,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_30_120000) do
     t.text "environment_context"
     t.text "expected_behavior"
     t.text "fix_summary"
+    t.boolean "gate_one_legacy", default: false, null: false
     t.string "gate_one_status", limit: 255, default: "incomplete", null: false
     t.string "gate_two_status", limit: 255, default: "incomplete", null: false
+    t.string "legacy_external_id"
+    t.boolean "legacy_import", default: false, null: false
+    t.datetime "legacy_imported_at"
+    t.json "legacy_metadata", default: {}, null: false
+    t.string "legacy_source"
     t.json "linked_commit_shas"
     t.json "linked_pr_urls"
+    t.boolean "needs_structuring", default: false, null: false
     t.text "problem_description"
     t.text "reproduction_steps"
     t.text "root_cause"
@@ -285,6 +292,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_30_120000) do
     t.index ["account_id", "domain"], name: "index_card_resolution_records_on_account_id_and_domain"
     t.index ["account_id", "gate_one_status"], name: "idx_on_account_id_gate_one_status_be337b4a03"
     t.index ["account_id", "gate_two_status"], name: "idx_on_account_id_gate_two_status_1d133d3b82"
+    t.index ["account_id", "legacy_import"], name: "index_card_resolution_records_on_account_id_and_legacy_import"
+    t.index ["account_id", "legacy_source", "legacy_external_id"], name: "idx_on_account_id_legacy_source_legacy_external_id_2bdb0ae1de", unique: true, where: "((legacy_source IS NOT NULL) AND (legacy_external_id IS NOT NULL))"
+    t.index ["account_id", "needs_structuring"], name: "idx_on_account_id_needs_structuring_93d1adaa31"
     t.index ["account_id"], name: "index_card_resolution_records_on_account_id"
     t.index ["card_id"], name: "index_card_resolution_records_on_card_id", unique: true
     t.index ["verified_by_id"], name: "index_card_resolution_records_on_verified_by_id"

@@ -16,7 +16,14 @@ class Ai::CardContextBuilderTest < ActiveSupport::TestCase
       category: "bug",
       domain: "ui",
       severity: "cosmetic",
-      linked_commit_shas: [ "abc123" ]
+      linked_commit_shas: [ "abc123" ],
+      legacy_import: true,
+      legacy_source: "asana",
+      legacy_external_id: "1200",
+      legacy_imported_at: Time.current,
+      legacy_metadata: { "permalink_url" => "https://app.asana.com/0/1/1200" },
+      gate_one_legacy: true,
+      needs_structuring: false
     )
     @card.code_links.create!(
       provider: "github",
@@ -47,6 +54,11 @@ class Ai::CardContextBuilderTest < ActiveSupport::TestCase
     assert_equal "complete", context.dig("resolution_record", "gate_one_status")
     assert_equal "complete", context.dig("resolution_record", "gate_two_status")
     assert_equal [ "abc123" ], context.dig("resolution_record", "linked_commit_shas")
+    assert_equal true, context.dig("resolution_record", "legacy_import")
+    assert_equal "asana", context.dig("resolution_record", "legacy_source")
+    assert_equal "1200", context.dig("resolution_record", "legacy_external_id")
+    assert_equal true, context.dig("resolution_record", "gate_one_legacy")
+    assert_equal false, context.dig("resolution_record", "needs_structuring")
     assert_equal [ "pull_request" ], context["code_links"].map { it["external_type"] }
     assert_equal "https://github.com/cactus/fizzy_tracker/pull/42", context.dig("code_links", 0, "url")
     assert_equal true, context.dig("resolution_record", "code_evidence_present")

@@ -32,24 +32,59 @@
             <th class="txt-align-start">Column</th>
             <th class="txt-align-start">Gate 1</th>
             <th class="txt-align-start">Gate 2</th>
+            <th class="txt-align-start">Classification</th>
             <th class="txt-align-start">Next action</th>
             <th class="txt-align-start">Updated</th>
           </tr>
         </thead>
         <tbody>
           <% @cards.each do |card| %>
+            <% resolution_record = card.resolution_record || card.build_resolution_record %>
             <tr>
-              <td><%= link_to "##{card.number} #{card.title}", card, class: "txt-link" %></td>
+              <td>
+                <div class="flex flex-column gap-half">
+                  <%= link_to "##{card.number} #{card.title}", card, class: "txt-link" %>
+                  <% if resolution_record.legacy_import? %>
+                    <span class="txt-small txt-subtle">
+                      Legacy <%= resolution_record.legacy_source %>
+                      <% if resolution_record.legacy_external_id.present? %>
+                        #<%= resolution_record.legacy_external_id %>
+                      <% end %>
+                      <% if resolution_record.needs_structuring? %>
+                        &middot; needs structuring
+                      <% end %>
+                    </span>
+                  <% end %>
+                </div>
+              </td>
               <td><%= card.cactus_workflow_state_label %></td>
               <td><%= card.board.name %></td>
               <td><%= card.column&.name || "N/A" %></td>
-              <td><%= card.resolution_record&.gate_one_status&.humanize || "N/A" %></td>
-              <td><%= card.resolution_record&.gate_two_status&.humanize || "N/A" %></td>
+              <td><%= resolution_record.gate_one_status&.humanize || "N/A" %></td>
+              <td><%= resolution_record.gate_two_status&.humanize || "N/A" %></td>
+              <td>
+                <%= form_with model: resolution_record, scope: :card_resolution_record, url: card_resolution_record_path(card), method: :put,
+                      class: "flex flex-column gap-half txt-small",
+                      data: { controller: "form" } do |form| %>
+                  <%= hidden_field_tag :return_to, "cactus_queue" %>
+                  <%= hidden_field_tag :queue_state, @state %>
+
+                  <%= form.text_field :category, class: "input txt-small", placeholder: "Category" %>
+                  <%= form.text_field :domain, class: "input txt-small", placeholder: "Domain" %>
+                  <%= form.text_field :severity, class: "input txt-small", placeholder: "Severity" %>
+                  <%= form.submit "Save", class: "btn txt-small" %>
+                <% end %>
+              </td>
               <td>
                 <% case card.cactus_workflow_state %>
                 <% when "needs_info" %>
-                  <% guidance = CardResolutionRecords::GateOneGuidance.new(card) %>
-                  <% if (next_item = guidance.next_item) %>
+                  <% if resolution_record.legacy_import? && resolution_record.needs_structuring? %>
+                    <div class="flex flex-column gap-half txt-small">
+                      <span><strong>Structure legacy import</strong></span>
+                      <span class="txt-subtle">Review imported data and complete missing Gate 1 fields.</span>
+                      <%= link_to "Open card", card, class: "btn txt-small" %>
+                    </div>
+                  <% elsif (next_item = CardResolutionRecords::GateOneGuidance.new(card).next_item) %>
                     <div class="flex flex-column gap-half txt-small">
                       <span><strong>Ask:</strong> <%= next_item.label %></span>
                       <span class="txt-subtle"><%= next_item.prompt %></span>
@@ -66,21 +101,35 @@
                       <%= form.submit "Triage", class: "btn txt-small" %>
                     <% end %>
                   <% else %>
-                    <span class="txt-small txt-subtle">No board columns</span>
+                    <div class="flex flex-column gap-half txt-small">
+                      <span class="txt-subtle">No board columns configured.</span>
+                      <%= link_to "Create board column", new_board_column_path(card.board), class: "btn txt-small" %>
+                    </div>
                   <% end %>
                 <% when "in_progress" %>
-                  <% missing_gate_two = card.resolution_record&.missing_gate_two_fields || [] %>
+                  <% missing_gate_two = resolution_record.missing_gate_two_fields || [] %>
+                  <% assigned_names = card.assignees.active.alphabetically.map(&:name) %>
+                  <% assigned_ids = card.assignees.map(&:id) %>
+                  <% assignable_users = (@assignable_users_by_board_id.fetch(card.board_id, [])).reject { |user| assigned_ids.include?(user.id) } %>
                   <div class="flex flex-column gap-half txt-small">
                     <% if missing_gate_two.any? %>
                       <span><strong>Complete Gate 2:</strong> <%= missing_gate_two.map { it.to_s.humanize.downcase }.to_sentence %></span>
                     <% else %>
                       <span><strong>Review Gate 2 details</strong></span>
                     <% end %>
-                    <%= link_to "Fill resolution", card_path(card, anchor: dom_id(card, :resolution_record)), class: "btn txt-small" %>
+                    <span class="txt-subtle">Assigned to: <%= assigned_names.any? ? assigned_names.to_sentence : "nobody" %></span>
+                    <%= link_to "Fill resolution", edit_card_resolution_record_path(card), class: "btn txt-small" %>
+
+                    <% if assignable_users.any? %>
+                      <%= form_with url: card_assignments_path(card), method: :post, class: "flex align-center gap-half" do |form| %>
+                        <%= form.select :assignee_id, options_from_collection_for_select(assignable_users, :id, :name), { prompt: "Assign developer..." }, class: "input txt-small" %>
+                        <%= form.submit "Assign", class: "btn txt-small" %>
+                      <% end %>
+                    <% end %>
                   </div>
                 <% when "needs_review" %>
                   <div class="flex align-center gap-half">
-                    <%= link_to "Review resolution", card_path(card, anchor: dom_id(card, :resolution_record)), class: "btn txt-small" %>
+                    <%= link_to "Review resolution", edit_card_resolution_record_path(card), class: "btn txt-small" %>
                     <%= button_to "Mark resolved", card_resolution_path(card), class: "btn btn--reversed txt-small" %>
                   </div>
                 <% else %>

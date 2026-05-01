@@ -36,6 +36,17 @@ class Cards::AssignmentsControllerTest < ActionDispatch::IntegrationTest
     assert_not card.reload.assigned_to?(users(:david))
   end
 
+  test "create as HTML redirects back for Cactus queue forms" do
+    card = cards(:logo)
+
+    assert_changes -> { card.reload.assigned_to?(users(:david)) }, from: false, to: true do
+      post card_assignments_path(card), params: { assignee_id: users(:david).id }
+    end
+
+    assert_redirected_to card_path(card)
+    assert_equal "Assignment updated.", flash[:notice]
+  end
+
   private
     def assert_meta_replaced(card)
       assert_turbo_stream action: :replace, target: dom_id(card, :meta)

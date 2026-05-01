@@ -1,0 +1,179 @@
+<% @page_title = "Cactus Dashboard" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Home", root_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap">
+  <header class="flex flex-wrap align-center justify-between gap">
+    <div>
+      <h1 class="txt-x-large font-weight-black margin-none">Cactus Dashboard</h1>
+      <p class="txt-small txt-subtle margin-none">
+        Pipeline health for <%= @metrics.account.name %>, generated
+        <%= local_datetime_tag @metrics.generated_at, style: :shortdate %>.
+      </p>
+    </div>
+
+    <nav class="flex flex-wrap gap-half txt-small" aria-label="Cactus dashboard shortcuts">
+      <%= link_to "Open queue", cactus_queues_path, class: "btn" %>
+      <%= link_to "Review examples", training_examples_path, class: "btn" %>
+      <%= link_to "Integrations", cactus_integrations_path, class: "btn" %>
+      <%= link_to "Import Asana tasks", new_legacy_imports_asana_path, class: "btn" %>
+    </nav>
+  </header>
+
+  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));">
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Workflow</h2>
+      <dl class="margin-none">
+        <% @metrics.workflow_counts.each do |state, count| %>
+          <div class="flex justify-space-between gap-half">
+            <dt><%= state.humanize %></dt>
+            <dd class="margin-none font-weight-bold"><%= count %></dd>
+          </div>
+        <% end %>
+      </dl>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Gate Coverage</h2>
+      <dl class="margin-none">
+        <div class="flex justify-space-between gap-half">
+          <dt>Structured records</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.gate_counts[:total_records] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Gate 1 complete</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.gate_counts[:gate_one_complete] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Gate 1 incomplete</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.gate_counts[:gate_one_incomplete] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Gate 2 complete</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.gate_counts[:gate_two_complete] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Gate 2 incomplete</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.gate_counts[:gate_two_incomplete] %></dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Training Corpus</h2>
+      <dl class="margin-none">
+        <% @metrics.training_counts.each do |status, count| %>
+          <div class="flex justify-space-between gap-half">
+            <dt><%= status.humanize %></dt>
+            <dd class="margin-none font-weight-bold"><%= count %></dd>
+          </div>
+        <% end %>
+        <div class="flex justify-space-between gap-half">
+          <dt>Review rate</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.training_review_rate %>%</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Code Evidence</h2>
+      <dl class="margin-none">
+        <div class="flex justify-space-between gap-half">
+          <dt>Linked cards</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.code_link_counts[:linked_cards] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Commits</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.code_link_counts[:commits] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Pull requests</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.code_link_counts[:pull_requests] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Gate 2 linkage</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.github_linkage_rate %>%</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">AI Runs</h2>
+      <dl class="margin-none">
+        <% @metrics.ai_run_counts.each do |status, count| %>
+          <div class="flex justify-space-between gap-half">
+            <dt><%= status.humanize %></dt>
+            <dd class="margin-none font-weight-bold"><%= count %></dd>
+          </div>
+        <% end %>
+      </dl>
+      <% unless @metrics.ai_acceptance_tracking_available %>
+        <p class="txt-small txt-subtle margin-none">Suggestion acceptance is not tracked yet.</p>
+      <% end %>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Legacy Imports</h2>
+      <dl class="margin-none">
+        <div class="flex justify-space-between gap-half">
+          <dt>Imported</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.legacy_counts[:imported] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Needs structuring</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.legacy_counts[:needs_structuring] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Structured</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.legacy_counts[:structured] %></dd>
+        </div>
+      </dl>
+    </section>
+  </div>
+
+  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));">
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Gate 1 Missing Fields</h2>
+      <dl class="margin-none">
+        <% @metrics.missing_gate_one_counts.each do |field, count| %>
+          <div class="flex justify-space-between gap-half">
+            <dt><%= field.to_s.humanize %></dt>
+            <dd class="margin-none font-weight-bold"><%= count %></dd>
+          </div>
+        <% end %>
+      </dl>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Gate 2 Missing Fields</h2>
+      <dl class="margin-none">
+        <% @metrics.missing_gate_two_counts.each do |field, count| %>
+          <div class="flex justify-space-between gap-half">
+            <dt><%= field.to_s.humanize %></dt>
+            <dd class="margin-none font-weight-bold"><%= count %></dd>
+          </div>
+        <% end %>
+      </dl>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Top Domains</h2>
+      <% if @metrics.domain_counts.any? %>
+        <dl class="margin-none">
+          <% @metrics.domain_counts.each do |domain, count| %>
+            <div class="flex justify-space-between gap-half">
+              <dt><%= domain %></dt>
+              <dd class="margin-none font-weight-bold"><%= count %></dd>
+            </div>
+          <% end %>
+        </dl>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none">No structured domains yet.</p>
+      <% end %>
+    </section>
+  </div>
+</section>

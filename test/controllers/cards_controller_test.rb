@@ -77,6 +77,49 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Show all missing Gate 1 items", response.body
   end
 
+  test "show renders legacy import structuring panel" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      legacy_import: true,
+      legacy_source: "asana",
+      legacy_external_id: "1200",
+      legacy_imported_at: Time.current,
+      legacy_metadata: {
+        "completed" => false,
+        "permalink_url" => "https://app.asana.com/0/1/1200"
+      },
+      gate_one_legacy: true,
+      needs_structuring: true
+    )
+
+    get card_path(card)
+
+    assert_response :success
+    assert_match "Legacy import", response.body
+    assert_match "Needs structuring", response.body
+    assert_select "a[href=?]", "https://app.asana.com/0/1/1200", text: "Open original task"
+  end
+
+  test "show renders linked code evidence" do
+    card = cards(:logo)
+    card.code_links.create!(
+      provider: "github",
+      external_type: "pull_request",
+      external_id: "123",
+      repository: "cactus/fizzy",
+      title: "Fix issue workflow",
+      url: "https://github.com/cactus/fizzy/pull/123",
+      metadata: {}
+    )
+
+    get card_path(card)
+
+    assert_response :success
+    assert_match "Code evidence", response.body
+    assert_match "Fix issue workflow", response.body
+    assert_select "a[href=?]", "https://github.com/cactus/fizzy/pull/123", text: "Open"
+  end
+
   test "show renders mark resolved action when cactus workflow needs review" do
     card = cards(:logo)
     card.create_resolution_record!(

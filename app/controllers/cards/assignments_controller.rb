@@ -11,11 +11,13 @@ class Cards::AssignmentsController < ApplicationController
     if @card.toggle_assignment @board.users.active.find(params[:assignee_id])
       respond_to do |format|
         format.turbo_stream
+        format.html { redirect_back_or_to @card, notice: "Assignment updated." }
         format.json { head :no_content }
       end
     else
       respond_to do |format|
         format.turbo_stream
+        format.html { redirect_back_or_to @card, alert: "Could not update assignment." }
         format.json { head :unprocessable_entity }
       end
     end

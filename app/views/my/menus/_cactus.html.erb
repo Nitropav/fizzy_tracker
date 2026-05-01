@@ -1,0 +1,14 @@
+<%= collapsible_nav_section "Cactus" do %>
+  <%= filter_place_menu_item cactus_home_path, "Cactus Home", "home" %>
+  <%= filter_place_menu_item new_cactus_issue_path, "New Issue", "add" %>
+  <%= filter_place_menu_item cactus_queues_path, "Cactus Queue", "clipboard" %>
+  <%= filter_place_menu_item cactus_work_path, "My Work", "person" %>
+  <%= filter_place_menu_item boards_path, "Projects", "board" %>
+
+  <% if Current.user.admin? %>
+    <%= filter_place_menu_item cactus_dashboard_path, "Pipeline Dashboard", "clipboard" %>
+    <%= filter_place_menu_item cactus_integrations_path, "Integrations", "clipboard" %>
+    <%= filter_place_menu_item training_examples_path, "Training Examples", "clipboard" %>
+    <%= filter_place_menu_item new_legacy_imports_asana_path, "Import Asana Tasks", "clipboard" %>
+  <% end %>
+<% end %>

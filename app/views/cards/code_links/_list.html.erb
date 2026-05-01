@@ -1,0 +1,29 @@
+<% if code_links.any? %>
+  <ul class="list-unstyled margin-none flex flex-column gap-half">
+    <% code_links.each do |code_link| %>
+      <li class="panel border flex flex-wrap align-center justify-between gap-half">
+        <div class="flex flex-column gap-half">
+          <strong>
+            <%= code_link.external_type.humanize %>:
+            <%= code_link.title.presence || code_link.external_id %>
+          </strong>
+
+          <span class="txt-small txt-subtle">
+            <%= code_link.repository.presence || "GitHub" %>
+            <% if code_link.sha.present? %>
+              &middot; <%= code_link.sha.first(12) %>
+            <% end %>
+          </span>
+        </div>
+
+        <% if code_link.url.present? %>
+          <%= link_to "Open", code_link.url, class: "btn txt-small", target: "_blank", rel: "noopener noreferrer" %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="txt-small txt-subtle margin-none">
+    No linked GitHub commits or pull requests yet.
+  </p>
+<% end %>

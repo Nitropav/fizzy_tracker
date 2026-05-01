@@ -57,6 +57,7 @@
 
   .display-inline { display: inline; }
 
+  .grid { display: grid; }
   .flex { display: flex; }
   .flex-inline { display: inline-flex; }
   .flex-column { flex-direction: column; }

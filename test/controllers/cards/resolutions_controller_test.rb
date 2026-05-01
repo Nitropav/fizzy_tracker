@@ -41,6 +41,17 @@ class Cards::ResolutionsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Complete Gate 2", @response.parsed_body["error"]
   end
 
+  test "create cannot resolve inaccessible account card" do
+    other_account_card = create_other_account_card
+
+    assert_no_difference -> { TrainingExample.count } do
+      post card_resolution_path(other_account_card), as: :json
+    end
+
+    assert_response :not_found
+    assert_not other_account_card.reload.closed?
+  end
+
   private
     def resolution_record_attrs
       {
@@ -53,5 +64,17 @@ class Cards::ResolutionsControllerTest < ActionDispatch::IntegrationTest
         fix_summary: "Adjusted the card image layout",
         verification_steps: "Opened the card and confirmed the logo is readable"
       }
+    end
+
+    def create_other_account_card
+      Current.with(account: accounts(:initech), session: sessions(:mike)) do
+        boards(:miltons_wish_list).cards.create!(
+          account: accounts(:initech),
+          creator: users(:mike),
+          status: :published,
+          number: 999,
+          title: "Other account card"
+        )
+      end
     end
 end
