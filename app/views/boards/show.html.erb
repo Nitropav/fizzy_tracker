@@ -6,7 +6,7 @@
 
 <% content_for :header do %>
   <div class="header__actions header__actions--start hide-on-native">
-    <%= link_to_webhooks(@board) if Current.user.admin? %>
+    <%= link_to_webhooks(@board) if Current.user.can_manage_cactus_integrations? %>
   </div>
 
   <h1 class="header__title divider divider--fade full-width" data-bridge--title-target="header">
@@ -14,7 +14,7 @@
   </h1>
 
   <div class="header__actions header__actions--end hide-on-native">
-    <%= link_to_edit_board @board %>
+    <%= link_to_edit_board @board if Current.user.can_manage_cactus_project?(@board) %>
   </div>
 <% end %>
 

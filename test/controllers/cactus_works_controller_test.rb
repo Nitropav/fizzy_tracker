@@ -14,6 +14,23 @@ class CactusWorksControllerTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "#1 The logo isn't big enough"
   end
 
+  test "support users cannot access developer work" do
+    logout_and_sign_in_as :jz
+
+    get cactus_work_path
+
+    assert_response :forbidden
+  end
+
+  test "reporters cannot access developer work" do
+    users(:david).update!(cactus_role: :reporter)
+    logout_and_sign_in_as :david
+
+    get cactus_work_path
+
+    assert_response :forbidden
+  end
+
   test "show lists assigned issues needing gate two" do
     card = cards(:text)
     card.assignments.create!(assignee: users(:kevin), assigner: users(:david), account: accounts(:"37s"))
@@ -23,7 +40,8 @@ class CactusWorksControllerTest < ActionDispatch::IntegrationTest
       expected_behavior: "Text should be readable",
       actual_behavior: "Text is too small",
       environment_context: "Card detail page",
-      root_cause: "Wrong font scale"
+      root_cause: "Wrong font scale",
+      priority: "high"
     )
 
     get cactus_work_path
@@ -31,6 +49,7 @@ class CactusWorksControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Needs Gate 2", response.body
     assert_match "The text is too small", response.body
+    assert_match "High", response.body
     assert_match "fix summary", response.body
     assert_match "verification steps", response.body
     assert_select "a[href=?]", edit_card_resolution_record_path(card), text: "Fill Gate 2"

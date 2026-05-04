@@ -5,6 +5,17 @@ class CactusHomesController < ApplicationController
 
     @workflow_counts = Cards::CactusWorkflowQuery::STATES.index_with { |state| workflow_query.for(state).count }
     @assigned_count = Current.user.assigned_cards.published.open.count
-    @training_review_count = Current.user.admin? ? Current.account.training_examples.pending_review.count : nil
+    @training_review_count = Current.user.can_review_training_examples? ? Current.account.training_examples.pending_review.count : nil
+    @legacy_needs_structuring_count = Current.user.can_import_cactus_issues? ? legacy_asana_needs_structuring_count : nil
   end
+
+  private
+    def legacy_asana_needs_structuring_count
+      Card::ResolutionRecord.where(
+        account: Current.account,
+        legacy_import: true,
+        legacy_source: "asana",
+        needs_structuring: true
+      ).count
+    end
 end

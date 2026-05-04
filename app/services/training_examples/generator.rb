@@ -48,6 +48,7 @@ module TrainingExamples
           "board_id" => card.board_id,
           "board_name" => card.board.name,
           "account_id" => card.account_id,
+          "priority" => record.priority,
           "category" => record.category,
           "domain" => record.domain,
           "severity" => record.severity,

@@ -1,4 +1,4 @@
-<% @page_title = "Training Example ##{@training_example.card.number}" %>
+<% @page_title = "Training Example for issue ##{@training_example.card.number}" %>
 
 <% content_for :header do %>
   <div class="header__actions header__actions--start">
@@ -28,49 +28,142 @@
     <% end %>
   </header>
 
-  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));">
-    <section class="panel flex flex-column gap-half">
-      <h2 class="txt-large margin-none">Problem</h2>
-      <p class="margin-none"><%= simple_format @training_example.problem_summary %></p>
+  <section class="panel flex flex-column gap-half">
+    <h2 class="txt-large margin-none">Issue overview</h2>
+    <dl class="grid gap-half" style="grid-template-columns: max-content 1fr;">
+      <dt>Project</dt>
+      <dd class="margin-none"><%= @board_context["name"].presence || @training_example.card.board.name %></dd>
+      <dt>Issue state</dt>
+      <dd class="margin-none"><%= @training_example.metadata["cactus_workflow_state"].presence&.humanize || @card_context["workflow_state"].presence&.humanize || "N/A" %></dd>
+      <dt>Priority</dt>
+      <dd class="margin-none"><%= @training_example.metadata["priority"].presence&.humanize || "N/A" %></dd>
+      <dt>Category</dt>
+      <dd class="margin-none"><%= @training_example.metadata["category"].presence || "N/A" %></dd>
+      <dt>Domain</dt>
+      <dd class="margin-none"><%= @training_example.metadata["domain"].presence || "N/A" %></dd>
+      <dt>Severity</dt>
+      <dd class="margin-none"><%= @training_example.metadata["severity"].presence || "N/A" %></dd>
+    </dl>
+  </section>
+
+  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));">
+    <section class="panel flex flex-column gap">
+      <header>
+        <h2 class="txt-large margin-none">Gate 1 - Reporter side</h2>
+        <p class="txt-small txt-subtle margin-none">Problem context used as the training prompt.</p>
+      </header>
+
+      <dl class="grid gap-half" style="grid-template-columns: max-content 1fr;">
+        <dt>Problem description</dt>
+        <dd class="margin-none"><%= simple_format @resolution_context["problem_description"].presence || @training_example.problem_summary.presence || "N/A" %></dd>
+        <dt>Reproduction steps</dt>
+        <dd class="margin-none"><%= simple_format @resolution_context["reproduction_steps"].presence || "N/A" %></dd>
+        <dt>Expected behavior</dt>
+        <dd class="margin-none"><%= simple_format @resolution_context["expected_behavior"].presence || "N/A" %></dd>
+        <dt>Actual behavior</dt>
+        <dd class="margin-none"><%= simple_format @resolution_context["actual_behavior"].presence || "N/A" %></dd>
+        <dt>Environment</dt>
+        <dd class="margin-none"><%= simple_format @resolution_context["environment_context"].presence || "N/A" %></dd>
+        <dt>Structured summary</dt>
+        <dd class="margin-none"><%= simple_format @resolution_context["structured_summary"].presence || @training_example.problem_summary.presence || "N/A" %></dd>
+      </dl>
     </section>
 
-    <section class="panel flex flex-column gap-half">
-      <h2 class="txt-large margin-none">Resolution</h2>
-      <p class="margin-none"><strong>Root cause:</strong></p>
-      <%= simple_format @training_example.root_cause %>
-      <p class="margin-none"><strong>Fix:</strong></p>
-      <%= simple_format @training_example.resolution_summary %>
-      <p class="margin-none"><strong>Verification:</strong></p>
-      <%= simple_format @training_example.verification_steps %>
+    <section class="panel flex flex-column gap">
+      <header>
+        <h2 class="txt-large margin-none">Gate 2 - Developer side</h2>
+        <p class="txt-small txt-subtle margin-none">Verified resolution used as the training answer.</p>
+      </header>
+
+      <dl class="grid gap-half" style="grid-template-columns: max-content 1fr;">
+        <dt>Root cause</dt>
+        <dd class="margin-none"><%= simple_format @training_example.root_cause.presence || @resolution_context["root_cause"].presence || "N/A" %></dd>
+        <dt>Fix summary</dt>
+        <dd class="margin-none"><%= simple_format @training_example.resolution_summary.presence || @resolution_context["fix_summary"].presence || "N/A" %></dd>
+        <dt>Verification steps</dt>
+        <dd class="margin-none"><%= simple_format @training_example.verification_steps.presence || @resolution_context["verification_steps"].presence || "N/A" %></dd>
+        <dt>Manual commits</dt>
+        <dd class="margin-none"><%= Array(@resolution_context["linked_commit_shas"]).presence&.join(", ") || "N/A" %></dd>
+        <dt>Manual PRs</dt>
+        <dd class="margin-none"><%= Array(@resolution_context["linked_pr_urls"]).presence&.join(", ") || "N/A" %></dd>
+      </dl>
     </section>
   </div>
 
   <section class="panel flex flex-column gap-half">
-    <h2 class="txt-large margin-none">Metadata</h2>
-    <dl class="grid gap-half" style="grid-template-columns: max-content 1fr;">
-      <dt>Domain</dt>
-      <dd class="margin-none"><%= @training_example.metadata["domain"].presence || "N/A" %></dd>
-      <dt>Category</dt>
-      <dd class="margin-none"><%= @training_example.metadata["category"].presence || "N/A" %></dd>
-      <dt>Severity</dt>
-      <dd class="margin-none"><%= @training_example.metadata["severity"].presence || "N/A" %></dd>
-      <dt>Commits</dt>
-      <dd class="margin-none"><%= Array(@training_example.metadata["commit_shas"]).presence&.join(", ") || "N/A" %></dd>
-      <dt>PRs</dt>
-      <dd class="margin-none"><%= Array(@training_example.metadata["pr_urls"]).presence&.join(", ") || "N/A" %></dd>
-    </dl>
+    <h2 class="txt-large margin-none">Code evidence</h2>
+    <% if @code_links_context.any? %>
+      <div class="overflow-auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Repository</th>
+              <th>Reference</th>
+              <th>Title</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @code_links_context.each do |code_link| %>
+              <tr>
+                <td><%= code_link["external_type"].to_s.humanize %></td>
+                <td><%= code_link["repository"].presence || "N/A" %></td>
+                <td>
+                  <% if code_link["url"].present? %>
+                    <%= link_to code_link["sha"].presence || code_link["external_id"], code_link["url"], class: "txt-link", target: "_blank", rel: "noopener" %>
+                  <% else %>
+                    <%= code_link["sha"].presence || code_link["external_id"].presence || "N/A" %>
+                  <% end %>
+                </td>
+                <td><%= code_link["title"].presence || "N/A" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="margin-none txt-subtle">No automatic GitHub code evidence linked. Manual commit/PR fields are still included in Gate 2 if present.</p>
+    <% end %>
   </section>
 
   <section class="panel flex flex-column gap-half">
-    <h2 class="txt-large margin-none">Review notes</h2>
-    <%= form_with url: approve_training_example_path(@training_example), class: "flex flex-column gap-half", data: { controller: "form" } do |form| %>
-      <%= form.text_area :review_notes, value: @training_example.review_notes, rows: 3, class: "input input--textarea full-width", placeholder: "Optional notes for approve/reject decision" %>
-      <div class="flex gap-half justify-end">
-        <%= form.submit "Approve with notes", class: "btn btn--reversed" %>
-        <%= form.submit "Reject with notes", formaction: reject_training_example_path(@training_example), class: "btn" %>
-      </div>
-    <% end %>
+    <h2 class="txt-large margin-none">Training metadata</h2>
+    <dl class="grid gap-half" style="grid-template-columns: max-content 1fr;">
+      <dt>Commits in export</dt>
+      <dd class="margin-none"><%= Array(@training_example.metadata["commit_shas"]).presence&.join(", ") || "N/A" %></dd>
+      <dt>PRs in export</dt>
+      <dd class="margin-none"><%= Array(@training_example.metadata["pr_urls"]).presence&.join(", ") || "N/A" %></dd>
+      <dt>Code evidence present</dt>
+      <dd class="margin-none"><%= @training_example.metadata["code_evidence_present"] ? "Yes" : "No" %></dd>
+      <dt>Generated at</dt>
+      <dd class="margin-none"><%= @training_example.metadata["generated_at"].presence || "N/A" %></dd>
+      <dt>Exported at</dt>
+      <dd class="margin-none"><%= @training_example.exported_at&.to_fs(:db) || "N/A" %></dd>
+    </dl>
   </section>
+
+  <% if @training_example.pending_review? || @training_example.rejected? %>
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Review notes</h2>
+      <%= form_with url: approve_training_example_path(@training_example), class: "flex flex-column gap-half", data: { controller: "form" } do |form| %>
+        <%= form.text_area :review_notes, value: @training_example.review_notes, rows: 3, class: "input input--textarea full-width", placeholder: "Optional notes for approve/reject decision" %>
+        <div class="flex gap-half justify-end">
+          <%= form.submit "Approve with notes", class: "btn btn--reversed" %>
+          <%= form.submit "Reject with notes", formaction: reject_training_example_path(@training_example), class: "btn" %>
+        </div>
+      <% end %>
+    </section>
+  <% elsif @training_example.review_notes.present? %>
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Review notes</h2>
+      <p class="margin-none"><%= @training_example.review_notes %></p>
+    </section>
+  <% end %>
+
+  <details class="panel">
+    <summary class="txt-bold">JSONL preview</summary>
+    <pre class="txt-small overflow-auto"><%= @jsonl_preview %></pre>
+  </details>
 
   <details class="panel">
     <summary class="txt-bold">Input context snapshot</summary>

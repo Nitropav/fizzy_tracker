@@ -50,6 +50,18 @@ class Card::ResolutionRecordTest < ActiveSupport::TestCase
     assert record.code_evidence_present?
   end
 
+  test "classification options preserve existing custom values" do
+    assert_includes Card::ResolutionRecord.category_options, "bug"
+    assert_includes Card::ResolutionRecord.domain_options, "assembly config"
+    assert_includes Card::ResolutionRecord.severity_options, "blocks ordering"
+    assert_includes Card::ResolutionRecord.priority_options, "urgent"
+
+    assert_includes Card::ResolutionRecord.category_options("custom category"), "custom category"
+    assert_includes Card::ResolutionRecord.domain_options("custom domain"), "custom domain"
+    assert_includes Card::ResolutionRecord.severity_options("custom severity"), "custom severity"
+    assert_includes Card::ResolutionRecord.priority_options("custom priority"), "custom priority"
+  end
+
   test "requires one resolution record per card" do
     @card.create_resolution_record!
     duplicate = Card::ResolutionRecord.new(card: @card)
@@ -100,6 +112,32 @@ class Card::ResolutionRecordTest < ActiveSupport::TestCase
 
     assert_not record.needs_structuring?
     assert record.legacy_structuring_complete?
+  end
+
+  test "legacy training candidate requires both gates" do
+    record = @card.create_resolution_record!(
+      legacy_import: true,
+      legacy_source: "asana",
+      legacy_external_id: "candidate-1",
+      legacy_imported_at: Time.current,
+      legacy_metadata: { "completed" => true },
+      needs_structuring: true
+    )
+
+    assert_not record.legacy_training_candidate_ready?
+    assert_includes record.legacy_training_candidate_blockers, "Gate 1 problem description"
+    assert_includes record.legacy_training_candidate_blockers, "Gate 2 root cause"
+
+    record.update!(gate_one_attrs)
+
+    assert_not record.legacy_training_candidate_ready?
+    assert_not_includes record.legacy_training_candidate_blockers, "Gate 1 problem description"
+    assert_includes record.legacy_training_candidate_blockers, "Gate 2 root cause"
+
+    record.update!(gate_two_attrs)
+
+    assert record.legacy_training_candidate_ready?
+    assert_empty record.legacy_training_candidate_blockers
   end
 
   private

@@ -12,6 +12,18 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Training Examples", response.body
     assert_match "The logo", response.body
+    assert_match "High", response.body
+    assert_match "Export history", response.body
+  end
+
+  test "index is visible to cactus reviewers" do
+    users(:david).update!(cactus_role: :reviewer)
+    logout_and_sign_in_as :david
+
+    get training_examples_path
+
+    assert_response :success
+    assert_match "Training Examples", response.body
   end
 
   test "index can filter by status" do
@@ -27,8 +39,38 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     get training_example_path(@training_example)
 
     assert_response :success
-    assert_match "Problem", response.body
+    assert_match "Issue overview", response.body
+    assert_match "Gate 1 - Reporter side", response.body
+    assert_match "Problem description", response.body
+    assert_match "Logo is unreadable", response.body
+    assert_match "Reproduction steps", response.body
+    assert_match "Expected behavior", response.body
+    assert_match "Actual behavior", response.body
+    assert_match "Environment", response.body
+    assert_match "Gate 2 - Developer side", response.body
+    assert_match "Root cause", response.body
+    assert_match "Image sizing used the wrong max width", response.body
+    assert_match "Fix summary", response.body
+    assert_match "Verification steps", response.body
+    assert_match "Code evidence", response.body
+    assert_match "Training metadata", response.body
+    assert_match "No automatic GitHub code evidence linked", response.body
+    assert_match "JSONL preview", response.body
     assert_match "Input context snapshot", response.body
+    assert_select "input[type='submit'][value='Approve with notes']"
+    assert_select "input[type='submit'][value='Reject with notes']"
+  end
+
+  test "show hides review actions after approval" do
+    @training_example.approve!(reviewer: users(:kevin), notes: "Good example")
+
+    get training_example_path(@training_example)
+
+    assert_response :success
+    assert_match "Good example", response.body
+    assert_select "form[action=?]", approve_training_example_path(@training_example), count: 0
+    assert_select "input[type='submit'][value='Approve with notes']", count: 0
+    assert_select "input[type='submit'][value='Reject with notes']", count: 0
   end
 
   test "approve" do
@@ -37,6 +79,18 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to @training_example
     assert @training_example.reload.approved?
     assert_equal users(:kevin), @training_example.reviewed_by
+    assert_equal "Good example", @training_example.review_notes
+  end
+
+  test "approve is blocked after export" do
+    @training_example.approve!(reviewer: users(:kevin), notes: "Good example")
+    @training_example.mark_exported!
+
+    post reject_training_example_path(@training_example), params: { review_notes: "Changed my mind" }
+
+    assert_redirected_to @training_example
+    assert_equal "Training example has already left review.", flash[:alert]
+    assert @training_example.reload.exported?
     assert_equal "Good example", @training_example.review_notes
   end
 
@@ -51,10 +105,16 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
   test "export approved examples as jsonl" do
     @training_example.approve!(reviewer: users(:kevin), notes: "Good example")
 
-    get export_training_examples_path
+    assert_difference -> { TrainingExampleExport.count }, +1 do
+      get export_training_examples_path
+    end
 
     assert_response :success
     assert_includes response.headers["Content-Disposition"], ".jsonl"
+
+    training_example_export = TrainingExampleExport.latest_first.first
+    assert_equal users(:kevin), training_example_export.user
+    assert_equal [ @training_example.id ], training_example_export.training_example_ids
 
     line = response.body.lines.first
     payload = JSON.parse(line)
@@ -62,7 +122,9 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "user", payload.dig("messages", 1, "role")
     assert_equal "assistant", payload.dig("messages", 2, "role")
     assert_equal @training_example.id, payload.dig("metadata", "training_example_id")
+    assert_equal training_example_export.completed_at.iso8601, payload.dig("metadata", "exported_at")
     assert @training_example.reload.exported?
+    assert_equal training_example_export, @training_example.training_example_export
   end
 
   test "export only includes current account approved examples" do
@@ -77,6 +139,15 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ @training_example.id ], exported_ids
     assert @training_example.reload.exported?
     assert other_account_example.reload.approved?
+  end
+
+  test "export redirects when no examples are approved" do
+    assert_no_difference -> { TrainingExampleExport.count } do
+      get export_training_examples_path
+    end
+
+    assert_redirected_to training_examples_path
+    assert_equal "No approved training examples are ready for export.", flash[:alert]
   end
 
   test "non admins cannot access index" do
@@ -133,6 +204,7 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
         root_cause: "Image sizing used the wrong max width",
         fix_summary: "Adjusted the card image layout",
         verification_steps: "Opened the card and confirmed the logo is readable",
+        priority: "high",
         domain: "ui",
         category: "bug",
         severity: "cosmetic"

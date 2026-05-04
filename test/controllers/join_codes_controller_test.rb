@@ -1,6 +1,8 @@
 require "test_helper"
 
 class JoinCodesControllerTest < ActionDispatch::IntegrationTest
+  STRONG_PASSWORD = "correct horse battery staple"
+
   setup do
     @account = accounts("37s")
     @join_code = account_join_codes(:"37s")
@@ -31,13 +33,14 @@ class JoinCodesControllerTest < ActionDispatch::IntegrationTest
   test "create" do
     assert_difference -> { Identity.count }, 1 do
       assert_difference -> { User.count }, 1 do
-        post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: "new_user@example.com", password: "password" }
+        post join_path(code: @join_code.code, script_name: @account.slug),
+          params: { email_address: "new_user@example.com", password: STRONG_PASSWORD, password_confirmation: STRONG_PASSWORD }
       end
     end
 
     assert_redirected_to new_users_verification_url(script_name: @account.slug)
     assert cookies.get_cookie("session_token").present?
-    assert Identity.find_by!(email_address: "new_user@example.com").authenticate("password")
+    assert Identity.find_by!(email_address: "new_user@example.com").authenticate(STRONG_PASSWORD)
   end
 
   test "create for existing identity" do
@@ -77,12 +80,28 @@ class JoinCodesControllerTest < ActionDispatch::IntegrationTest
 
     assert_no_difference -> { Identity.count } do
       assert_difference -> { User.count }, 1 do
-        post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: identity.email_address, password: "new-password" }
+        post join_path(code: @join_code.code, script_name: @account.slug),
+          params: { email_address: identity.email_address, password: STRONG_PASSWORD, password_confirmation: STRONG_PASSWORD }
       end
     end
 
     assert_redirected_to new_users_verification_url(script_name: @account.slug)
-    assert identity.reload.authenticate("new-password")
+    assert identity.reload.authenticate(STRONG_PASSWORD)
+  end
+
+  test "create for existing identity without password rejects confirmation mismatch" do
+    identity = identities(:mike)
+    identity.update_column(:password_digest, nil)
+
+    assert_no_difference -> { Identity.count } do
+      assert_no_difference -> { User.count } do
+        post join_path(code: @join_code.code, script_name: @account.slug),
+          params: { email_address: identity.email_address, password: STRONG_PASSWORD, password_confirmation: "different strong password" }
+      end
+    end
+
+    assert_response :unprocessable_entity
+    assert_not identity.reload.authenticate(STRONG_PASSWORD)
   end
 
   test "create for existing identity rejects wrong password" do
@@ -103,7 +122,8 @@ class JoinCodesControllerTest < ActionDispatch::IntegrationTest
 
     assert_difference -> { Identity.count }, 1 do
       assert_difference -> { User.count }, 1 do
-        post join_path(code: @join_code.code, script_name: @account.slug), params: { email_address: "new_user@example.com", password: "password" }
+        post join_path(code: @join_code.code, script_name: @account.slug),
+          params: { email_address: "new_user@example.com", password: STRONG_PASSWORD, password_confirmation: STRONG_PASSWORD }
       end
     end
 

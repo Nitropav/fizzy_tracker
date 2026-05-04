@@ -1,6 +1,6 @@
 class User < ApplicationRecord
   include Accessor, Assignee, Attachable, Avatar, Configurable, EmailAddressChangeable,
-    Mentionable, Named, Notifiable, Role, Searcher, Watcher
+    Mentionable, Named, Notifiable, Role, CactusRole, Searcher, Watcher
   include Timelined # Depends on Accessor
 
   belongs_to :account
@@ -14,6 +14,7 @@ class User < ApplicationRecord
   has_many :closures, dependent: :nullify
   has_many :ai_runs, dependent: :nullify
   has_many :reviewed_training_examples, class_name: "TrainingExample", foreign_key: :reviewed_by_id, dependent: :nullify
+  has_many :training_example_exports, dependent: :nullify
   has_many :pins, dependent: :destroy
   has_many :pinned_cards, through: :pins, source: :card
   has_many :data_exports, class_name: "User::DataExport", dependent: :destroy

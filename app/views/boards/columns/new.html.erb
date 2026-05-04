@@ -1,4 +1,4 @@
-<% @page_title = "New column" %>
+<% @page_title = "New project column" %>
 
 <% content_for :header do %>
   <div class="header__actions header__actions--start">
@@ -8,8 +8,8 @@
 
 <section class="panel panel--centered center flex flex-column gap">
   <header class="flex flex-column gap-half">
-    <h1 class="txt-x-large font-weight-black margin-none">New column</h1>
-    <p class="txt-small txt-subtle margin-none">Create a board column so Cactus Queue can triage open cards into active work.</p>
+    <h1 class="txt-x-large font-weight-black margin-none">New project column</h1>
+    <p class="txt-small txt-subtle margin-none">Create a project column so Cactus Queue can triage open issues into active work.</p>
   </header>
 
   <%= form_with model: [@board, @column], class: "flex flex-column gap", data: { controller: "form", action: "submit->form#preventEmptySubmit", turbo: false } do |form| %>
@@ -26,7 +26,7 @@
     </div>
 
     <div class="flex align-center gap-half">
-      <%= form.submit "Create column", class: "btn btn--reversed" %>
+      <%= form.submit "Create project column", class: "btn btn--reversed" %>
       <%= link_to "Cancel", @board, class: "btn" %>
     </div>
   <% end %>

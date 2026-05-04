@@ -35,6 +35,15 @@ class TrainingExamples::JsonlExporterTest < ActiveSupport::TestCase
     assert_includes payload.dig("messages", 2, "content"), "Adjusted image layout"
     assert_equal @training_example.id, payload.dig("metadata", "training_example_id")
     assert_equal [ "abc123" ], payload.dig("metadata", "commit_shas")
+    assert_nil payload.dig("metadata", "exported_at")
+  end
+
+  test "can include a stable exported timestamp" do
+    exported_at = Time.current.change(usec: 0)
+    jsonl = TrainingExamples::JsonlExporter.new([ @training_example ], exported_at: exported_at).to_jsonl
+
+    payload = JSON.parse(jsonl.lines.first)
+    assert_equal exported_at.iso8601, payload.dig("metadata", "exported_at")
   end
 
   test "exports empty string when no examples are provided" do

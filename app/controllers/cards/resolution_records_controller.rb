@@ -1,7 +1,12 @@
 class Cards::ResolutionRecordsController < ApplicationController
   include CardScoped
+  before_action :ensure_can_update_cactus_resolution_record, only: :update
 
   def edit
+    head :forbidden unless Current.user.can_update_cactus_gate_two? ||
+      Current.user.can_view_cactus_queue? ||
+      Current.user.can_review_training_examples?
+
     @resolution_record = @card.ensure_resolution_record
     @code_links = @card.code_links.latest_first
   end
@@ -36,6 +41,7 @@ class Cards::ResolutionRecordsController < ApplicationController
         :actual_behavior,
         :environment_context,
         :structured_summary,
+        :priority,
         :category,
         :domain,
         :severity,

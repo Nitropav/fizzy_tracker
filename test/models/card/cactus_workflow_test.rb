@@ -64,9 +64,10 @@ class Card::CactusWorkflowTest < ActiveSupport::TestCase
 
     def gate_two_attrs
       {
-        root_cause: "Image sizing used the wrong max width",
-        fix_summary: "Adjusted the card image layout",
-        verification_steps: "Opened the card and confirmed the logo is readable"
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable",
+      linked_commit_shas: [ "abc123" ]
       }
     end
 end

@@ -1,6 +1,6 @@
-<% disabled = !Current.user.can_administer_board?(board) %>
+<% disabled = !Current.user.can_manage_cactus_project?(board) %>
 <header>
-  <h2 class="divider txt-medium margin-block-start">Who can access this board?</h2>
+  <h2 class="divider txt-medium margin-block-start">Who can access this project?</h2>
 </header>
 
 <%= access_menu_tag board, class: "settings__user-filter unpad margin-none" do %>

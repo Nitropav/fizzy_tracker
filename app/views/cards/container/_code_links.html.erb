@@ -1,4 +1,4 @@
-<% code_links = card.code_links.latest_first %>
+<% code_links = Current.user.can_view_cactus_internal_issue_data? ? card.code_links.latest_first : [] %>
 
 <% if code_links.any? %>
   <section id="<%= dom_id(card, :code_links) %>" class="card__code-links panel flex flex-column gap-half margin-block-start">

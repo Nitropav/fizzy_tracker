@@ -16,6 +16,19 @@ class Cards::TriagesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "developer cannot triage issue" do
+    logout_and_sign_in_as :david
+    card = cards(:logo)
+    original_column = card.column
+
+    assert_no_changes -> { card.reload.column } do
+      post card_triage_path(card, column_id: columns(:writebook_in_progress).id), as: :json
+    end
+
+    assert_response :forbidden
+    assert_equal original_column, card.reload.column
+  end
+
   test "create is blocked when resolution record has incomplete gate one" do
     card = cards(:buy_domain)
     column = columns(:writebook_in_progress)

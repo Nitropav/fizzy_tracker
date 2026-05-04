@@ -30,11 +30,11 @@ class SessionsController < ApplicationController
 
   private
     def email_address
-      params.expect(:email_address)
+      params[:email_address].to_s.strip.downcase
     end
 
     def password
-      params.expect(:password)
+      params[:password].to_s
     end
 
     def rate_limit_exceeded

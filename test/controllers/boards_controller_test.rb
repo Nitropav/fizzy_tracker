@@ -15,6 +15,28 @@ class BoardsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "index renders projects page for html" do
+    get boards_path
+
+    assert_response :success
+    assert_match "Projects", response.body
+    assert_select "a[href=?]", board_path(boards(:writebook)), text: boards(:writebook).name
+    assert_select "a[href=?]", new_board_path, text: "New project"
+    assert_select "a[href=?]", edit_board_path(boards(:writebook)), text: "Settings"
+  end
+
+  test "index hides project management actions from developers" do
+    logout_and_sign_in_as :david
+
+    get boards_path
+
+    assert_response :success
+    assert_match "Projects", response.body
+    assert_select "a[href=?]", board_path(boards(:writebook)), text: boards(:writebook).name
+    assert_select "a[href=?]", new_board_path, count: 0
+    assert_select "a[href=?]", edit_board_path(boards(:writebook)), count: 0
+  end
+
   test "invalidates page title cache when account updates" do
     get board_path(boards(:writebook))
     etag = response.headers["ETag"]
@@ -39,6 +61,37 @@ class BoardsControllerTest < ActionDispatch::IntegrationTest
   test "edit" do
     get edit_board_path(boards(:writebook))
     assert_response :success
+  end
+
+  test "developer cannot create projects" do
+    logout_and_sign_in_as :david
+
+    get new_board_path
+    assert_response :forbidden
+
+    assert_no_difference -> { Board.count } do
+      post boards_path, params: { board: { name: "Developer Project" } }
+    end
+    assert_response :forbidden
+  end
+
+  test "developer cannot manage project settings even when they created the project" do
+    logout_and_sign_in_as :david
+
+    board = boards(:writebook)
+    original_name = board.name
+
+    get edit_board_path(board)
+    assert_response :forbidden
+
+    patch board_path(board), params: { board: { name: "Developer Rename" } }
+    assert_response :forbidden
+    assert_equal original_name, board.reload.name
+
+    assert_no_difference -> { Board.count } do
+      delete board_path(board)
+    end
+    assert_response :forbidden
   end
 
   test "edit renders 11-day auto-close option last on the knob" do
@@ -166,19 +219,17 @@ class BoardsControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test "disables select all/none buttons for non-privileged user" do
+  test "project settings require cactus project management permission" do
     logout_and_sign_in_as :jz
-    assert_not users(:jz).can_administer_board?(boards(:writebook))
+    assert_not users(:jz).can_manage_cactus_project?(boards(:writebook))
 
     get edit_board_path(boards(:writebook))
 
-    assert_response :success
-    assert_select "button[disabled]", text: "Select all"
-    assert_select "button[disabled]", text: "Select none"
+    assert_response :forbidden
   end
 
   test "enables select all/none buttons for privileged user" do
-    assert users(:kevin).can_administer_board?(boards(:writebook))
+    assert users(:kevin).can_manage_cactus_project?(boards(:writebook))
 
     get edit_board_path(boards(:writebook))
 
@@ -200,14 +251,10 @@ class BoardsControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select "input.switch__input[name='user_ids[]'][value='#{david.id}']:not([disabled])"
 
-      # unprivileged user
-      logout_and_sign_in_as :jz
-      assert_not users(:jz).can_administer_board?(board)
-
+      # Re-rendering still uses the cactus project permission guard.
       get edit_board_path(board)
-
       assert_response :success
-      assert_select "input.switch__input[name='user_ids[]'][value='#{david.id}'][disabled]"
+      assert_select "input.switch__input[name='user_ids[]'][value='#{david.id}']:not([disabled])"
     end
   end
 

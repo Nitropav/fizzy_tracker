@@ -43,17 +43,21 @@ class Card::CloseableTest < ActiveSupport::TestCase
     assert_not card.closed?
   end
 
-  test "close is allowed when resolution record has complete gate two" do
+  test "close is blocked when resolution record is not review-ready" do
     card = cards(:logo)
     card.create_resolution_record!(
       root_cause: "Image sizing used the wrong max width",
       fix_summary: "Adjusted the card image layout",
-      verification_steps: "Opened the card and confirmed the logo is readable"
+      verification_steps: "Opened the card and confirmed the logo is readable",
+      linked_commit_shas: [ "abc123" ]
     )
 
-    card.close
+    error = assert_raises Card::Closeable::ResolutionNotReady do
+      card.close
+    end
 
-    assert card.closed?
+    assert_match "Move this issue into active work", error.message
+    assert_not card.closed?
   end
 
   test "close generates training example when both gates are complete" do
@@ -66,7 +70,8 @@ class Card::CloseableTest < ActiveSupport::TestCase
       environment_context: "Fizzy card page",
       root_cause: "Image sizing used the wrong max width",
       fix_summary: "Adjusted the card image layout",
-      verification_steps: "Opened the card and confirmed the logo is readable"
+      verification_steps: "Opened the card and confirmed the logo is readable",
+      linked_commit_shas: [ "abc123" ]
     )
 
     assert_difference -> { card.training_examples.count }, +1 do
@@ -86,7 +91,8 @@ class Card::CloseableTest < ActiveSupport::TestCase
       environment_context: "Fizzy card page",
       root_cause: "Image sizing used the wrong max width",
       fix_summary: "Adjusted the card image layout",
-      verification_steps: "Opened the card and confirmed the logo is readable"
+      verification_steps: "Opened the card and confirmed the logo is readable",
+      linked_commit_shas: [ "abc123" ]
     )
 
     training_example = nil
@@ -98,17 +104,69 @@ class Card::CloseableTest < ActiveSupport::TestCase
     assert training_example.pending_review?
   end
 
-  test "close does not generate training example when gate one is incomplete" do
+  test "close is blocked when gate one is incomplete" do
     card = cards(:logo)
     card.create_resolution_record!(
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable",
+      linked_commit_shas: [ "abc123" ]
+    )
+
+    assert_no_difference -> { card.training_examples.count } do
+      assert_raises Card::Closeable::ResolutionNotReady do
+        card.close
+      end
+    end
+
+    assert_not card.closed?
+  end
+
+  test "close is blocked when code evidence is missing" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      problem_description: "Logo is unreadable",
+      reproduction_steps: "Open the card",
+      expected_behavior: "Logo should be readable",
+      actual_behavior: "Logo is too small",
+      environment_context: "Fizzy card page",
       root_cause: "Image sizing used the wrong max width",
       fix_summary: "Adjusted the card image layout",
       verification_steps: "Opened the card and confirmed the logo is readable"
     )
 
-    assert_no_difference -> { card.training_examples.count } do
+    error = assert_raises Card::Closeable::CodeEvidenceMissing do
       card.close
     end
+
+    assert_match "Add code evidence", error.message
+    assert_not card.closed?
+  end
+
+  test "close accepts linked github code evidence" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      problem_description: "Logo is unreadable",
+      reproduction_steps: "Open the card",
+      expected_behavior: "Logo should be readable",
+      actual_behavior: "Logo is too small",
+      environment_context: "Fizzy card page",
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable"
+    )
+    card.code_links.create!(
+      account: card.account,
+      provider: "github",
+      external_type: "commit",
+      external_id: "abc123",
+      sha: "abc123",
+      title: "Fix CT-#{card.number}",
+      url: "https://github.com/cactus/fizzy_tracker/commit/abc123",
+      metadata: {}
+    )
+
+    card.close
 
     assert card.closed?
   end

@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Sessions::PasswordResetsControllerTest < ActionDispatch::IntegrationTest
+  STRONG_PASSWORD = "correct horse battery staple"
+
   test "new" do
     untenanted do
       get new_session_password_reset_path
@@ -55,11 +57,15 @@ class Sessions::PasswordResetsControllerTest < ActionDispatch::IntegrationTest
     token = identity.signed_id(purpose: :password_reset, expires_in: 30.minutes)
 
     untenanted do
-      patch session_password_reset_path, params: { token: token, password: "new-password" }
+      patch session_password_reset_path, params: {
+        token: token,
+        password: STRONG_PASSWORD,
+        password_confirmation: STRONG_PASSWORD
+      }
     end
 
     assert_redirected_to landing_path(script_name: nil)
-    assert identity.reload.authenticate("new-password")
+    assert identity.reload.authenticate(STRONG_PASSWORD)
     assert_not Session.exists?(old_session.id), "Existing sessions should be invalidated when password changes"
     assert cookies.get_cookie("session_token").present?
   end
@@ -69,10 +75,49 @@ class Sessions::PasswordResetsControllerTest < ActionDispatch::IntegrationTest
     token = identity.signed_id(purpose: :password_reset, expires_in: 30.minutes)
 
     untenanted do
-      patch session_password_reset_path, params: { token: token, password: "short" }
+      patch session_password_reset_path, params: {
+        token: token,
+        password: "short",
+        password_confirmation: "short"
+      }
     end
 
     assert_response :unprocessable_entity
+    assert_match "Password is too short", response.body
+    assert identity.reload.authenticate("password")
+  end
+
+  test "update rejects password confirmation mismatch" do
+    identity = identities(:kevin)
+    token = identity.signed_id(purpose: :password_reset, expires_in: 30.minutes)
+
+    untenanted do
+      patch session_password_reset_path, params: {
+        token: token,
+        password: STRONG_PASSWORD,
+        password_confirmation: "different strong password"
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "Password confirmation", response.body
+    assert identity.reload.authenticate("password")
+  end
+
+  test "update rejects blank password" do
+    identity = identities(:kevin)
+    token = identity.signed_id(purpose: :password_reset, expires_in: 30.minutes)
+
+    untenanted do
+      patch session_password_reset_path, params: {
+        token: token,
+        password: "",
+        password_confirmation: ""
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "blank", response.body
     assert identity.reload.authenticate("password")
   end
 end

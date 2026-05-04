@@ -1,21 +1,37 @@
 <% record = card.resolution_record || card.build_resolution_record %>
+<% can_view_internal_issue_data = Current.user.can_view_cactus_internal_issue_data? %>
+<% can_manage_issue_structuring_suggestions = Current.user.can_update_cactus_gate_one? || Current.user.can_update_cactus_classification? %>
+<% latest_issue_structuring_run = card.ai_runs.issue_structurings.completed.latest_first.detect(&:active_suggestion?) if can_manage_issue_structuring_suggestions %>
 
 <section id="<%= dom_id(card, :resolution_record) %>" class="card__resolution-record flex flex-column gap margin-block-start">
   <header class="flex flex-wrap align-center justify-between gap">
     <div>
       <h2 class="txt-large margin-none">Bug training data</h2>
-      <p class="txt-small txt-subtle margin-none">Structured Gate 1 and Gate 2 fields used for review, AI context, and training examples.</p>
+      <p class="txt-small txt-subtle margin-none">
+        <% if can_view_internal_issue_data %>
+          Structured Gate 1 and Gate 2 fields used for review, AI context, and training examples.
+        <% else %>
+          Reporter-side details used to route this issue to the right team.
+        <% end %>
+      </p>
     </div>
 
     <div class="flex flex-wrap align-center gap-half txt-small">
       <span class="badge">State: <%= card.cactus_workflow_state_label %></span>
       <span class="badge">Gate 1: <%= record.gate_one_complete? ? "Complete" : "Incomplete" %></span>
-      <span class="badge">Gate 2: <%= record.gate_two_complete? ? "Complete" : "Incomplete" %></span>
-      <%= button_to "Review quality", card_ai_review_path(card), class: "btn txt-small" %>
+      <% if can_view_internal_issue_data %>
+        <span class="badge">Gate 2: <%= record.gate_two_complete? ? "Complete" : "Incomplete" %></span>
+      <% end %>
+      <% if can_manage_issue_structuring_suggestions %>
+        <%= button_to "Suggest structure", card_structuring_suggestion_path(card), class: "btn txt-small" %>
+      <% end %>
+      <% if can_view_internal_issue_data %>
+        <%= button_to "Review quality", card_ai_review_path(card), class: "btn txt-small" %>
+      <% end %>
     </div>
   </header>
 
-  <% if (latest_review = card.ai_runs.card_quality_reviews.completed.latest_first.first) %>
+  <% if can_view_internal_issue_data && (latest_review = card.ai_runs.card_quality_reviews.completed.latest_first.first) %>
     <div class="panel txt-small">
       <strong>Latest quality review:</strong>
       <%= latest_review.output["summary"] %>
@@ -24,6 +40,64 @@
         <p class="margin-block-end-none">Warnings: <%= latest_review.output["warnings"].to_sentence %></p>
       <% end %>
     </div>
+  <% end %>
+
+  <% if can_view_internal_issue_data %>
+    <%= render "cards/resolution_records/duplicate_suggestion", card: card %>
+  <% end %>
+
+  <% if latest_issue_structuring_run %>
+    <% suggested_fields = latest_issue_structuring_run.output.fetch("suggested_fields", {}) %>
+    <section class="panel flex flex-column gap-half txt-small">
+      <div class="flex flex-wrap align-center justify-between gap">
+        <div>
+          <strong>Latest issue structuring suggestion</strong>
+          <p class="txt-subtle margin-none">
+            <%= latest_issue_structuring_run.metadata["completed_by"].presence&.humanize || "Deterministic" %>
+            suggestion generated <%= local_datetime_tag latest_issue_structuring_run.completed_at, style: :shortdate %>.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap align-center gap-half">
+          <%= button_to "Dismiss",
+                card_ai_run_dismissal_path(card, latest_issue_structuring_run),
+                params: { return_to: "card" },
+                class: "btn txt-small" %>
+          <%= button_to "Apply suggestion",
+                apply_card_structuring_suggestion_path(card, ai_run_id: latest_issue_structuring_run.id),
+                class: "btn btn--reversed txt-small" %>
+        </div>
+      </div>
+
+      <p class="margin-none"><%= latest_issue_structuring_run.output["summary"] %></p>
+
+      <% if latest_issue_structuring_run.output["warnings"].present? %>
+        <div>
+          <strong>Warnings</strong>
+          <ul class="margin-block-end-none">
+            <% latest_issue_structuring_run.output["warnings"].each do |warning| %>
+              <li><%= warning %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% if suggested_fields.any? %>
+        <details>
+          <summary>Preview suggested fields</summary>
+          <dl class="grid gap-half margin-block-start" style="grid-template-columns: max-content 1fr;">
+            <% suggested_fields.each do |field, value| %>
+              <dt><%= field.humanize %></dt>
+              <dd class="margin-none"><%= value %></dd>
+            <% end %>
+          </dl>
+        </details>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if Current.user.can_update_cactus_gate_two? %>
+    <%= render "cards/resolution_records/resolution_draft_suggestion", card: card, return_to: "card" %>
   <% end %>
 
   <% if record.legacy_import? %>
@@ -70,7 +144,7 @@
     </section>
   <% end %>
 
-  <% if card.cactus_workflow_state == "needs_info" %>
+  <% if Current.user.can_update_cactus_gate_one? && card.cactus_workflow_state == "needs_info" %>
     <% guidance = CardResolutionRecords::GateOneGuidance.new(card) %>
 
     <% unless guidance.complete? %>
@@ -102,9 +176,8 @@
           <% end %>
         <% end %>
 
-        <details class="txt-small">
-          <summary>Show all missing Gate 1 items</summary>
-
+        <div class="txt-small">
+          <strong>All missing Gate 1 items:</strong>
           <ul class="margin-block-end-none">
             <% guidance.missing_items.each do |item| %>
               <li>
@@ -113,12 +186,12 @@
               </li>
             <% end %>
           </ul>
-        </details>
+        </div>
       </div>
     <% end %>
   <% end %>
 
-  <% if card.cactus_workflow_state == "needs_review" %>
+  <% if Current.user.can_resolve_cactus_issues? && card.cactus_workflow_state == "needs_review" %>
     <div class="panel flex align-center justify-between gap">
       <div>
         <strong>Ready to resolve</strong>
@@ -126,7 +199,7 @@
       </div>
       <%= button_to "Mark resolved", card_resolution_path(card), class: "btn btn--reversed" %>
     </div>
-  <% elsif card.closed? && card.training_examples.pending_review.any? %>
+  <% elsif Current.user.can_review_training_examples? && card.closed? && card.training_examples.pending_review.any? %>
     <div class="panel flex align-center justify-between gap">
       <div>
         <strong>Training example pending review</strong>
@@ -136,90 +209,85 @@
     </div>
   <% end %>
 
-  <%= form_with model: record, scope: :card_resolution_record, url: card_resolution_record_path(card), method: :put,
-        class: "flex flex-column gap",
-        data: { controller: "form" } do |form| %>
-    <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));">
-      <fieldset class="panel flex flex-column gap-half">
-        <legend class="txt-small txt-bold">Gate 1 - Reporter side</legend>
+  <% if Current.user.can_update_cactus_gate_one? || Current.user.can_update_cactus_gate_two? || Current.user.can_update_cactus_classification? %>
+    <%= form_with model: record, scope: :card_resolution_record, url: card_resolution_record_path(card), method: :put,
+          class: "flex flex-column gap",
+          data: { controller: "form" } do |form| %>
+      <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));">
+        <% if Current.user.can_update_cactus_gate_one? %>
+          <fieldset class="panel flex flex-column gap-half">
+            <legend class="txt-small txt-bold">Gate 1 - Reporter side</legend>
 
-        <%= form.label :problem_description, "Problem description", class: "txt-small txt-bold" %>
-        <%= form.text_area :problem_description, rows: 3, class: "input input--textarea full-width", placeholder: "What is broken or confusing?" %>
+            <%= form.label :problem_description, "Problem description", class: "txt-small txt-bold" %>
+            <%= form.text_area :problem_description, rows: 3, class: "input input--textarea full-width", placeholder: "What is broken or confusing?" %>
 
-        <%= form.label :reproduction_steps, "Reproduction steps", class: "txt-small txt-bold" %>
-        <%= form.text_area :reproduction_steps, rows: 3, class: "input input--textarea full-width", placeholder: "Step-by-step path to reproduce" %>
+            <%= form.label :reproduction_steps, "Reproduction steps", class: "txt-small txt-bold" %>
+            <%= form.text_area :reproduction_steps, rows: 3, class: "input input--textarea full-width", placeholder: "Step-by-step path to reproduce" %>
 
-        <%= form.label :expected_behavior, "Expected behavior", class: "txt-small txt-bold" %>
-        <%= form.text_area :expected_behavior, rows: 2, class: "input input--textarea full-width" %>
+            <%= form.label :expected_behavior, "Expected behavior", class: "txt-small txt-bold" %>
+            <%= form.text_area :expected_behavior, rows: 2, class: "input input--textarea full-width" %>
 
-        <%= form.label :actual_behavior, "Actual behavior", class: "txt-small txt-bold" %>
-        <%= form.text_area :actual_behavior, rows: 2, class: "input input--textarea full-width" %>
+            <%= form.label :actual_behavior, "Actual behavior", class: "txt-small txt-bold" %>
+            <%= form.text_area :actual_behavior, rows: 2, class: "input input--textarea full-width" %>
 
-        <%= form.label :environment_context, "Environment context", class: "txt-small txt-bold" %>
-        <%= form.text_area :environment_context, rows: 2, class: "input input--textarea full-width", placeholder: "Product, UI, customer account, browser, etc." %>
-      </fieldset>
+            <%= form.label :environment_context, "Environment context", class: "txt-small txt-bold" %>
+            <%= form.text_area :environment_context, rows: 2, class: "input input--textarea full-width", placeholder: "Product, UI, customer account, browser, etc." %>
+          </fieldset>
+        <% end %>
 
-      <fieldset class="panel flex flex-column gap-half">
-        <legend class="txt-small txt-bold">Gate 2 - Developer side</legend>
+        <% if Current.user.can_update_cactus_gate_two? %>
+          <fieldset class="panel flex flex-column gap-half">
+            <legend class="txt-small txt-bold">Gate 2 - Developer side</legend>
 
-        <%= form.label :root_cause, "Root cause", class: "txt-small txt-bold" %>
-        <%= form.text_area :root_cause, rows: 3, class: "input input--textarea full-width", placeholder: "Plain-language technical cause" %>
+            <%= form.label :root_cause, "Root cause", class: "txt-small txt-bold" %>
+            <%= form.text_area :root_cause, rows: 3, class: "input input--textarea full-width", placeholder: "Plain-language technical cause" %>
 
-        <%= form.label :fix_summary, "Fix summary", class: "txt-small txt-bold" %>
-        <%= form.text_area :fix_summary, rows: 3, class: "input input--textarea full-width", placeholder: "What changed and why" %>
+            <%= form.label :fix_summary, "Fix summary", class: "txt-small txt-bold" %>
+            <%= form.text_area :fix_summary, rows: 3, class: "input input--textarea full-width", placeholder: "What changed and why" %>
 
-        <%= form.label :verification_steps, "Verification steps", class: "txt-small txt-bold" %>
-        <%= form.text_area :verification_steps, rows: 3, class: "input input--textarea full-width", placeholder: "How the fix was checked" %>
+            <%= form.label :verification_steps, "Verification steps", class: "txt-small txt-bold" %>
+            <%= form.text_area :verification_steps, rows: 3, class: "input input--textarea full-width", placeholder: "How the fix was checked" %>
 
-        <%= form.label :linked_commit_shas, "Linked commit SHAs", class: "txt-small txt-bold" %>
-        <%= form.text_field :linked_commit_shas, value: record.linked_commit_shas.join(", "), name: "card_resolution_record[linked_commit_shas][]", class: "input full-width", placeholder: "abc123, def456" %>
+            <%= form.label :linked_commit_shas, "Linked commit SHAs", class: "txt-small txt-bold" %>
+            <%= form.text_field :linked_commit_shas, value: record.linked_commit_shas.join(", "), name: "card_resolution_record[linked_commit_shas][]", class: "input full-width", placeholder: "abc123, def456" %>
 
-        <%= form.label :linked_pr_urls, "Linked PR URLs", class: "txt-small txt-bold" %>
-        <%= form.text_field :linked_pr_urls, value: record.linked_pr_urls.join(", "), name: "card_resolution_record[linked_pr_urls][]", class: "input full-width", placeholder: "https://github.com/org/repo/pull/123" %>
-      </fieldset>
-    </div>
-
-    <fieldset class="panel flex flex-column gap-half">
-      <legend class="txt-small txt-bold">Classification</legend>
-
-      <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
-        <div class="flex flex-column gap-half">
-          <%= form.label :category, class: "txt-small txt-bold" %>
-          <%= form.text_field :category, class: "input full-width", placeholder: "bug, feature request, question" %>
-        </div>
-
-        <div class="flex flex-column gap-half">
-          <%= form.label :domain, class: "txt-small txt-bold" %>
-          <%= form.text_field :domain, class: "input full-width", placeholder: "pricing, glass visibility, assembly config" %>
-        </div>
-
-        <div class="flex flex-column gap-half">
-          <%= form.label :severity, class: "txt-small txt-bold" %>
-          <%= form.text_field :severity, class: "input full-width", placeholder: "blocks ordering, cosmetic, etc." %>
-        </div>
+            <%= form.label :linked_pr_urls, "Linked PR URLs", class: "txt-small txt-bold" %>
+            <%= form.text_field :linked_pr_urls, value: record.linked_pr_urls.join(", "), name: "card_resolution_record[linked_pr_urls][]", class: "input full-width", placeholder: "https://github.com/org/repo/pull/123" %>
+          </fieldset>
+        <% end %>
       </div>
 
-      <%= form.label :structured_summary, "Structured summary", class: "txt-small txt-bold" %>
-      <%= form.text_area :structured_summary, rows: 3, class: "input input--textarea full-width" %>
+      <% if Current.user.can_update_cactus_classification? %>
+        <fieldset class="panel flex flex-column gap-half">
+          <legend class="txt-small txt-bold">Classification</legend>
 
-      <%= form.label :suggested_primitives, "Suggested primitives/components", class: "txt-small txt-bold" %>
-      <%= form.text_field :suggested_primitives, value: record.suggested_primitives.join(", "), name: "card_resolution_record[suggested_primitives][]", class: "input full-width", placeholder: "assembly config, pricing rules" %>
-    </fieldset>
+          <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
+            <%= render "cards/resolution_records/classification_fields", form: form, record: record %>
+          </div>
 
-    <% if record.missing_gate_one_fields.any? || record.missing_gate_two_fields.any? %>
-      <div class="txt-small txt-subtle">
-        <% if record.missing_gate_one_fields.any? %>
-          <p class="margin-none">Gate 1 missing: <%= record.missing_gate_one_fields.map { it.to_s.humanize.downcase }.to_sentence %>.</p>
-        <% end %>
+          <%= form.label :structured_summary, "Structured summary", class: "txt-small txt-bold" %>
+          <%= form.text_area :structured_summary, rows: 3, class: "input input--textarea full-width" %>
 
-        <% if record.missing_gate_two_fields.any? %>
-          <p class="margin-none">Gate 2 missing: <%= record.missing_gate_two_fields.map { it.to_s.humanize.downcase }.to_sentence %>.</p>
-        <% end %>
+          <%= form.label :suggested_primitives, "Suggested primitives/components", class: "txt-small txt-bold" %>
+          <%= form.text_field :suggested_primitives, value: record.suggested_primitives.join(", "), name: "card_resolution_record[suggested_primitives][]", class: "input full-width", placeholder: "assembly config, pricing rules" %>
+        </fieldset>
+      <% end %>
+
+      <% if record.missing_gate_one_fields.any? || (can_view_internal_issue_data && record.missing_gate_two_fields.any?) %>
+        <div class="txt-small txt-subtle">
+          <% if record.missing_gate_one_fields.any? %>
+            <p class="margin-none">Gate 1 missing: <%= record.missing_gate_one_fields.map { it.to_s.humanize.downcase }.to_sentence %>.</p>
+          <% end %>
+
+          <% if can_view_internal_issue_data && record.missing_gate_two_fields.any? %>
+            <p class="margin-none">Gate 2 missing: <%= record.missing_gate_two_fields.map { it.to_s.humanize.downcase }.to_sentence %>.</p>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="flex justify-end">
+        <%= form.submit "Save training data", class: "btn btn--reversed" %>
       </div>
     <% end %>
-
-    <div class="flex justify-end">
-      <%= form.submit "Save training data", class: "btn btn--reversed" %>
-    </div>
   <% end %>
 </section>

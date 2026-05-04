@@ -36,7 +36,11 @@
       <p class="txt-small txt-subtle margin-none">
         Issues need a project so the queue can route them to support and developers.
       </p>
-      <%= link_to "Create project", new_board_path, class: "btn btn--reversed txt-small" %>
+      <% if Current.user.can_create_cactus_project? %>
+        <%= link_to "Create project", new_board_path, class: "btn btn--reversed txt-small" %>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none">Ask an admin to create the first project before filing issues.</p>
+      <% end %>
     </div>
   <% end %>
 </section>

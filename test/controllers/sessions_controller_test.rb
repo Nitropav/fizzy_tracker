@@ -15,7 +15,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     untenanted do
       get new_session_path
-      assert_redirected_to root_url
+      assert_redirected_to landing_url(script_name: accounts("37s").slug)
     end
   end
 
@@ -27,7 +27,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
         post session_path, params: { email_address: identity.email_address, password: "password" }
       end
 
-      assert_redirected_to landing_path
+      assert_redirected_to landing_url(script_name: accounts("37s").slug)
       assert cookies.get_cookie("session_token").present?
       assert_nil flash[:magic_link_code]
     end
@@ -44,6 +44,25 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
       assert_redirected_to new_session_path
       assert_equal "Check your email and password.", flash[:alert]
       assert_not cookies.get_cookie("session_token").present?
+    end
+  end
+
+  test "create rejects missing credentials without raising" do
+    untenanted do
+      post session_path, params: {}
+
+      assert_redirected_to new_session_path
+      assert_equal "Check your email and password.", flash[:alert]
+      assert_not cookies.get_cookie("session_token").present?
+    end
+  end
+
+  test "create via JSON rejects missing credentials without raising" do
+    untenanted do
+      post session_path(format: :json), params: {}
+
+      assert_response :unauthorized
+      assert_equal "Check your email and password.", @response.parsed_body["message"]
     end
   end
 

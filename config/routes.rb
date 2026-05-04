@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  root "events#index"
+  root "cactus_homes#show"
 
   namespace :account do
     resource :cancellation, only: [ :create ]
@@ -79,7 +79,11 @@ Rails.application.routes.draw do
       resource :draft, only: :show
       resource :board
       resource :ai_review, only: :create
+      resources :ai_runs, only: [] do
+        resource :dismissal, only: :create, controller: :ai_run_dismissals
+      end
       resource :closure
+      resource :duplicate_suggestion, only: :create
       resource :gate_one_answer, only: :update
       resource :column
       resource :goldness
@@ -89,7 +93,13 @@ Rails.application.routes.draw do
       resource :publish
       resource :reading
       resource :resolution, only: :create
+      resource :resolution_draft, only: :create do
+        post :apply
+      end
       resource :resolution_record, only: %i[ edit update ]
+      resource :structuring_suggestion, only: :create do
+        post :apply
+      end
       resource :triage
       resource :watch
       resource :reading
@@ -155,12 +165,24 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :training_example_exports, only: %i[ index show ]
+
   namespace :legacy_imports do
-    resource :asana, only: %i[ new create ]
+    resource :asana, only: %i[ new create ] do
+      resources :issues, only: :index, controller: :asana_issues do
+        resource :structuring_suggestion, only: :create, controller: :asana_structuring_suggestions do
+          post :apply
+        end
+        resource :training_example, only: :create, controller: :asana_training_examples
+      end
+    end
   end
 
   namespace :github do
     resource :webhook, only: :create
+    resources :webhook_deliveries, only: [] do
+      resource :retry, only: :create, controller: :webhook_delivery_retries
+    end
   end
 
   resources :events, only: :index

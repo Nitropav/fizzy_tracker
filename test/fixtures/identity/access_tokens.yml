@@ -9,3 +9,9 @@ davids_api_token:
   token: x18cf1425682700098f24f0799e3fe20
   description: My Superscript
   permission: write
+
+kevins_api_token:
+  identity: kevin
+  token: k18cf1425682700098f24f0799e3fe20
+  description: Admin Superscript
+  permission: write

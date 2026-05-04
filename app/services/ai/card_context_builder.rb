@@ -150,6 +150,7 @@ module Ai
           "actual_behavior" => record.actual_behavior,
           "environment_context" => record.environment_context,
           "structured_summary" => record.structured_summary,
+          "priority" => record.priority,
           "category" => record.category,
           "domain" => record.domain,
           "severity" => record.severity,

@@ -1,7 +1,7 @@
 <%= turbo_frame_tag @board, :publication do %>
   <header>
     <h2 class="divider txt-large">Public link</h2>
-    <div>Turn on the Public link to share this board with anyone in the world. They won’t need to log in and they won’t be able to see anything else in Fizzy.</div>
+    <div>Turn on the public link to share this project with anyone in the world. They won't need to log in and they won't be able to see anything else in Cactus.</div>
   </header>
 
   <% if board.published? %>
@@ -10,7 +10,7 @@
         <label class="flex gap cursor-pointer">
           <span class="txt-large"><%= icon_tag "lock" %></span>
           <span class="switch flex align-center justify-between">
-            <%= form.check_box :published, class: "switch__input", checked: true, data: { action: "change->form#submit" }, disabled: !Current.user.can_administer_board?(@board) %>
+            <%= form.check_box :published, class: "switch__input", checked: true, data: { action: "change->form#submit" }, disabled: !Current.user.can_manage_cactus_project?(@board) %>
             <span class="switch__btn round"></span>
           </span>
           <span class="for-screen-reader">Turn off the public link</span>
@@ -31,9 +31,9 @@
       <div class="border-radius input fill-white">
         <%= form_with model: board, class: "txt-align-start", data: { controller: "form", turbo_frame: "_top" } do |form| %>
           <%= form.rich_textarea :public_description, class: "lexxy-content txt-small",
-            placeholder: "Add a public note about this board…",
+            placeholder: "Add a public note about this project...",
             data: { action: "keydown.ctrl+enter->form#submit:prevent keydown.meta+enter->form#submit:prevent keydown.esc->form#cancel:stop" },
-            readonly: !Current.user.can_administer_board?(@board) %>
+            readonly: !Current.user.can_manage_cactus_project?(@board) %>
           <%= form.button "Save changes", type: :submit, class: "btn txt-small", title: "Save changes (#{ hotkey_label(["ctrl", "enter"]) })" %>
         <% end %>
       </div>
@@ -44,7 +44,7 @@
         <span class="txt-large" aria-hidden="true"><%= icon_tag "lock" %></span>
         <label class="flex gap cursor-pointer">
           <span class="switch flex align-center justify-between">
-            <%= form.check_box :published, class: "switch__input", checked: false, data: { action: "change->form#submit" }, disabled: !Current.user.can_administer_board?(@board) %>
+            <%= form.check_box :published, class: "switch__input", checked: false, data: { action: "change->form#submit" }, disabled: !Current.user.can_manage_cactus_project?(@board) %>
             <span class="switch__btn round"></span>
           </span>
           <span class="txt-large"><%= icon_tag "world" %></span>

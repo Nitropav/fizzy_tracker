@@ -4,6 +4,7 @@ class ApiTest < ActionDispatch::IntegrationTest
   setup do
     @davids_bearer_token = bearer_token_env(identity_access_tokens(:davids_api_token).token)
     @jasons_bearer_token = bearer_token_env(identity_access_tokens(:jasons_api_token).token)
+    @kevins_bearer_token = bearer_token_env(identity_access_tokens(:kevins_api_token).token)
   end
 
   test "authenticate with user credentials" do
@@ -50,6 +51,9 @@ class ApiTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
 
     post boards_path(format: :json), params: { board: { name: "My new board" } }, env: @davids_bearer_token
+    assert_response :forbidden
+
+    post boards_path(format: :json), params: { board: { name: "My new board" } }, env: @kevins_bearer_token
     assert_response :success
   end
 

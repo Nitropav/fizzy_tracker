@@ -1,0 +1,60 @@
+<% @page_title = "Training Export History" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Training Examples", training_examples_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap">
+  <header class="flex align-center justify-between flex-wrap gap">
+    <div class="min-width">
+      <h1 class="txt-x-large font-weight-black margin-none">Training Export History</h1>
+      <p class="txt-small txt-subtle margin-none">Completed JSONL export batches for this account.</p>
+    </div>
+
+    <%= link_to "Back to examples", training_examples_path, class: "btn txt-small" %>
+  </header>
+
+  <% if @training_example_exports.any? %>
+    <div class="overflow-auto">
+      <table class="full-width">
+        <thead>
+          <tr>
+            <th class="txt-align-start">File</th>
+            <th class="txt-align-start">Examples</th>
+            <th class="txt-align-start">Exported by</th>
+            <th class="txt-align-start">Status</th>
+            <th class="txt-align-start">Completed</th>
+            <th class="txt-align-start">Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @training_example_exports.each do |training_example_export| %>
+            <tr>
+              <td><code><%= training_example_export.filename %></code></td>
+              <td><%= training_example_export.example_count %></td>
+              <td><%= training_example_export.user.name %></td>
+              <td><%= training_example_export.status.humanize %></td>
+              <td><%= local_datetime_tag training_example_export.completed_at, style: :shortdate %></td>
+              <td><%= link_to "Download", training_example_export_path(training_example_export), class: "btn txt-small" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <section class="panel border flex flex-column gap-half">
+      <h2 class="txt-large margin-none">No export batches yet</h2>
+      <% if @exported_without_batch_count.positive? %>
+        <p class="txt-small txt-subtle margin-none">
+          <%= pluralize(@exported_without_batch_count, "training example") %>
+          <%= @exported_without_batch_count == 1 ? "already has" : "already have" %>
+          exported status from before export batch history was enabled. Those examples remain visible in Training Examples, but there is no downloadable batch record for them.
+        </p>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none">Approve examples and run a JSONL export to create the first downloadable batch.</p>
+      <% end %>
+    </section>
+  <% end %>
+</section>

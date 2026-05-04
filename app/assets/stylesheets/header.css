@@ -61,6 +61,13 @@
     margin-inline-start: auto;
   }
 
+  .header__session-actions {
+    inset-block-start: calc(var(--block-space-half) + var(--custom-safe-inset-top));
+    inset-inline-end: var(--main-padding);
+    position: absolute;
+    z-index: 1;
+  }
+
   .header__title {
     color: inherit;
     font-size: var(--text-large);

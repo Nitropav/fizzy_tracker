@@ -29,15 +29,19 @@ class Sessions::PasswordResetsController < ApplicationController
 
   private
     def email_address
-      params.expect(:email_address)
+      params[:email_address].to_s.strip.downcase
     end
 
     def password
-      params.expect(:password)
+      params[:password].to_s
+    end
+
+    def password_confirmation
+      params[:password_confirmation].to_s
     end
 
     def token
-      params.expect(:token)
+      params[:token].to_s
     end
 
     def identity_from_token
@@ -45,13 +49,27 @@ class Sessions::PasswordResetsController < ApplicationController
     end
 
     def update_password(identity)
-      if password.length >= 8
+      if password.blank?
+        flash.now[:alert] = "Password can't be blank."
+        render :edit, status: :unprocessable_entity
+        return
+      end
+
+      if password_confirmation.blank?
+        flash.now[:alert] = "Password confirmation can't be blank."
+        render :edit, status: :unprocessable_entity
+        return
+      end
+
+      identity.assign_attributes(password: password, password_confirmation: password_confirmation)
+
+      if identity.valid?
         identity.sessions.delete_all
-        identity.update!(password: password)
+        identity.save!
         start_new_session_for identity
         redirect_to after_authentication_url, notice: "Password updated."
       else
-        flash.now[:alert] = "Password must be at least 8 characters."
+        flash.now[:alert] = identity.errors.full_messages.to_sentence
         render :edit, status: :unprocessable_entity
       end
     end

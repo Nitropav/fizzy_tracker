@@ -36,6 +36,40 @@ class AiRunTest < ActiveSupport::TestCase
     assert ai_run.completed_at.present?
   end
 
+  test "suggestion dismissal and applied lifecycle" do
+    ai_run = @card.ai_runs.create!(
+      user: users(:david),
+      run_type: "issue_structuring",
+      input_context: {},
+      output: {},
+      metadata: {}
+    )
+    ai_run.complete!(output: { "status" => "suggested" }, metadata: { "completed_by" => "deterministic" })
+
+    assert ai_run.active_suggestion?
+
+    ai_run.dismiss!(user: users(:david), reason: "not useful")
+
+    assert ai_run.dismissed?
+    assert_not ai_run.active_suggestion?
+    assert_equal users(:david).id, ai_run.metadata["dismissed_by_id"]
+    assert_equal "not useful", ai_run.metadata["dismissed_reason"]
+
+    ai_run = @card.ai_runs.create!(
+      user: users(:david),
+      run_type: "resolution_draft",
+      input_context: {},
+      output: {},
+      metadata: {}
+    )
+    ai_run.complete!(output: { "status" => "suggested" }, metadata: { "completed_by" => "deterministic" })
+    ai_run.mark_applied!(user: users(:david))
+
+    assert ai_run.applied?
+    assert_not ai_run.active_suggestion?
+    assert_equal users(:david).id, ai_run.metadata["applied_by_id"]
+  end
+
   test "requires card to match account" do
     ai_run = AiRun.new(
       account: accounts(:initech),

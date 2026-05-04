@@ -46,7 +46,9 @@
   <%= render "section", title: "Needs Review", cards: @needs_review_cards, empty: "No assigned issues are ready for review." do |card| %>
     <div class="flex align-center gap-half">
       <%= link_to "Review", edit_card_resolution_record_path(card), class: "btn txt-small" %>
-      <%= button_to "Mark resolved", card_resolution_path(card), class: "btn btn--reversed txt-small" %>
+      <% if Current.user.can_resolve_cactus_issues? %>
+        <%= button_to "Mark resolved", card_resolution_path(card), class: "btn btn--reversed txt-small" %>
+      <% end %>
     </div>
   <% end %>
 

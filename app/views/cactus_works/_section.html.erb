@@ -9,6 +9,7 @@
             <th class="txt-align-start">Issue</th>
             <th class="txt-align-start">Project</th>
             <th class="txt-align-start">Column</th>
+            <th class="txt-align-start">Priority</th>
             <th class="txt-align-start">State</th>
             <th class="txt-align-start">Gate 1</th>
             <th class="txt-align-start">Gate 2</th>
@@ -21,6 +22,7 @@
               <td><%= link_to "##{card.number} #{card.title}", card, class: "txt-link" %></td>
               <td><%= card.board.name %></td>
               <td><%= card.column&.name || "N/A" %></td>
+              <td><%= card.resolution_record&.priority&.humanize || "N/A" %></td>
               <td><%= card.cactus_workflow_state_label %></td>
               <td><%= card.resolution_record&.gate_one_status&.humanize || "N/A" %></td>
               <td><%= card.resolution_record&.gate_two_status&.humanize || "N/A" %></td>

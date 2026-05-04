@@ -14,9 +14,21 @@ class Boards::ColumnsControllerTest < ActionDispatch::IntegrationTest
     get new_board_column_path(boards(:writebook))
 
     assert_response :success
-    assert_select "h1", text: "New column"
+    assert_select "h1", text: "New project column"
     assert_select "form[action=?][method=?]", board_columns_path(boards(:writebook)), "post"
     assert_select "input[name='column[name]']"
+  end
+
+  test "developers cannot create project columns" do
+    logout_and_sign_in_as :david
+
+    get new_board_column_path(boards(:writebook))
+    assert_response :forbidden
+
+    assert_no_difference -> { boards(:writebook).columns.count } do
+      post board_columns_path(boards(:writebook)), params: { column: { name: "Developer Column" } }
+    end
+    assert_response :forbidden
   end
 
   test "create" do
@@ -55,6 +67,22 @@ class Boards::ColumnsControllerTest < ActionDispatch::IntegrationTest
       put board_column_path(boards(:writebook), column), params: { column: { name: "Updated Name" } }, as: :turbo_stream
       assert_response :success
     end
+  end
+
+  test "developers cannot update or destroy project columns" do
+    logout_and_sign_in_as :david
+
+    column = columns(:writebook_in_progress)
+    original_name = column.name
+
+    put board_column_path(column.board, column), params: { column: { name: "Developer Rename" } }, as: :turbo_stream
+    assert_response :forbidden
+    assert_equal original_name, column.reload.name
+
+    assert_no_difference -> { column.board.columns.count } do
+      delete board_column_path(column.board, column), as: :turbo_stream
+    end
+    assert_response :forbidden
   end
 
   test "destroy" do

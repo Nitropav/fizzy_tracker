@@ -32,6 +32,6 @@ module BridgeHelper
   def bridge_share_board_description(board)
     count_open = board.cards.active.count
     count_in_stream = board.cards.awaiting_triage.count
-    "#{count_open} open cards, #{count_in_stream} in MAYBE?"
+    "#{count_open} open issues, #{count_in_stream} waiting for triage"
   end
 end

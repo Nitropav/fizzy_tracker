@@ -74,7 +74,34 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_match "List the exact steps needed to reproduce it", response.body
     assert_select "form[action=?]", card_gate_one_answer_path(card)
     assert_select "input[name='gate_one_answer[field]'][value='reproduction_steps']"
-    assert_match "Show all missing Gate 1 items", response.body
+    assert_match "All missing Gate 1 items", response.body
+  end
+
+  test "show renders issue structuring suggestion controls" do
+    card = cards(:logo)
+    ai_run = Ai::IssueStructuringService.new(card, user: users(:kevin)).suggest
+
+    get card_path(card)
+
+    assert_response :success
+    assert_select "form[action=?]", card_structuring_suggestion_path(card)
+    assert_match "Suggest structure", response.body
+    assert_match "Latest issue structuring suggestion", response.body
+    assert_match "Generated deterministic Gate 1 and classification suggestions", response.body
+    assert_match "Apply suggestion", response.body
+    assert_match ERB::Util.html_escape(ai_run.output.dig("suggested_fields", "structured_summary")), response.body
+  end
+
+  test "show renders duplicate suggestion controls" do
+    card = cards(:logo)
+    Ai::DuplicateIssueSuggestionService.new(card, user: users(:kevin)).suggest
+
+    get card_path(card)
+
+    assert_response :success
+    assert_select "form[action=?]", card_duplicate_suggestion_path(card)
+    assert_match "Duplicate check", response.body
+    assert_match "Find similar issues", response.body
   end
 
   test "show renders legacy import structuring panel" do
@@ -120,6 +147,42 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", "https://github.com/cactus/fizzy/pull/123", text: "Open"
   end
 
+  test "show hides developer-only issue data from reporters" do
+    users(:david).update!(cactus_role: :reporter)
+    logout_and_sign_in_as :david
+
+    card = cards(:logo)
+    card.create_resolution_record!(
+      problem_description: "Logo is unreadable",
+      reproduction_steps: "Open the card",
+      expected_behavior: "Logo should be readable",
+      actual_behavior: "Logo is too small",
+      environment_context: "Cactus card page",
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable"
+    )
+    card.code_links.create!(
+      provider: "github",
+      external_type: "commit",
+      external_id: "abc123",
+      repository: "cactus/fizzy",
+      title: "Fix issue workflow",
+      url: "https://github.com/cactus/fizzy/commit/abc123",
+      metadata: {}
+    )
+
+    get card_path(card)
+
+    assert_response :success
+    assert_match "Reporter-side details", response.body
+    assert_match "Problem description", response.body
+    assert_no_match "Gate 2 - Developer side", response.body
+    assert_no_match "Root cause", response.body
+    assert_no_match "Code evidence", response.body
+    assert_no_match "Review quality", response.body
+  end
+
   test "show renders mark resolved action when cactus workflow needs review" do
     card = cards(:logo)
     card.create_resolution_record!(
@@ -151,6 +214,15 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
       root_cause: "Image sizing used the wrong max width",
       fix_summary: "Adjusted the card image layout",
       verification_steps: "Opened the card and confirmed the logo is readable"
+    )
+    card.code_links.create!(
+      provider: "github",
+      external_type: "commit",
+      external_id: "abc123",
+      repository: "cactus/fizzy",
+      title: "Fix issue workflow",
+      url: "https://github.com/cactus/fizzy/commit/abc123",
+      metadata: {}
     )
     training_example = card.resolve(user: users(:kevin))
 

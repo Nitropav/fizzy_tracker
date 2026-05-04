@@ -1,5 +1,6 @@
 class Cards::TriagesController < ApplicationController
   include CardScoped
+  before_action :ensure_can_update_cactus_classification
 
   def create
     column = @card.board.columns.find(params[:column_id])

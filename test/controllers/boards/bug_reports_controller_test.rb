@@ -11,7 +11,13 @@ class Boards::BugReportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Report a bug"
+    assert_match "Gate 1 readiness", response.body
+    assert_select "select[name='bug_report[priority]']" do
+      assert_select "option", text: "Urgent"
+      assert_select "option", text: "Normal"
+    end
     assert_select "textarea[name='bug_report[problem_description]']"
+    assert_select "lexxy-editor[name='bug_report[description]']"
   end
 
   test "create makes published card with structured gate one record" do
@@ -46,7 +52,9 @@ class Boards::BugReportsControllerTest < ActionDispatch::IntegrationTest
     post board_bug_report_path(@board), params: {
       bug_report: {
         title: "Missing glass label",
-        problem_description: "A glass label is missing on the order preview."
+        priority: "urgent",
+        problem_description: "A glass label is missing on the order preview.",
+        description: "<p>Preview screenshot attached.</p>"
       }
     }
 
@@ -54,6 +62,8 @@ class Boards::BugReportsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to card_path(card)
     assert_equal "needs_info", card.cactus_workflow_state
+    assert_equal "Preview screenshot attached.", card.description.to_plain_text.strip
+    assert_equal "urgent", card.resolution_record.priority
     assert_equal %i[ reproduction_steps expected_behavior actual_behavior environment_context ], card.resolution_record.missing_gate_one_fields
   end
 
@@ -107,6 +117,6 @@ class Boards::BugReportsControllerTest < ActionDispatch::IntegrationTest
     get board_path(@board)
 
     assert_response :success
-    assert_select "a[href=?]", new_board_bug_report_path(@board), text: "Report bug"
+    assert_select "a[href=?]", new_board_bug_report_path(@board), text: /New issue/
   end
 end

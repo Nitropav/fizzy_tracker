@@ -1,5 +1,5 @@
 class Users::RolesController < ApplicationController
-  wrap_parameters :user, include: %i[ role ]
+  wrap_parameters :user, include: %i[ role cactus_role ]
 
   before_action :set_user
   before_action :ensure_permission_to_administer_user
@@ -23,6 +23,17 @@ class Users::RolesController < ApplicationController
     end
 
     def role_params
-      { role: params.require(:user)[:role].presence_in(%w[ member admin ]) || "member" }
+      user_params = params.require(:user)
+      attributes = {}
+
+      if user_params.key?(:role)
+        attributes[:role] = user_params[:role].presence_in(%w[ member admin ]) || "member"
+      end
+
+      if user_params.key?(:cactus_role)
+        attributes[:cactus_role] = user_params[:cactus_role].presence_in(User::CactusRole::ROLES) || "reporter"
+      end
+
+      attributes
     end
 end

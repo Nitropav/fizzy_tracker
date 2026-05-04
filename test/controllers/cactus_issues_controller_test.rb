@@ -10,8 +10,14 @@ class CactusIssuesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Create issue"
+    assert_match "Gate 1 readiness", response.body
     assert_select "select[name='cactus_issue[board_id]']"
+    assert_select "select[name='cactus_issue[priority]']" do
+      assert_select "option", text: "Urgent"
+      assert_select "option", text: "Normal"
+    end
     assert_select "textarea[name='cactus_issue[problem_description]']"
+    assert_select "lexxy-editor[name='cactus_issue[description]']"
     assert_select "button[name='cactus_issue[draft]']", text: "Save draft"
   end
 
@@ -22,11 +28,13 @@ class CactusIssuesControllerTest < ActionDispatch::IntegrationTest
           cactus_issue: {
             board_id: boards(:writebook).id,
             title: "Checkout total changes after refresh",
+            priority: "high",
             problem_description: "The customer subtotal changes after refreshing the quote.",
             reproduction_steps: "Open quote\nRefresh page",
             expected_behavior: "Subtotal should stay the same",
             actual_behavior: "Subtotal changes",
-            environment_context: "Customer portal quote screen"
+            environment_context: "Customer portal quote screen",
+            description: "<p>Screenshot and console log attached.</p>"
           }
         }
       end
@@ -37,6 +45,8 @@ class CactusIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to card_path(card)
     assert_equal boards(:writebook), card.board
     assert_equal "Checkout total changes after refresh", card.title
+    assert_equal "Screenshot and console log attached.", card.description.to_plain_text.strip
+    assert_equal "high", card.resolution_record.priority
     assert card.resolution_record.gate_one_complete?
   end
 

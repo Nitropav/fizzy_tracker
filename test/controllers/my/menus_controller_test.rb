@@ -26,6 +26,16 @@ class My::MenusControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{cactus_queues_path}']", text: /Cactus Queue/
   end
 
+  test "show uses cactus-first labels" do
+    get my_menu_path
+
+    assert_response :success
+    assert_select "a[href='#{cactus_home_path}']", text: /Cactus Home/
+    assert_select "a[href='#{new_cactus_issue_path}']", text: /New Issue/
+    assert_select "details", text: /Projects/
+    assert_select "a", text: /Add a project/
+  end
+
   test "show hides training examples from non admins" do
     logout_and_sign_in_as :david
 
@@ -33,6 +43,20 @@ class My::MenusControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a[href='#{training_examples_path}']", count: 0
+  end
+
+  test "show hides generic fizzy sections from non admins" do
+    logout_and_sign_in_as :david
+
+    get my_menu_path
+
+    assert_response :success
+    assert_no_match "Tags", response.body
+    assert_no_match "People", response.body
+    assert_no_match "Shortcuts", response.body
+    assert_no_match "Golden issues", response.body
+    assert_no_match "Projects", response.body
+    assert_no_match "Add a project", response.body
   end
 
   test "etag invalidates when filters change" do

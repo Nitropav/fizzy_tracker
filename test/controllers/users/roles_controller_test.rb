@@ -21,6 +21,22 @@ class Users::RolesControllerTest < ActionDispatch::IntegrationTest
     assert users(:david).reload.admin?
   end
 
+  test "updates cactus role" do
+    put user_role_path(users(:david)), params: { user: { cactus_role: "reviewer" } }
+
+    assert_redirected_to account_settings_path
+    assert users(:david).reload.reviewer?
+  end
+
+  test "invalid cactus role falls back to reporter" do
+    users(:david).update!(cactus_role: :developer)
+
+    put user_role_path(users(:david)), params: { user: { cactus_role: "supervisor" } }
+
+    assert_redirected_to account_settings_path
+    assert users(:david).reload.reporter?
+  end
+
   test "can't promote to special roles" do
     assert_no_changes -> { users(:david).reload.role } do
       put user_role_path(users(:david)), params: { user: { role: "system" } }

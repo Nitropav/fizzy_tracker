@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   include Authentication
   include Authorization
+  include CactusAuthorization
   include BlockSearchEngineIndexing
   include CurrentRequest, CurrentTimezone, SetPlatform
   include RequestForgeryProtection

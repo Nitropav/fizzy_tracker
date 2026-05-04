@@ -30,6 +30,22 @@ class IdentityTest < ActiveSupport::TestCase
     end
   end
 
+  test "password policy applies when password is set" do
+    identity = Identity.new(email_address: "secure-login@example.com", password: "too-short", password_confirmation: "too-short")
+
+    assert_not identity.valid?
+    assert identity.errors[:password].any?
+  end
+
+  test "password confirmation is required when password is changed" do
+    identity = identities(:kevin)
+    identity.password = "correct horse battery staple"
+    identity.password_confirmation = "different strong password"
+
+    assert_not identity.valid?
+    assert identity.errors[:password_confirmation].any?
+  end
+
   test "join" do
     identity = identities(:david)
     account = accounts(:initech)

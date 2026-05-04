@@ -1,4 +1,4 @@
-<% @page_title = "Signup for Fizzy" %>
+<% @page_title = "Signup for Cactus" %>
 
 <div class="panel panel--centered flex flex-column gap-half">
   <h1 class="txt-x-large font-weight-black margin-block-end">Sign up</h1>
@@ -12,11 +12,28 @@
 
     <div class="flex align-center gap">
       <label class="flex align-center gap input input--actor">
-        <%= form.password_field :password, required: true, minlength: 8, class: "input txt-large full-width", autocomplete: "new-password", placeholder: "Create a password..." %>
+        <%= form.password_field :password, required: true, minlength: Identity::MINIMUM_PASSWORD_LENGTH, class: "input txt-large full-width", autocomplete: "new-password", placeholder: "Create a password..." %>
       </label>
     </div>
 
-    <p>Enter your email and create a password to create an account.</p>
+    <div class="flex align-center gap">
+      <label class="flex align-center gap input input--actor">
+        <%= form.password_field :password_confirmation, required: true, minlength: Identity::MINIMUM_PASSWORD_LENGTH, class: "input txt-large full-width", autocomplete: "new-password", placeholder: "Confirm your password..." %>
+      </label>
+    </div>
+
+    <p>Enter your email and create a password with at least <%= Identity::MINIMUM_PASSWORD_LENGTH %> characters.</p>
+
+    <% if @signup.errors.any? %>
+      <div class="margin-block-half txt-negative txt-small" style="text-align: left;">
+        <p class="margin-block-none font-weight-bold">Your account couldn't be created:</p>
+        <ul class="margin-block-none">
+          <% @signup.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
 
     <button type="submit" id="log_in" class="btn btn--link center txt-medium">
       <span>Let's go</span>

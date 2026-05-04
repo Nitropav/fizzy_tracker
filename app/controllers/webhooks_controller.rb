@@ -3,7 +3,7 @@ class WebhooksController < ApplicationController
 
   include BoardScoped
 
-  before_action :ensure_admin
+  before_action :ensure_can_manage_cactus_integrations
   before_action :set_webhook, except: %i[ index new create ]
 
   def index

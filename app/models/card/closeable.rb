@@ -2,6 +2,8 @@ module Card::Closeable
   extend ActiveSupport::Concern
 
   GateTwoIncomplete = Class.new(StandardError)
+  CodeEvidenceMissing = Class.new(StandardError)
+  ResolutionNotReady = Class.new(StandardError)
 
   included do
     has_one :closure, dependent: :destroy
@@ -33,6 +35,8 @@ module Card::Closeable
   def close(user: Current.user)
     unless closed?
       ensure_gate_two_complete_for_resolution_record!
+      ensure_code_evidence_present_for_resolution_record!
+      ensure_cactus_workflow_ready_for_resolution!
 
       transaction do
         not_now&.destroy
@@ -49,6 +53,12 @@ module Card::Closeable
 
   def close_blocked_by_resolution_record?
     resolution_record.present? && !resolution_record.gate_two_complete?
+  end
+
+  def cactus_code_evidence_present?
+    resolution_record.blank? ||
+      resolution_record.code_evidence_present? ||
+      code_links.exists?
   end
 
   def reopen(user: Current.user)
@@ -68,8 +78,24 @@ module Card::Closeable
       raise GateTwoIncomplete, "Complete Gate 2 before marking this card done. Missing: #{missing}."
     end
 
+    def ensure_code_evidence_present_for_resolution_record!
+      return if resolution_record.blank? ||
+        !resolution_record.gate_one_complete? ||
+        !resolution_record.gate_two_complete? ||
+        cactus_workflow_state != "needs_review" ||
+        cactus_code_evidence_present?
+
+      raise CodeEvidenceMissing, "Add code evidence before resolving this issue. Link a GitHub commit or PR with CT-#{number}, or enter a commit SHA / PR URL in Gate 2."
+    end
+
+    def ensure_cactus_workflow_ready_for_resolution!
+      return if resolution_record.blank? || cactus_workflow_state == "needs_review"
+
+      raise ResolutionNotReady, "Move this issue into active work and complete review before resolving it."
+    end
+
     def generate_training_example_if_ready!
-      return unless resolution_record&.gate_one_complete? && resolution_record&.gate_two_complete?
+      return unless resolution_record&.gate_one_complete? && resolution_record&.gate_two_complete? && cactus_code_evidence_present?
 
       TrainingExamples::Generator.new(self).generate
     end

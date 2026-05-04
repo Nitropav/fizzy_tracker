@@ -1,7 +1,7 @@
 class Webhooks::ActivationsController < ApplicationController
   include BoardScoped
 
-  before_action :ensure_admin
+  before_action :ensure_can_manage_cactus_integrations
 
   def create
     @webhook = @board.webhooks.find(params[:webhook_id])

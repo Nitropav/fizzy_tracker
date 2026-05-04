@@ -7,7 +7,9 @@ class Account < ApplicationRecord
   has_many :boards, dependent: :destroy
   has_many :cards, dependent: :destroy
   has_many :card_code_links, class_name: "Card::CodeLink", dependent: :destroy
+  has_many :github_webhook_deliveries, class_name: "Github::WebhookDelivery", dependent: :destroy
   has_many :training_examples, dependent: :destroy
+  has_many :training_example_exports, dependent: :destroy
   has_many :webhooks, dependent: :destroy
   has_many :tags, dependent: :destroy
   has_many :columns, dependent: :destroy

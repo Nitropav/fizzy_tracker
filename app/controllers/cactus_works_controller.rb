@@ -1,4 +1,6 @@
 class CactusWorksController < ApplicationController
+  before_action :ensure_can_work_cactus_issues
+
   def show
     cards = Current.user.accessible_cards
       .preload(:board, :column, :resolution_record, :closure, :assignments, :assignees, training_examples: :reviewed_by)

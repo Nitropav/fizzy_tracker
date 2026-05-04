@@ -4,10 +4,12 @@ class BoardsController < ApplicationController
   include FilterScoped
 
   before_action :set_board, except: %i[ index new create ]
-  before_action :ensure_permission_to_admin_board, only: %i[ update destroy ]
+  before_action :ensure_can_create_cactus_project, only: %i[ new create ]
+  before_action :ensure_can_manage_cactus_project, only: %i[ edit update destroy ]
 
   def index
     set_page_and_extract_portion_from Current.user.boards.ordered_by_recently_accessed.includes(creator: :identity)
+    @card_counts = Card.where(board_id: @page.records.map(&:id)).group(:board_id).count if request.format.html?
     fresh_when etag: @page.records
   end
 
@@ -66,12 +68,6 @@ class BoardsController < ApplicationController
   private
     def set_board
       @board = Current.user.boards.find params[:id]
-    end
-
-    def ensure_permission_to_admin_board
-      unless Current.user.can_administer_board?(@board)
-        head :forbidden
-      end
     end
 
     def grantees_changed?

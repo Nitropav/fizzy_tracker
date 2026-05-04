@@ -28,6 +28,7 @@ class TrainingExamples::GeneratorTest < ActiveSupport::TestCase
     assert_equal "Logo is unreadable in the card detail view", @training_example.problem_summary
     assert_equal "Image sizing used the wrong max width", @training_example.root_cause
     assert_equal "Adjusted the card image layout", @training_example.resolution_summary
+    assert_equal "high", @training_example.metadata["priority"]
     assert_equal "ui", @training_example.metadata["domain"]
     assert_equal [ "abc123" ], @training_example.metadata["commit_shas"]
     assert_equal [ "https://github.com/cactus/fizzy_tracker/pull/42" ], @training_example.metadata["pr_urls"]
@@ -109,6 +110,7 @@ class TrainingExamples::GeneratorTest < ActiveSupport::TestCase
         actual_behavior: "Logo is too small",
         environment_context: "Fizzy card page",
         structured_summary: "Logo is unreadable in the card detail view",
+        priority: "high",
         category: "bug",
         domain: "ui",
         severity: "cosmetic",

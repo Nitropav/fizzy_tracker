@@ -2,6 +2,7 @@ david:
   id: <%= ActiveRecord::FixtureSet.identify("david", :uuid) %>
   name: David
   role: member
+  cactus_role: developer
   identity: david
   account: 37s_uuid
   verified_at: <%= Time.current.to_fs(:db) %>
@@ -10,6 +11,7 @@ jz:
   id: <%= ActiveRecord::FixtureSet.identify("jz", :uuid) %>
   name: JZ
   role: member
+  cactus_role: support
   identity: jz
   account: 37s_uuid
   verified_at: <%= Time.current.to_fs(:db) %>
@@ -18,6 +20,7 @@ jason:
   id: <%= ActiveRecord::FixtureSet.identify("jason", :uuid) %>
   name: Jason
   role: owner
+  cactus_role: reviewer
   identity: jason
   account: 37s_uuid
   verified_at: <%= Time.current.to_fs(:db) %>
@@ -26,6 +29,7 @@ kevin:
   id: <%= ActiveRecord::FixtureSet.identify("kevin", :uuid) %>
   name: Kevin
   role: admin
+  cactus_role: support
   identity: kevin
   account: 37s_uuid
   verified_at: <%= Time.current.to_fs(:db) %>
@@ -34,12 +38,14 @@ system:
   id: <%= ActiveRecord::FixtureSet.identify("system", :uuid) %>
   name: System
   role: system
+  cactus_role: reporter
   account: 37s_uuid
 
 mike:
   id: <%= ActiveRecord::FixtureSet.identify("mike", :uuid) %>
   name: Mike
   role: admin
+  cactus_role: support
   identity: mike
   account: initech_uuid
   verified_at: <%= Time.current.to_fs(:db) %>
@@ -48,4 +54,5 @@ system_initech:
   id: <%= ActiveRecord::FixtureSet.identify("system_initech", :uuid) %>
   name: System
   role: system
+  cactus_role: reporter
   account: initech_uuid

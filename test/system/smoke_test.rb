@@ -15,19 +15,23 @@ class SmokeTest < ApplicationSystemTestCase
     fill_in "Full name", with: "New Bee"
     click_on "Continue"
 
-    assert_selector "h1", text: "Writebook"
+    assert_selector "h1", text: "Cactus Bug Tracker"
   end
 
-  test "create a card" do
+  test "create an issue" do
     sign_in_as(users(:david))
 
     visit board_url(boards(:writebook))
-    click_on "Add a card"
-    fill_in "card_title", with: "Hello, world!"
-    fill_in_lexxy with: "I am editing this thing"
-    click_on "Create card"
+    click_on "New issue"
+    fill_in "Short title", with: "Hello, world!"
+    fill_in "Problem description", with: "I am editing this thing"
+    fill_in "Reproduction steps", with: "Open the project and create an issue"
+    fill_in "Expected behavior", with: "The issue is created"
+    fill_in "Actual behavior", with: "The issue is created"
+    fill_in "Environment context", with: "System smoke test"
+    click_on "Create bug report"
 
-    assert_selector "h3", text: "Hello, world!"
+    assert_selector "h1", text: "Hello, world!"
   end
 
   test "active storage attachments" do

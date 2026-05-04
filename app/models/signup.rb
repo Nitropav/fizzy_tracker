@@ -3,11 +3,12 @@ class Signup
   include ActiveModel::Attributes
   include ActiveModel::Validations
 
-  attr_accessor :full_name, :email_address, :identity, :password, :skip_account_seeding
+  attr_accessor :full_name, :email_address, :identity, :password, :password_confirmation, :skip_account_seeding
   attr_reader :account, :user
 
   validates :email_address, format: { with: URI::MailTo::EMAIL_REGEXP }, on: :identity_creation
-  validates :password, length: { minimum: 8 }, on: :identity_creation
+  validates :password, length: { minimum: Identity::MINIMUM_PASSWORD_LENGTH }, confirmation: true, on: :identity_creation
+  validates :password_confirmation, presence: true, on: :identity_creation
   validate :email_address_available, on: :identity_creation
   validates :full_name, :identity, presence: true, on: :completion
   validates :full_name, length: { maximum: 240 }
@@ -19,7 +20,11 @@ class Signup
   end
 
   def create_identity
-    @identity = Identity.create!(email_address: email_address, password: password)
+    @identity = Identity.create!(
+      email_address: email_address,
+      password: password,
+      password_confirmation: password_confirmation
+    )
   end
 
   def complete

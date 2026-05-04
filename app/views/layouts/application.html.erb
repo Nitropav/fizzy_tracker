@@ -15,6 +15,13 @@
         <a href="#main" class="header__skip-navigation btn" data-turbo="false">Skip to main content</a>
         <%= render "my/menu" if Current.user %>
         <%= yield :header %>
+        <% if Current.user %>
+          <div class="header__session-actions hide-on-native">
+            <%= button_to session_path(script_name: nil), method: :delete, class: "btn txt-small", form: { data: { turbo: false, controller: "clear-offline-cache", action: "submit->clear-offline-cache#clearCache" } } do %>
+              <span>Sign out</span>
+            <% end %>
+          </div>
+        <% end %>
       </header>
 
       <%= render "layouts/shared/flash" %>

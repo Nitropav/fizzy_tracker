@@ -14,7 +14,7 @@ class LegacyImports::AsanasControllerTest < ActionDispatch::IntegrationTest
     assert_match @board.name, response.body
   end
 
-  test "create imports Asana JSON tasks as legacy cards" do
+  test "create imports Asana JSON tasks as legacy issues" do
     assert_difference -> { Card.count }, 2 do
       assert_difference -> { Card::ResolutionRecord.where(legacy_import: true).count }, 2 do
         post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("asana_tasks.json", "application/json") }
@@ -22,8 +22,9 @@ class LegacyImports::AsanasControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :created
-    assert_match "Cards created: 2", response.body
-    assert_match "Cards needing structuring: 2", response.body
+    assert_match "Issues created: 2", response.body
+    assert_match "Issues needing structuring: 2", response.body
+    assert_match "Review legacy issues", response.body
 
     record = Card::ResolutionRecord.find_by!(legacy_source: "asana", legacy_external_id: "asana-1")
     assert_equal @board, record.card.board
@@ -59,6 +60,15 @@ class LegacyImports::AsanasControllerTest < ActionDispatch::IntegrationTest
     get new_legacy_imports_asana_path
 
     assert_response :forbidden
+  end
+
+  test "support users can open import screen" do
+    logout_and_sign_in_as :jz
+
+    get new_legacy_imports_asana_path
+
+    assert_response :success
+    assert_match "Import Asana Tasks", response.body
   end
 
   test "non admins cannot create imports" do

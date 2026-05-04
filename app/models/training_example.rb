@@ -4,6 +4,7 @@ class TrainingExample < ApplicationRecord
   belongs_to :account, default: -> { card&.account }
   belongs_to :card
   belongs_to :reviewed_by, class_name: "User", optional: true
+  belongs_to :training_example_export, optional: true
 
   enum :status, STATUSES.index_by(&:itself), default: :draft
 
@@ -40,8 +41,12 @@ class TrainingExample < ApplicationRecord
     )
   end
 
-  def mark_exported!
-    update!(status: :exported, exported_at: Time.current)
+  def mark_exported!(training_example_export: nil, exported_at: Time.current)
+    update!(
+      status: :exported,
+      exported_at: exported_at,
+      training_example_export: training_example_export
+    )
   end
 
   private

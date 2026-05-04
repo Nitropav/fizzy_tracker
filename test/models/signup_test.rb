@@ -1,17 +1,19 @@
 require "test_helper"
 
 class SignupTest < ActiveSupport::TestCase
+  STRONG_PASSWORD = "correct horse battery staple"
+
   test "validates email format for identity creation" do
     signup = Signup.new(email_address: "not-an-email")
     assert_not signup.valid?(:identity_creation)
     assert signup.errors[:email_address].any?
 
-    signup = Signup.new(email_address: "valid@example.com", password: "password")
+    signup = Signup.new(email_address: "valid@example.com", password: STRONG_PASSWORD, password_confirmation: STRONG_PASSWORD)
     assert signup.valid?(:identity_creation)
   end
 
   test "#create_identity" do
-    signup = Signup.new(email_address: "brian@example.com", password: "password")
+    signup = Signup.new(email_address: "brian@example.com", password: STRONG_PASSWORD, password_confirmation: STRONG_PASSWORD)
 
     assert_difference -> { Identity.count }, 1 do
       assert_no_difference -> { MagicLink.count } do
@@ -22,7 +24,7 @@ class SignupTest < ActiveSupport::TestCase
     assert_empty signup.errors
     assert signup.identity
     assert signup.identity.persisted?
-    assert signup.identity.authenticate("password")
+    assert signup.identity.authenticate(STRONG_PASSWORD)
 
     signup_invalid = Signup.new(email_address: "")
     assert_raises do

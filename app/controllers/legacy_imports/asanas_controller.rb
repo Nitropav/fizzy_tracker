@@ -1,5 +1,5 @@
 class LegacyImports::AsanasController < ApplicationController
-  before_action :ensure_admin
+  before_action :ensure_can_import_cactus_issues
 
   def new
     @boards = Current.user.boards.order(:name)

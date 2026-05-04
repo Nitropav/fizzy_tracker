@@ -1,6 +1,12 @@
 class AiRun < ApplicationRecord
   STATUSES = %w[ pending completed failed ].freeze
-  RUN_TYPES = %w[ card_quality_review ].freeze
+  RUN_TYPES = %w[ card_quality_review issue_structuring legacy_issue_structuring resolution_draft duplicate_issue_suggestion ].freeze
+  DISMISSIBLE_RUN_TYPES = %w[
+    issue_structuring
+    legacy_issue_structuring
+    resolution_draft
+    duplicate_issue_suggestion
+  ].freeze
 
   belongs_to :account, default: -> { card&.account || user&.account }
   belongs_to :card, optional: true, touch: true
@@ -20,6 +26,10 @@ class AiRun < ApplicationRecord
 
   scope :latest_first, -> { order(created_at: :desc, id: :desc) }
   scope :card_quality_reviews, -> { where(run_type: "card_quality_review") }
+  scope :issue_structurings, -> { where(run_type: "issue_structuring") }
+  scope :legacy_issue_structurings, -> { where(run_type: "legacy_issue_structuring") }
+  scope :resolution_drafts, -> { where(run_type: "resolution_draft") }
+  scope :duplicate_issue_suggestions, -> { where(run_type: "duplicate_issue_suggestion") }
 
   def complete!(output:, metadata: {})
     update!(
@@ -37,6 +47,41 @@ class AiRun < ApplicationRecord
       metadata: self.metadata.merge(metadata),
       completed_at: Time.current
     )
+  end
+
+  def dismiss!(user: Current.user, reason: nil)
+    update!(
+      metadata: metadata.merge(
+        "dismissed_at" => Time.current.iso8601,
+        "dismissed_by_id" => user&.id,
+        "dismissed_reason" => reason.presence
+      ).compact
+    )
+  end
+
+  def mark_applied!(user: Current.user)
+    update!(
+      metadata: metadata.merge(
+        "applied_at" => Time.current.iso8601,
+        "applied_by_id" => user&.id
+      ).compact
+    )
+  end
+
+  def dismissible?
+    DISMISSIBLE_RUN_TYPES.include?(run_type)
+  end
+
+  def dismissed?
+    metadata["dismissed_at"].present?
+  end
+
+  def applied?
+    metadata["applied_at"].present?
+  end
+
+  def active_suggestion?
+    completed? && dismissible? && !dismissed? && !applied?
   end
 
   private

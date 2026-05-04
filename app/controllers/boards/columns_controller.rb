@@ -4,6 +4,7 @@ class Boards::ColumnsController < ApplicationController
   include BoardScoped
 
   before_action :set_column, only: %i[ show update destroy ]
+  before_action :ensure_can_manage_cactus_project, only: %i[ new create update destroy ]
 
   def index
     @columns = @board.columns.sorted

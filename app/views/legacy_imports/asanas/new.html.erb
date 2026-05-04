@@ -10,7 +10,7 @@
   <header class="flex flex-column gap-half">
     <h1 class="txt-x-large font-weight-black margin-none">Import Asana Tasks</h1>
     <p class="txt-small txt-subtle margin-none">
-      Upload an Asana JSON export to create legacy cards. Imported cards are marked as historical and queued for structuring before they can become training examples.
+      Upload an Asana JSON export to create legacy issues. Imported issues are marked as historical and queued for structuring before they can become training examples.
     </p>
   </header>
 
@@ -19,18 +19,18 @@
       <h2 class="txt-large margin-none">Import summary</h2>
       <ul class="margin-none">
         <li>Total tasks processed: <%= @summary[:total] %></li>
-        <li>Cards created: <%= @summary[:created] %></li>
+        <li>Issues created: <%= @summary[:created] %></li>
         <li>Duplicates skipped: <%= @summary[:skipped] %></li>
-        <li>Cards needing structuring: <%= @summary[:needs_structuring] %></li>
+        <li>Issues needing structuring: <%= @summary[:needs_structuring] %></li>
       </ul>
-      <%= link_to "Review legacy cards", cactus_queues_path(state: "needs_info"), class: "btn txt-small" %>
+      <%= link_to "Review legacy issues", legacy_imports_asana_issues_path, class: "btn txt-small" %>
     </section>
   <% end %>
 
   <%= form_with url: legacy_imports_asana_path, class: "flex flex-column gap", data: { controller: "form upload-preview" }, multipart: true do |form| %>
     <label class="flex flex-column gap-half">
-      <span class="txt-small font-weight-bold">Destination board</span>
-      <%= form.select :board_id, options_from_collection_for_select(@boards, :id, :name, @board&.id), { prompt: "Choose a board..." }, required: true, class: "input" %>
+      <span class="txt-small font-weight-bold">Destination project</span>
+      <%= form.select :board_id, options_from_collection_for_select(@boards, :id, :name, @board&.id), { prompt: "Choose a project..." }, required: true, class: "input" %>
     </label>
 
     <label class="btn input--upload">
@@ -44,4 +44,13 @@
       <%= icon_tag "arrow-right" %>
     </button>
   <% end %>
+
+  <section class="panel border flex flex-wrap align-center justify-between gap">
+    <div>
+      <strong>Already imported tasks?</strong>
+      <p class="txt-small txt-subtle margin-none">Open the legacy review queue to structure imported Asana tasks before training review.</p>
+    </div>
+
+    <%= link_to "Review legacy issues", legacy_imports_asana_issues_path, class: "btn txt-small" %>
+  </section>
 </section>

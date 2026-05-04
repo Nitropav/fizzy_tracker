@@ -33,6 +33,23 @@
       <span class="badge"><%= @github_webhook_secret_configured ? "Secret configured" : "Secret missing" %></span>
     </header>
 
+    <section class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
+      <article class="panel border flex flex-column gap-half">
+        <span class="txt-small txt-subtle">Webhook secret</span>
+        <strong><%= @github_webhook_secret_configured ? "Configured" : "Missing" %></strong>
+      </article>
+
+      <article class="panel border flex flex-column gap-half">
+        <span class="txt-small txt-subtle">Failed deliveries</span>
+        <strong><%= @github_webhook_delivery_counts.fetch("failed", 0) %></strong>
+      </article>
+
+      <article class="panel border flex flex-column gap-half">
+        <span class="txt-small txt-subtle">Last delivery</span>
+        <strong><%= @github_webhook_last_delivery&.status&.humanize || "None yet" %></strong>
+      </article>
+    </section>
+
     <dl class="grid gap-half txt-small margin-none" style="grid-template-columns: max-content minmax(0, 1fr);">
       <dt class="txt-subtle">Webhook URL</dt>
       <dd class="margin-none overflow-auto"><code><%= @github_webhook_url %></code></dd>
@@ -50,12 +67,139 @@
       <dd class="margin-none"><code>CT-&lt;issue number&gt;</code>, for example <code>CT-1234</code>.</dd>
     </dl>
 
+    <section class="panel border flex flex-column gap-half">
+      <h3 class="txt-medium margin-none">Setup checklist</h3>
+
+      <ol class="txt-small margin-none">
+        <li>Open the GitHub repository settings and add a webhook.</li>
+        <li>Use the webhook URL above as the Payload URL.</li>
+        <li>Set Content type to <code>application/json</code>.</li>
+        <li>Use the same secret as <code>GITHUB_WEBHOOK_SECRET</code> or Rails credentials <code>github.webhook_secret</code>.</li>
+        <li>Required GitHub events: enable <strong>Pushes</strong> and <strong>Pull requests</strong>.</li>
+        <li>Reference issues as <code>CT-&lt;issue number&gt;</code> in commit messages, PR titles, PR bodies, or branch names.</li>
+      </ol>
+    </section>
+
+    <section class="panel border flex flex-column gap-half">
+      <h3 class="txt-medium margin-none">Security and error behavior</h3>
+
+      <ul class="txt-small margin-none">
+        <li>Requests without a configured server secret return <code>503</code> and are not processed.</li>
+        <li>Requests with missing or invalid <code>X-Hub-Signature-256</code> return <code>401</code> and are not stored.</li>
+        <li>Signed requests with invalid JSON or processing errors are stored as failed deliveries for review and retry.</li>
+        <li>Duplicate delivery ids return the original result and do not create duplicate code links.</li>
+      </ul>
+    </section>
+
+    <section class="panel border flex flex-column gap-half">
+      <h3 class="txt-medium margin-none">Reference examples</h3>
+
+      <ul class="txt-small margin-none">
+        <li><code>Fix quote total recalculation for CT-1234</code></li>
+        <li><code>Resolve CT-1234</code> in a pull request title.</li>
+        <li><code>Refs CT-1234</code> in a pull request body.</li>
+        <li><code>fix/ct-1234-price-cache</code> as a branch name.</li>
+      </ul>
+    </section>
+
     <% unless @github_webhook_secret_configured %>
       <div class="panel border txt-small">
         Set <code>GITHUB_WEBHOOK_SECRET</code> or Rails credentials before enabling the webhook in GitHub.
         Unsigned or incorrectly signed requests are rejected.
       </div>
     <% end %>
+
+    <% if @github_webhook_failed_deliveries.any? %>
+      <section class="panel border flex flex-column gap-half">
+        <h3 class="txt-medium margin-none">Failed GitHub deliveries</h3>
+        <p class="txt-small txt-subtle margin-none">
+          These requests reached Cactus but could not be processed. Fix the payload/configuration and redeliver from GitHub.
+        </p>
+
+        <div class="overflow-auto">
+          <table class="full-width txt-small">
+            <thead>
+              <tr>
+                <th class="txt-align-start">Delivery</th>
+                <th class="txt-align-start">Event</th>
+                <th class="txt-align-start">Error</th>
+                <th class="txt-align-start">Processed</th>
+                <th class="txt-align-start">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @github_webhook_failed_deliveries.each do |delivery| %>
+                <tr>
+                  <td><code><%= delivery.delivery_id %></code></td>
+                  <td><%= delivery.event %></td>
+                  <td><%= delivery.error_message.presence || "Unknown processing error" %></td>
+                  <td>
+                    <% if delivery.processed_at.present? %>
+                      <%= tag.time delivery.processed_at.to_fs(:db), datetime: delivery.processed_at.iso8601 %>
+                    <% else %>
+                      N/A
+                    <% end %>
+                  </td>
+                  <td>
+                    <% if delivery.retryable? %>
+                      <%= button_to "Retry", github_webhook_delivery_retry_path(delivery), class: "btn txt-small" %>
+                    <% else %>
+                      <span class="txt-subtle">Not retryable</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    <% end %>
+
+    <section class="panel border flex flex-column gap-half">
+      <h3 class="txt-medium margin-none">Recent GitHub deliveries</h3>
+
+      <% if @github_webhook_deliveries.any? %>
+        <div class="overflow-auto">
+          <table class="full-width txt-small">
+            <thead>
+              <tr>
+                <th class="txt-align-start">Delivery</th>
+                <th class="txt-align-start">Event</th>
+                <th class="txt-align-start">Status</th>
+                <th class="txt-align-start">Linked refs</th>
+                <th class="txt-align-start">Payload SHA</th>
+                <th class="txt-align-start">Processed</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @github_webhook_deliveries.each do |delivery| %>
+                <tr>
+                  <td><code><%= delivery.delivery_id %></code></td>
+                  <td><%= delivery.event %></td>
+                  <td><%= delivery.status.humanize %></td>
+                  <td><%= delivery.linked_code_references_count %></td>
+                  <td><code><%= delivery.payload_sha256.to_s.first(12) %></code></td>
+                  <td>
+                    <% if delivery.processed_at.present? %>
+                      <%= tag.time delivery.processed_at.to_fs(:db), datetime: delivery.processed_at.iso8601 %>
+                    <% else %>
+                      N/A
+                    <% end %>
+                  </td>
+                </tr>
+                <% if delivery.error_message.present? %>
+                  <tr>
+                    <td colspan="6" class="txt-subtle">Error: <%= delivery.error_message %></td>
+                  </tr>
+                <% end %>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none">No GitHub webhook deliveries have been received yet.</p>
+      <% end %>
+    </section>
   </section>
 
   <section class="panel flex flex-column gap-half">

@@ -1,4 +1,4 @@
-<% @page_title = "Join #{@join_code.account.name} in Fizzy" %>
+<% @page_title = "Join #{@join_code.account.name} in Cactus" %>
 
 <div class="panel panel--centered flex flex-column gap-half">
   <h1 class="txt-x-large font-weight-black margin-none"><%= @page_title %></h1>
@@ -12,9 +12,20 @@
 
     <div class="flex align-center gap">
       <label class="flex align-center gap input input--actor">
-        <%= form.password_field :password, required: true, minlength: 8, class: "input full-width", autocomplete: "current-password", placeholder: "Password" %>
+        <%= form.password_field :password, required: true, class: "input full-width", autocomplete: "current-password", placeholder: "Password" %>
       </label>
     </div>
+
+    <div class="flex align-center gap">
+      <label class="flex align-center gap input input--actor">
+        <%= form.password_field :password_confirmation, minlength: Identity::MINIMUM_PASSWORD_LENGTH, class: "input full-width", autocomplete: "new-password", placeholder: "Confirm password for first-time join" %>
+      </label>
+    </div>
+
+    <p class="txt-small txt-subtle margin-none">
+      New users must create a password with at least <%= Identity::MINIMUM_PASSWORD_LENGTH %> characters and confirm it.
+      Existing users only need their current password.
+    </p>
 
     <button type="submit" id="log_in" class="btn btn--link center" data-form-target="submit">
       <span>Continue</span>

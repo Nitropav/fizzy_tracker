@@ -26,11 +26,11 @@ class JoinCodesController < ApplicationController
       start_new_session_for @identity
       redirect_to new_users_verification_url(script_name: @join_code.account.slug)
     end
-  end
+    end
 
   private
     def set_identity
-      @identity = Identity.find_or_initialize_by(email_address: params.expect(:email_address))
+      @identity = Identity.find_or_initialize_by(email_address: email_address)
     end
 
     def authenticate_or_prepare_identity
@@ -47,7 +47,9 @@ class JoinCodesController < ApplicationController
 
     def create_identity_with_password
       @identity.password = password
-      if password_valid? && @identity.valid?
+      @identity.password_confirmation = password_confirmation
+
+      if @identity.valid?
         @identity.save!
       else
         head :unprocessable_entity
@@ -65,20 +67,26 @@ class JoinCodesController < ApplicationController
     end
 
     def set_initial_password
-      if password_valid?
-        @identity.update!(password: password)
+      @identity.assign_attributes(password: password, password_confirmation: password_confirmation)
+
+      if @identity.valid?
+        @identity.save!
       else
         head :unprocessable_entity
         false
       end
     end
 
-    def password_valid?
-      password.length >= 8
+    def email_address
+      params[:email_address].to_s.strip.downcase
     end
 
     def password
-      params.expect(:password)
+      params[:password].to_s
+    end
+
+    def password_confirmation
+      params[:password_confirmation].to_s
     end
 
     def set_join_code

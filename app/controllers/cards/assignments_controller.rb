@@ -1,14 +1,18 @@
 class Cards::AssignmentsController < ApplicationController
   include CardScoped
+  before_action :ensure_can_assign_cactus_issues
 
   def new
     @assigned_to = @card.assignees.active.alphabetically.where.not(id: Current.user)
-    @users = @board.users.active.alphabetically.where.not(id: @card.assignees).where.not(id: Current.user)
+    @users = @board.users.active.alphabetically.where.not(id: @card.assignees).where.not(id: Current.user).select(&:can_work_cactus_issues?)
     fresh_when etag: [ @users, @card.assignees ]
   end
 
   def create
-    if @card.toggle_assignment @board.users.active.find(params[:assignee_id])
+    assignee = @board.users.active.find(params[:assignee_id])
+    return head :forbidden unless assignee.can_work_cactus_issues?
+
+    if @card.toggle_assignment assignee
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_back_or_to @card, notice: "Assignment updated." }

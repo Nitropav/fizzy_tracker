@@ -1,5 +1,6 @@
 class Cards::GateOneAnswersController < ApplicationController
   include CardScoped
+  before_action :ensure_can_update_cactus_gate_one
 
   def update
     record = @card.ensure_resolution_record

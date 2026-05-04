@@ -19,9 +19,13 @@
 
 <div class="nav__scroll-container">
   <div class="nav__hotkeys margin-block-end-half" role="list">
-    <%= filter_hotkey_link "Home", root_path, 1, "home" %>
-    <%= filter_hotkey_link "Assigned to me", cards_path(assignee_ids: [Current.user.id]), 2, "clipboard" %>
-    <%= filter_hotkey_link "Added by me", cards_path(creator_ids: [Current.user.id]), 3, "person-add" %>
+    <%= filter_hotkey_link "Cactus Home", cactus_home_path, 1, "home" %>
+    <% if Current.user.can_work_cactus_issues? %>
+      <%= filter_hotkey_link "My Work", cactus_work_path, 2, "clipboard" %>
+    <% else %>
+      <%= filter_hotkey_link "Reported by me", cards_path(creator_ids: [Current.user.id]), 2, "person-add" %>
+    <% end %>
+    <%= filter_hotkey_link "New Issue", new_cactus_issue_path, 3, "add" if Current.user.can_create_cactus_issue? %>
   </div>
 
   <%= yield %>

@@ -2,6 +2,8 @@ module Cards
   class IssueCreator
     REPORT_ATTRIBUTES = %i[
       title
+      description
+      priority
       problem_description
       reproduction_steps
       expected_behavior
@@ -55,12 +57,16 @@ module Cards
           creator: user,
           status: draft? ? :drafted : :published,
           title: attributes[:title].presence || title_from(attributes[:problem_description]),
-          description: attributes[:problem_description].presence || attributes[:title].to_s
+          description: card_description
         )
       end
 
       def resolution_attributes
-        attributes.except(:title)
+        attributes.except(:title, :description)
+      end
+
+      def card_description
+        attributes[:description].presence || attributes[:problem_description].presence || attributes[:title].to_s
       end
 
       def valid_report?

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_01_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -278,6 +278,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_01_100000) do
     t.json "linked_commit_shas"
     t.json "linked_pr_urls"
     t.boolean "needs_structuring", default: false, null: false
+    t.string "priority"
     t.text "problem_description"
     t.text "reproduction_steps"
     t.text "root_cause"
@@ -295,6 +296,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_01_100000) do
     t.index ["account_id", "legacy_import"], name: "index_card_resolution_records_on_account_id_and_legacy_import"
     t.index ["account_id", "legacy_source", "legacy_external_id"], name: "idx_on_account_id_legacy_source_legacy_external_id_2bdb0ae1de", unique: true, where: "((legacy_source IS NOT NULL) AND (legacy_external_id IS NOT NULL))"
     t.index ["account_id", "needs_structuring"], name: "idx_on_account_id_needs_structuring_93d1adaa31"
+    t.index ["account_id", "priority"], name: "index_card_resolution_records_on_account_id_and_priority"
     t.index ["account_id"], name: "index_card_resolution_records_on_account_id"
     t.index ["card_id"], name: "index_card_resolution_records_on_card_id", unique: true
     t.index ["verified_by_id"], name: "index_card_resolution_records_on_verified_by_id"
@@ -425,6 +427,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_01_100000) do
     t.uuid "tag_id", null: false
     t.index ["filter_id"], name: "index_filters_tags_on_filter_id"
     t.index ["tag_id"], name: "index_filters_tags_on_tag_id"
+  end
+
+  create_table "github_webhook_deliveries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.datetime "created_at", null: false
+    t.string "delivery_id", limit: 255, null: false
+    t.text "error_message"
+    t.string "event", limit: 255, null: false
+    t.integer "linked_code_references_count", default: 0, null: false
+    t.json "payload", default: {}, null: false
+    t.string "payload_sha256", limit: 255, null: false
+    t.datetime "processed_at"
+    t.string "status", limit: 255, default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "created_at"], name: "index_github_webhook_deliveries_on_account_id_and_created_at"
+    t.index ["account_id", "delivery_id"], name: "index_github_webhook_deliveries_on_account_id_and_delivery_id", unique: true
+    t.index ["account_id", "status"], name: "index_github_webhook_deliveries_on_account_id_and_status"
+    t.index ["account_id"], name: "index_github_webhook_deliveries_on_account_id"
   end
 
   create_table "identities", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -848,6 +868,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_01_100000) do
     t.index ["account_id", "title"], name: "index_tags_on_account_id_and_title", unique: true
   end
 
+  create_table "training_example_exports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.datetime "completed_at", null: false
+    t.datetime "created_at", null: false
+    t.integer "example_count", default: 0, null: false
+    t.string "filename", limit: 255, null: false
+    t.string "status", limit: 255, default: "completed", null: false
+    t.json "training_example_ids", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["account_id", "created_at"], name: "index_training_example_exports_on_account_id_and_created_at"
+    t.index ["account_id", "status"], name: "index_training_example_exports_on_account_id_and_status"
+    t.index ["account_id"], name: "index_training_example_exports_on_account_id"
+    t.index ["user_id"], name: "index_training_example_exports_on_user_id"
+  end
+
   create_table "training_examples", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "account_id", null: false
     t.uuid "card_id", null: false
@@ -862,6 +898,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_01_100000) do
     t.uuid "reviewed_by_id"
     t.text "root_cause"
     t.string "status", limit: 255, default: "draft", null: false
+    t.uuid "training_example_export_id"
     t.datetime "updated_at", null: false
     t.text "verification_steps"
     t.index ["account_id", "status"], name: "index_training_examples_on_account_id_and_status"
@@ -869,6 +906,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_01_100000) do
     t.index ["card_id", "status"], name: "index_training_examples_on_card_id_and_status"
     t.index ["card_id"], name: "index_training_examples_on_card_id"
     t.index ["reviewed_by_id"], name: "index_training_examples_on_reviewed_by_id"
+    t.index ["training_example_export_id"], name: "index_training_examples_on_training_example_export_id"
   end
 
   create_table "user_settings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -886,12 +924,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_01_100000) do
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "account_id", null: false
     t.boolean "active", default: true, null: false
+    t.string "cactus_role", default: "reporter", null: false
     t.datetime "created_at", null: false
     t.uuid "identity_id"
     t.string "name", limit: 255, null: false
     t.string "role", limit: 255, default: "member", null: false
     t.datetime "updated_at", null: false
     t.datetime "verified_at"
+    t.index ["account_id", "cactus_role"], name: "index_users_on_account_id_and_cactus_role"
     t.index ["account_id", "identity_id"], name: "index_users_on_account_id_and_identity_id", unique: true
     t.index ["account_id", "role"], name: "index_users_on_account_id_and_role"
     t.index ["identity_id"], name: "index_users_on_identity_id"

@@ -19,6 +19,18 @@
     </span>
   <% end %>
 
+  <%= form_with model: user, url: user_role_path(user), data: { controller: "form" }, method: :patch do |form| %>
+    <label class="for-screen-reader" for="<%= dom_id(user, :cactus_role) %>">Cactus role</label>
+    <%= form.select :cactus_role,
+          options_for_select(cactus_role_options, user.cactus_role),
+          {},
+          id: dom_id(user, :cactus_role),
+          class: "input txt-small",
+          disabled: !Current.user.can_administer?(user),
+          title: "Cactus role: #{cactus_role_display_name(user)}",
+          data: { action: "form#submit" } %>
+  <% end %>
+
   <%# FIXME: Move this Current.user check to a stimulus controller that just checks for admin? or the like we so we can cache user list %>
   <%= button_to user, method: :delete, class: "btn btn--circle btn--negative",
         disabled: !Current.user.can_administer?(user),

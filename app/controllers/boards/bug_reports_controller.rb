@@ -23,6 +23,8 @@ class Boards::BugReportsController < ApplicationController
     def bug_report_params
       params.expect(bug_report: [
         :title,
+        :description,
+        :priority,
         :problem_description,
         :reproduction_steps,
         :expected_behavior,

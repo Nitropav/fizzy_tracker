@@ -1,4 +1,6 @@
 class CactusIssuesController < ApplicationController
+  before_action :ensure_can_create_cactus_issue
+
   def new
     load_projects
     @board = @boards.first
@@ -13,8 +15,8 @@ class CactusIssuesController < ApplicationController
     @board = @boards.find { it.id == attributes[:board_id] }
 
     unless @board
-      @card = Card.new(title: attributes[:title])
-      @resolution_record = Card::ResolutionRecord.new(attributes.except(:board_id, :title))
+      @card = Card.new(title: attributes[:title], description: attributes[:description])
+      @resolution_record = Card::ResolutionRecord.new(attributes.except(:board_id, :title, :description))
       @resolution_record.errors.add(:base, "Select a project")
       render :new, status: :unprocessable_entity
       return
@@ -48,6 +50,8 @@ class CactusIssuesController < ApplicationController
         :board_id,
         :draft,
         :title,
+        :description,
+        :priority,
         :problem_description,
         :reproduction_steps,
         :expected_behavior,

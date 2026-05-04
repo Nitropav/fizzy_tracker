@@ -2,8 +2,9 @@ module TrainingExamples
   class JsonlExporter
     SYSTEM_PROMPT = "<eswindows> You are an expert operator helping diagnose and resolve ES Windows production issues.".freeze
 
-    def initialize(training_examples)
+    def initialize(training_examples, exported_at: nil)
       @training_examples = training_examples
+      @exported_at = exported_at
     end
 
     def to_jsonl
@@ -13,7 +14,7 @@ module TrainingExamples
     end
 
     private
-      attr_reader :training_examples
+      attr_reader :training_examples, :exported_at
 
       def payload_for(training_example)
         {
@@ -50,13 +51,15 @@ module TrainingExamples
       end
 
       def metadata_for(training_example)
-        training_example.metadata.merge(
+        metadata = training_example.metadata.merge(
           "training_example_id" => training_example.id,
           "status" => training_example.status,
           "reviewed_by_id" => training_example.reviewed_by_id,
-          "reviewed_at" => training_example.reviewed_at&.iso8601,
-          "exported_at" => Time.current.iso8601
+          "reviewed_at" => training_example.reviewed_at&.iso8601
         )
+
+        metadata["exported_at"] = exported_at.iso8601 if exported_at
+        metadata
       end
   end
 end

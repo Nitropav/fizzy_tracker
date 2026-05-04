@@ -31,9 +31,9 @@
 
       <% if @user.verified? %>
         <div class="flex-inline center justify-center flex-wrap gap">
-          <%= link_to "Which cards are assigned to #{me_or_you}?",
+          <%= link_to "Which issues are assigned to #{me_or_you}?",
                 cards_path(assignee_ids: [ @user.id ], sorted_by: "newest"), class: "btn btn--link", data: { turbo_frame: "_top" } %>
-          <%= link_to "Which cards were added by #{me_or_you}?",
+          <%= link_to "Which issues were added by #{me_or_you}?",
                 cards_path(creator_ids: [ @user.id ], sorted_by: "newest"), class: "btn btn--link", data: { turbo_frame: "_top" } %>
         </div>
       <% end %>
@@ -48,7 +48,7 @@
           <% end %>
 
           <%= button_to session_path(script_name: nil), method: :delete, class: "btn txt-x-small", form: { data: { turbo: false, controller: "clear-offline-cache", action: "submit->clear-offline-cache#clearCache" } } do %>
-            <span>Sign out of Fizzy on this device</span>
+            <span>Sign out of Cactus on this device</span>
           <% end %>
         </div>
       <% end %>

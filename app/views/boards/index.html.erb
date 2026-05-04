@@ -1,0 +1,46 @@
+<% @page_title = "Projects" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Cactus Home", cactus_home_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap">
+  <header class="flex align-center justify-between flex-wrap gap">
+    <div class="min-width">
+      <h1 class="txt-x-large font-weight-black margin-none">Projects</h1>
+      <p class="txt-small txt-subtle margin-none">Product areas and issue queues available to this account.</p>
+    </div>
+
+    <% if Current.user.can_create_cactus_project? %>
+      <%= link_to "New project", new_board_path, class: "btn btn--reversed txt-small" %>
+    <% end %>
+  </header>
+
+  <% if @page.records.any? %>
+    <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));">
+      <% @page.records.each do |board| %>
+        <article class="panel border flex flex-column gap-half">
+          <h2 class="txt-large margin-none"><%= link_to board.name, board_path(board), class: "txt-link" %></h2>
+          <p class="txt-small txt-subtle margin-none">
+            <%= pluralize(@card_counts.fetch(board.id, 0), "issue") %>
+            &middot; created by <%= board.creator.name %>
+          </p>
+
+          <div class="flex flex-wrap gap-half">
+            <%= link_to "Open project", board_path(board), class: "btn txt-small" %>
+            <%= link_to "New issue", new_board_bug_report_path(board), class: "btn txt-small" if Current.user.can_create_cactus_issue? %>
+            <%= link_to "Settings", edit_board_path(board), class: "btn txt-small" if Current.user.can_manage_cactus_project?(board) %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <section class="panel border flex flex-column gap-half">
+      <h2 class="txt-large margin-none">No projects yet</h2>
+      <p class="txt-small txt-subtle margin-none">Create a project before reporters start filing structured issues.</p>
+      <%= link_to "New project", new_board_path, class: "btn btn--reversed txt-small" if Current.user.can_create_cactus_project? %>
+    </section>
+  <% end %>
+</section>

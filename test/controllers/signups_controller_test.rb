@@ -1,6 +1,8 @@
 require "test_helper"
 
 class SignupsControllerTest < ActionDispatch::IntegrationTest
+  STRONG_PASSWORD = "correct horse battery staple"
+
   test "new" do
     untenanted do
       get new_signup_path
@@ -26,13 +28,19 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
     untenanted do
       assert_difference -> { Identity.count }, +1 do
         assert_no_difference -> { MagicLink.count } do
-          post signup_path, params: { signup: { email_address: email_address, password: "password" } }
+          post signup_path, params: {
+            signup: {
+              email_address: email_address,
+              password: STRONG_PASSWORD,
+              password_confirmation: STRONG_PASSWORD
+            }
+          }
         end
       end
 
       assert_redirected_to new_signup_completion_path
       assert cookies.get_cookie("session_token").present?
-      assert Identity.find_by!(email_address: email_address).authenticate("password")
+      assert Identity.find_by!(email_address: email_address).authenticate(STRONG_PASSWORD)
     end
   end
 
@@ -41,12 +49,56 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
       untenanted do
         assert_no_difference -> { Identity.count } do
           assert_no_difference -> { MagicLink.count } do
-            post signup_path, params: { signup: { email_address: "not-a-valid-email", password: "password" } }
+            post signup_path, params: {
+              signup: {
+                email_address: "not-a-valid-email",
+                password: STRONG_PASSWORD,
+                password_confirmation: STRONG_PASSWORD
+              }
+            }
           end
         end
 
         assert_response :unprocessable_entity
       end
+    end
+  end
+
+  test "create rejects weak password" do
+    email_address = "newuser-#{SecureRandom.hex(6)}@example.com"
+
+    untenanted do
+      assert_no_difference -> { Identity.count } do
+        post signup_path, params: {
+          signup: {
+            email_address: email_address,
+            password: "too-short",
+            password_confirmation: "too-short"
+          }
+        }
+      end
+
+      assert_response :unprocessable_entity
+      assert_match "Password is too short", response.body
+    end
+  end
+
+  test "create rejects password confirmation mismatch" do
+    email_address = "newuser-#{SecureRandom.hex(6)}@example.com"
+
+    untenanted do
+      assert_no_difference -> { Identity.count } do
+        post signup_path, params: {
+          signup: {
+            email_address: email_address,
+            password: STRONG_PASSWORD,
+            password_confirmation: "different strong password"
+          }
+        }
+      end
+
+      assert_response :unprocessable_entity
+      assert_match "Password confirmation", response.body
     end
   end
 
@@ -58,7 +110,13 @@ class SignupsControllerTest < ActionDispatch::IntegrationTest
       assert_no_difference -> { Identity.count } do
         assert_no_difference -> { MagicLink.count } do
           post signup_path,
-            params: { signup: { email_address: identity.email_address, password: "password" } }
+            params: {
+              signup: {
+                email_address: identity.email_address,
+                password: STRONG_PASSWORD,
+                password_confirmation: STRONG_PASSWORD
+              }
+            }
         end
       end
 

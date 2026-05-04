@@ -1,0 +1,64 @@
+<% latest_duplicate_run = card.ai_runs.duplicate_issue_suggestions.completed.latest_first.detect(&:active_suggestion?) %>
+<% candidates = Array(latest_duplicate_run&.output&.fetch("candidates", [])) %>
+
+<section class="panel flex flex-column gap-half txt-small">
+  <div class="flex flex-wrap align-center justify-between gap">
+    <div>
+      <strong>Duplicate check</strong>
+      <p class="txt-subtle margin-none">
+        Find similar issues in this account before creating new training data or starting duplicate work.
+      </p>
+    </div>
+
+    <%= button_to "Find similar issues", card_duplicate_suggestion_path(card), class: "btn txt-small" %>
+  </div>
+
+  <% if latest_duplicate_run %>
+    <p class="txt-subtle margin-none">
+      <%= latest_duplicate_run.metadata["completed_by"].presence&.humanize || "Deterministic" %>
+      check completed <%= local_datetime_tag latest_duplicate_run.completed_at, style: :shortdate %>.
+    </p>
+
+    <p class="margin-none"><%= latest_duplicate_run.output["summary"] %></p>
+
+    <div>
+      <%= button_to "Dismiss duplicate check",
+            card_ai_run_dismissal_path(card, latest_duplicate_run),
+            params: { return_to: "card" },
+            class: "btn txt-small" %>
+    </div>
+
+    <% if latest_duplicate_run.output["warnings"].present? %>
+      <div>
+        <strong>Warnings</strong>
+        <ul class="margin-block-end-none">
+          <% latest_duplicate_run.output["warnings"].each do |warning| %>
+            <li><%= warning %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <% if candidates.any? %>
+      <div class="grid gap-half">
+        <% candidates.each do |candidate| %>
+          <article class="panel border flex flex-column gap-half">
+            <div class="flex flex-wrap align-center justify-between gap-half">
+              <strong>
+                <%= link_to "##{candidate['number']} #{candidate['title']}", card_path(candidate["number"]), class: "txt-link" %>
+              </strong>
+              <span class="badge">Score: <%= candidate["score"] %></span>
+            </div>
+            <p class="txt-subtle margin-none">
+              <%= candidate["board"] %> · <%= candidate["workflow_state"].to_s.humanize %>
+              <% if candidate["closed"] %>
+                · Closed
+              <% end %>
+            </p>
+            <p class="margin-none">Reasons: <%= Array(candidate["reasons"]).to_sentence %>.</p>
+          </article>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</section>

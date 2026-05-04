@@ -1,0 +1,65 @@
+<% latest_resolution_draft_run = card.ai_runs.resolution_drafts.completed.latest_first.detect(&:active_suggestion?) %>
+<% suggested_fields = latest_resolution_draft_run&.output&.fetch("suggested_fields", {}) || {} %>
+
+<section class="panel flex flex-column gap-half txt-small">
+  <div class="flex flex-wrap align-center justify-between gap">
+    <div>
+      <strong>Gate 2 draft assistant</strong>
+      <p class="txt-subtle margin-none">
+        Draft root cause, fix summary, and verification steps from linked code evidence. Applying a draft only fills blank fields.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap align-center gap-half">
+      <%= button_to "Draft resolution",
+            card_resolution_draft_path(card),
+            params: { return_to: local_assigns.fetch(:return_to, nil) },
+            class: "btn txt-small" %>
+
+      <% if latest_resolution_draft_run %>
+        <%= button_to "Dismiss",
+              card_ai_run_dismissal_path(card, latest_resolution_draft_run),
+              params: { return_to: local_assigns.fetch(:return_to, nil) },
+              class: "btn txt-small" %>
+        <%= button_to "Apply draft",
+              apply_card_resolution_draft_path(card),
+              params: { ai_run_id: latest_resolution_draft_run.id, return_to: local_assigns.fetch(:return_to, nil) },
+              class: "btn btn--reversed txt-small" %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if latest_resolution_draft_run %>
+    <div class="flex flex-column gap-half">
+      <p class="txt-subtle margin-none">
+        <%= latest_resolution_draft_run.metadata["completed_by"].presence&.humanize || "Deterministic" %>
+        draft generated <%= local_datetime_tag latest_resolution_draft_run.completed_at, style: :shortdate %>.
+      </p>
+
+      <p class="margin-none"><%= latest_resolution_draft_run.output["summary"] %></p>
+
+      <% if latest_resolution_draft_run.output["warnings"].present? %>
+        <div>
+          <strong>Warnings</strong>
+          <ul class="margin-block-end-none">
+            <% latest_resolution_draft_run.output["warnings"].each do |warning| %>
+              <li><%= warning %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% if suggested_fields.any? %>
+        <details>
+          <summary>Preview suggested Gate 2 fields</summary>
+          <dl class="grid gap-half margin-block-start" style="grid-template-columns: max-content 1fr;">
+            <% suggested_fields.each do |field, value| %>
+              <dt><%= field.humanize %></dt>
+              <dd class="margin-none"><%= value %></dd>
+            <% end %>
+          </dl>
+        </details>
+      <% end %>
+    </div>
+  <% end %>
+</section>

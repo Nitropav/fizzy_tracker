@@ -15,6 +15,44 @@ class Card::ResolutionRecord < ApplicationRecord
     verification_steps
   ].freeze
 
+  CATEGORIES = [
+    "bug",
+    "feature request",
+    "question",
+    "configuration error",
+    "task"
+  ].freeze
+
+  DOMAINS = [
+    "assembly config",
+    "pricing",
+    "glass visibility",
+    "certification",
+    "sales document",
+    "quote/work order",
+    "customer account",
+    "ui/ux",
+    "integration",
+    "performance",
+    "training data",
+    "other"
+  ].freeze
+
+  SEVERITIES = [
+    "blocks ordering",
+    "blocks workflow",
+    "degrades experience",
+    "cosmetic",
+    "needs investigation"
+  ].freeze
+
+  PRIORITIES = [
+    "urgent",
+    "high",
+    "normal",
+    "low"
+  ].freeze
+
   belongs_to :account, default: -> { card&.account }
   belongs_to :card, class_name: "::Card", touch: true
   belongs_to :verified_by, class_name: "User", optional: true
@@ -80,7 +118,38 @@ class Card::ResolutionRecord < ApplicationRecord
     gate_one_complete? && (!legacy_resolved? || gate_two_complete?)
   end
 
+  def legacy_training_candidate_ready?
+    legacy_import? && gate_one_complete? && gate_two_complete?
+  end
+
+  def legacy_training_candidate_blockers
+    [
+      *missing_gate_one_fields.map { "Gate 1 #{it.to_s.humanize.downcase}" },
+      *missing_gate_two_fields.map { "Gate 2 #{it.to_s.humanize.downcase}" }
+    ]
+  end
+
+  def self.category_options(current_value = nil)
+    options_with_current(CATEGORIES, current_value)
+  end
+
+  def self.domain_options(current_value = nil)
+    options_with_current(DOMAINS, current_value)
+  end
+
+  def self.severity_options(current_value = nil)
+    options_with_current(SEVERITIES, current_value)
+  end
+
+  def self.priority_options(current_value = nil)
+    options_with_current(PRIORITIES, current_value)
+  end
+
   private
+    def self.options_with_current(options, current_value)
+      (options + [ current_value ]).compact_blank.uniq
+    end
+
     def sync_gate_statuses
       self.gate_one_status = gate_one_complete? ? "complete" : "incomplete"
       self.gate_two_status = gate_two_complete? ? "complete" : "incomplete"

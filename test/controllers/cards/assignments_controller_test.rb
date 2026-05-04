@@ -22,6 +22,21 @@ class Cards::AssignmentsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "support can assign developer but not reporter" do
+    logout_and_sign_in_as :jz
+    reporter = users(:david)
+    reporter.update!(cactus_role: :reporter)
+
+    post card_assignments_path(cards(:logo)), params: { assignee_id: users(:david).id }, as: :json
+    assert_response :forbidden
+    assert_not cards(:logo).reload.assigned_to?(users(:david))
+
+    reporter.update!(cactus_role: :developer)
+    post card_assignments_path(cards(:logo)), params: { assignee_id: users(:david).id }, as: :json
+    assert_response :no_content
+    assert cards(:logo).reload.assigned_to?(users(:david))
+  end
+
   test "create as JSON" do
     card = cards(:logo)
 

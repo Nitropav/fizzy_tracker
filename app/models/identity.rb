@@ -1,6 +1,8 @@
 class Identity < ApplicationRecord
   include Joinable, Transferable
 
+  MINIMUM_PASSWORD_LENGTH = 12
+
   has_secure_password validations: false
 
   has_passkeys name: :email_address, display_name: -> { Current.user&.name || email_address }
@@ -16,6 +18,8 @@ class Identity < ApplicationRecord
   before_destroy :deactivate_users, prepend: true
 
   validates :email_address, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :password, length: { minimum: MINIMUM_PASSWORD_LENGTH }, allow_blank: true
+  validates :password, confirmation: true, allow_blank: true
   normalizes :email_address, with: ->(value) { value.strip.downcase.presence }
 
   def self.find_by_permissable_access_token(token, method:)

@@ -8,9 +8,17 @@
 
     <div class="flex align-center gap">
       <label class="flex align-center gap input input--actor">
-        <%= form.password_field :password, required: true, minlength: 8, class: "input txt-large full-width", autofocus: true, autocomplete: "new-password", placeholder: "Enter a new password..." %>
+        <%= form.password_field :password, required: true, minlength: Identity::MINIMUM_PASSWORD_LENGTH, class: "input txt-large full-width", autofocus: true, autocomplete: "new-password", placeholder: "Enter a new password..." %>
       </label>
     </div>
+
+    <div class="flex align-center gap">
+      <label class="flex align-center gap input input--actor">
+        <%= form.password_field :password_confirmation, required: true, minlength: Identity::MINIMUM_PASSWORD_LENGTH, class: "input txt-large full-width", autocomplete: "new-password", placeholder: "Confirm your new password..." %>
+      </label>
+    </div>
+
+    <p>Password must be at least <%= Identity::MINIMUM_PASSWORD_LENGTH %> characters.</p>
 
     <button type="submit" class="btn btn--link center txt-medium">
       <span>Update password</span>

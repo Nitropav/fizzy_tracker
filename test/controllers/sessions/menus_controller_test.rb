@@ -6,14 +6,17 @@ class Sessions::MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "show with no account" do
-    sign_in_as @identity
-    @identity.users.delete_all
+    with_multi_tenant_mode(false) do
+      sign_in_as @identity
+      @identity.users.delete_all
 
-    untenanted do
-      get session_menu_url
+      untenanted do
+        get session_menu_url
+      end
+
+      assert_response :success, "Renders an empty menu"
+      assert_select "a[href=?]", new_signup_path, count: 0
     end
-
-    assert_response :success, "Renders an empty menu"
   end
 
   test "show with exactly one account" do

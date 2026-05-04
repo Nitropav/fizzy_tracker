@@ -1,4 +1,6 @@
 class CactusQueuesController < ApplicationController
+  before_action :ensure_can_view_cactus_queue
+
   def index
     @state = params[:state].presence_in(Cards::CactusWorkflowQuery::STATES)
     @cards = Cards::CactusWorkflowQuery.new(Current.user.accessible_cards).for(@state)
@@ -9,6 +11,6 @@ class CactusQueuesController < ApplicationController
 
   private
     def assignable_users_by_board_id(cards)
-      cards.map(&:board).uniq.index_with { it.users.active.alphabetically.to_a }.transform_keys(&:id)
+      cards.map(&:board).uniq.index_with { it.users.active.alphabetically.select(&:can_work_cactus_issues?) }.transform_keys(&:id)
     end
 end

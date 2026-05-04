@@ -1,14 +1,24 @@
 <%= collapsible_nav_section "Cactus" do %>
   <%= filter_place_menu_item cactus_home_path, "Cactus Home", "home" %>
-  <%= filter_place_menu_item new_cactus_issue_path, "New Issue", "add" %>
-  <%= filter_place_menu_item cactus_queues_path, "Cactus Queue", "clipboard" %>
-  <%= filter_place_menu_item cactus_work_path, "My Work", "person" %>
-  <%= filter_place_menu_item boards_path, "Projects", "board" %>
+  <%= filter_place_menu_item new_cactus_issue_path, "New Issue", "add" if Current.user.can_create_cactus_issue? %>
+  <%= filter_place_menu_item cactus_queues_path, "Cactus Queue", "clipboard" if Current.user.can_view_cactus_queue? %>
+  <%= filter_place_menu_item cactus_work_path, "My Work", "person" if Current.user.can_work_cactus_issues? %>
+  <%= filter_place_menu_item boards_path, "Projects", "board" if Current.user.can_create_cactus_project? %>
 
-  <% if Current.user.admin? %>
+  <% if Current.user.can_view_cactus_dashboard? %>
     <%= filter_place_menu_item cactus_dashboard_path, "Pipeline Dashboard", "clipboard" %>
+  <% end %>
+
+  <% if Current.user.can_manage_cactus_integrations? %>
     <%= filter_place_menu_item cactus_integrations_path, "Integrations", "clipboard" %>
+  <% end %>
+
+  <% if Current.user.can_review_training_examples? %>
     <%= filter_place_menu_item training_examples_path, "Training Examples", "clipboard" %>
+  <% end %>
+
+  <% if Current.user.can_import_cactus_issues? %>
     <%= filter_place_menu_item new_legacy_imports_asana_path, "Import Asana Tasks", "clipboard" %>
+    <%= filter_place_menu_item legacy_imports_asana_issues_path, "Legacy Asana Issues", "clipboard" %>
   <% end %>
 <% end %>

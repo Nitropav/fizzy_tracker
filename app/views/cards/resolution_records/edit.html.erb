@@ -24,6 +24,7 @@
       <span class="badge">Issue #<%= @card.number %></span>
       <span class="badge">State: <%= @card.cactus_workflow_state_label %></span>
       <span class="badge">Gate 2: <%= @resolution_record.gate_two_complete? ? "Complete" : "Incomplete" %></span>
+      <span class="badge">Code evidence: <%= @card.cactus_code_evidence_present? ? "Present" : "Missing" %></span>
     </div>
   </header>
 
@@ -55,6 +56,17 @@
     </div>
   <% end %>
 
+  <% unless @card.cactus_code_evidence_present? %>
+    <div class="panel txt-small">
+      <strong>Missing code evidence:</strong>
+      link a GitHub commit or PR with <code>CT-<%= @card.number %></code>, or enter a commit SHA / PR URL below before resolving.
+    </div>
+  <% end %>
+
+  <% if Current.user.can_update_cactus_gate_two? %>
+    <%= render "cards/resolution_records/resolution_draft_suggestion", card: @card, return_to: "gate_two" %>
+  <% end %>
+
   <section class="panel flex flex-column gap-half">
     <header>
       <h2 class="txt-large margin-none">Linked code evidence</h2>
@@ -66,46 +78,59 @@
     <%= render "cards/code_links/list", code_links: @code_links %>
   </section>
 
-  <%= form_with model: @resolution_record, scope: :card_resolution_record, url: card_resolution_record_path(@card), method: :put,
-        class: "flex flex-column gap",
-        data: { controller: "form" } do |form| %>
-    <%= hidden_field_tag :return_to, "gate_two" %>
+  <% if Current.user.can_update_cactus_gate_two? %>
+    <%= form_with model: @resolution_record, scope: :card_resolution_record, url: card_resolution_record_path(@card), method: :put,
+          class: "flex flex-column gap",
+          data: { controller: "form" } do |form| %>
+      <%= hidden_field_tag :return_to, "gate_two" %>
 
-    <fieldset class="panel flex flex-column gap-half">
-      <legend class="txt-small txt-bold">Developer resolution</legend>
+      <fieldset class="panel flex flex-column gap-half">
+        <legend class="txt-small txt-bold">Developer resolution</legend>
 
-      <%= form.label :root_cause, "Root cause", class: "txt-small txt-bold" %>
-      <%= form.text_area :root_cause, rows: 4, class: "input input--textarea full-width", placeholder: "Plain-language technical cause. Example: cached quote totals were reused after line item edits." %>
+        <%= form.label :root_cause, "Root cause", class: "txt-small txt-bold" %>
+        <%= form.text_area :root_cause, rows: 4, class: "input input--textarea full-width", placeholder: "Plain-language technical cause. Example: cached quote totals were reused after line item edits." %>
 
-      <%= form.label :fix_summary, "Fix summary", class: "txt-small txt-bold" %>
-      <%= form.text_area :fix_summary, rows: 4, class: "input input--textarea full-width", placeholder: "What changed and why." %>
+        <%= form.label :fix_summary, "Fix summary", class: "txt-small txt-bold" %>
+        <%= form.text_area :fix_summary, rows: 4, class: "input input--textarea full-width", placeholder: "What changed and why." %>
 
-      <%= form.label :verification_steps, "Verification steps", class: "txt-small txt-bold" %>
-      <%= form.text_area :verification_steps, rows: 4, class: "input input--textarea full-width", placeholder: "How the fix was checked. Include manual and automated verification." %>
-    </fieldset>
+        <%= form.label :verification_steps, "Verification steps", class: "txt-small txt-bold" %>
+        <%= form.text_area :verification_steps, rows: 4, class: "input input--textarea full-width", placeholder: "How the fix was checked. Include manual and automated verification." %>
+      </fieldset>
 
-    <fieldset class="panel flex flex-column gap-half">
-      <legend class="txt-small txt-bold">Code evidence</legend>
+      <fieldset class="panel flex flex-column gap-half">
+        <legend class="txt-small txt-bold">Code evidence</legend>
 
-      <p class="txt-small txt-subtle margin-none">
-        Add commit SHAs or PR URLs when available. GitHub webhooks can populate this later, but manual links keep the training example grounded.
-      </p>
+        <p class="txt-small txt-subtle margin-none">
+          Add commit SHAs or PR URLs when available. GitHub webhooks can populate this later, but manual links keep the training example grounded.
+        </p>
 
-      <%= form.label :linked_commit_shas, "Linked commit SHAs", class: "txt-small txt-bold" %>
-      <%= form.text_area :linked_commit_shas, value: @resolution_record.linked_commit_shas.join("\n"), name: "card_resolution_record[linked_commit_shas][]", rows: 3, class: "input input--textarea full-width", placeholder: "abc123\ndef456" %>
+        <%= form.label :linked_commit_shas, "Linked commit SHAs", class: "txt-small txt-bold" %>
+        <%= form.text_area :linked_commit_shas, value: @resolution_record.linked_commit_shas.join("\n"), name: "card_resolution_record[linked_commit_shas][]", rows: 3, class: "input input--textarea full-width", placeholder: "abc123\ndef456" %>
 
-      <%= form.label :linked_pr_urls, "Linked PR URLs", class: "txt-small txt-bold" %>
-      <%= form.text_area :linked_pr_urls, value: @resolution_record.linked_pr_urls.join("\n"), name: "card_resolution_record[linked_pr_urls][]", rows: 3, class: "input input--textarea full-width", placeholder: "https://github.com/org/repo/pull/123" %>
-    </fieldset>
+        <%= form.label :linked_pr_urls, "Linked PR URLs", class: "txt-small txt-bold" %>
+        <%= form.text_area :linked_pr_urls, value: @resolution_record.linked_pr_urls.join("\n"), name: "card_resolution_record[linked_pr_urls][]", rows: 3, class: "input input--textarea full-width", placeholder: "https://github.com/org/repo/pull/123" %>
+      </fieldset>
 
-    <div class="flex flex-wrap align-center justify-between gap">
-      <%= link_to "Open full issue", @card, class: "btn" %>
+      <div class="flex flex-wrap align-center justify-between gap">
+        <%= link_to "Open full issue", @card, class: "btn" %>
 
-      <%= form.submit "Save Gate 2", class: "btn btn--reversed" %>
+        <%= form.submit "Save Gate 2", class: "btn btn--reversed" %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="panel flex flex-column gap-half">
+      <strong>Read-only resolution review</strong>
+      <p class="txt-small txt-subtle margin-none">Developers fill Gate 2. Support/reviewer roles can inspect the resolution before handoff.</p>
+      <%= link_to "Open full issue", @card, class: "btn txt-small" %>
     </div>
   <% end %>
 
-  <% if @resolution_record.gate_two_complete? %>
+  <% if @card.closed? %>
+    <div class="panel flex flex-column gap-half">
+      <strong>Issue already resolved</strong>
+      <p class="txt-small txt-subtle margin-none">This issue has already generated a training example candidate.</p>
+    </div>
+  <% elsif Current.user.can_resolve_cactus_issues? && @card.cactus_workflow_state == "needs_review" && @card.cactus_code_evidence_present? %>
     <div class="panel flex flex-wrap align-center justify-between gap">
       <div>
         <strong>Ready to resolve</strong>
@@ -113,6 +138,16 @@
       </div>
 
       <%= button_to "Mark resolved", card_resolution_path(@card), class: "btn btn--reversed" %>
+    </div>
+  <% elsif @card.cactus_workflow_state == "needs_review" && @resolution_record.gate_two_complete? && !@card.cactus_code_evidence_present? %>
+    <div class="panel flex flex-column gap-half">
+      <strong>Code evidence required</strong>
+      <p class="txt-small txt-subtle margin-none">Add a linked GitHub commit/PR or manual commit/PR evidence before resolving this issue.</p>
+    </div>
+  <% elsif @resolution_record.gate_two_complete? %>
+    <div class="panel flex flex-column gap-half">
+      <strong>Gate 2 complete</strong>
+      <p class="txt-small txt-subtle margin-none">Move this issue into active work before resolving it.</p>
     </div>
   <% end %>
 </section>

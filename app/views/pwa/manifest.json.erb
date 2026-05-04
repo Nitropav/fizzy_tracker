@@ -1,5 +1,5 @@
 {
-  "name": <%= [ "Fizzy", Rails.env.production? ? nil : Rails.env ].compact.join(" - ").to_json.html_safe %>,
+  "name": <%= [ "Cactus Bug Tracker", Rails.env.production? ? nil : Rails.env ].compact.join(" - ").to_json.html_safe %>,
   "icons": [
     {
       "src": "/app-icon-192.png",
@@ -21,7 +21,7 @@
   "start_url": "/",
   "display": "standalone",
   "scope": "/",
-  "description": "Card-up the biggest issues in your projects",
+  "description": "Structured bug tracking and training-data review for ES Windows",
   "categories": ["bugs", "business", "productivity"],
   "shortcuts": [
     {
@@ -31,9 +31,9 @@
       "icons": [{ "src": "<%= image_url("bell.svg") %>", "sizes": "any" }]
     },
     {
-      "name": "Latest Activity",
-      "description": "See what’s new",
-      "url": "<%= root_path %>",
+      "name": "Cactus Home",
+      "description": "Open the Cactus workflow dashboard",
+      "url": "<%= cactus_home_path %>",
       "icons": [{ "src": "<%= image_url("activity.svg") %>", "sizes": "any" }]
     }
   ]

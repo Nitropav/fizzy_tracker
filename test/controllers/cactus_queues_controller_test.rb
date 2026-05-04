@@ -37,21 +37,36 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
       reproduction_steps: "Open settings",
       expected_behavior: "Domain can be purchased",
       actual_behavior: "Purchase button is disabled",
-      environment_context: "Account settings"
+      environment_context: "Account settings",
+      priority: "urgent"
     )
 
     get cactus_queues_path(state: "open")
 
     assert_response :success
+    assert_match "Priority: Urgent", response.body
     assert_select "form[action=?][method=?]", card_triage_path(cards(:buy_domain)), "post"
     assert_select "select[name='column_id']"
     assert_select "option", text: "Triage"
     assert_select "form[action=?][method=?]", card_resolution_record_path(cards(:buy_domain)), "post" do
-      assert_select "input[name='card_resolution_record[category]']"
-      assert_select "input[name='card_resolution_record[domain]']"
-      assert_select "input[name='card_resolution_record[severity]']"
+      assert_select "select[name='card_resolution_record[priority]']" do
+        assert_select "option", text: "Urgent"
+        assert_select "option", text: "Normal"
+      end
+      assert_select "select[name='card_resolution_record[category]']" do
+        assert_select "option", text: "Bug"
+        assert_select "option", text: "Feature request"
+      end
+      assert_select "select[name='card_resolution_record[domain]']" do
+        assert_select "option", text: "Assembly config"
+        assert_select "option", text: "Pricing"
+      end
+      assert_select "select[name='card_resolution_record[severity]']" do
+        assert_select "option", text: "Blocks ordering"
+        assert_select "option", text: "Degrades experience"
+      end
       assert_select "input[name='return_to'][value='cactus_queue']", visible: false
-      assert_select "input[type='submit'][value='Save']"
+      assert_select "input[type='submit'][value='Save classification']"
     end
   end
 
@@ -68,8 +83,8 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
     get cactus_queues_path(state: "open")
 
     assert_response :success
-    assert_match "No board columns configured.", response.body
-    assert_select "a[href=?]", new_board_column_path(boards(:writebook)), text: "Create board column"
+    assert_match "No project columns configured.", response.body
+    assert_select "a[href=?]", new_board_column_path(boards(:writebook)), text: "Create project column"
     assert_select "form[action=?][method=?]", card_triage_path(cards(:buy_domain)), "post", count: 0
   end
 
@@ -91,6 +106,11 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
     assert_match "fix summary", response.body
     assert_match "verification steps", response.body
     assert_match "Assigned to:", response.body
+    assert_select "form[action=?][method=?]", card_self_assignment_path(card), "post" do
+      assert_select "button", text: "Claim"
+      assert_select "input[name='return_to'][value='cactus_queue']", visible: false
+      assert_select "input[name='queue_state'][value='in_progress']", visible: false
+    end
     assert_select "a[href=?]", edit_card_resolution_record_path(card), text: "Fill resolution"
     assert_select "form[action=?][method=?]", card_assignments_path(card), "post" do
       assert_select "select[name='assignee_id']"
@@ -130,5 +150,23 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "I want to play my radio", response.body
     assert_no_match "The logo", response.body
+  end
+
+  test "support users can access queue" do
+    logout_and_sign_in_as :jz
+
+    get cactus_queues_path
+
+    assert_response :success
+    assert_match "Cactus Queue", response.body
+  end
+
+  test "reporters cannot access queue" do
+    users(:david).update!(cactus_role: :reporter)
+    logout_and_sign_in_as :david
+
+    get cactus_queues_path
+
+    assert_response :forbidden
   end
 end

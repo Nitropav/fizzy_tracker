@@ -13,6 +13,7 @@ class Ai::CardContextBuilderTest < ActiveSupport::TestCase
       root_cause: "Image sizing used the wrong max width",
       fix_summary: "Adjusted the card image layout",
       verification_steps: "Opened the card and confirmed the logo is readable",
+      priority: "high",
       category: "bug",
       domain: "ui",
       severity: "cosmetic",
@@ -53,6 +54,7 @@ class Ai::CardContextBuilderTest < ActiveSupport::TestCase
     assert_includes context["events"].map { it["action"] }, "card_published"
     assert_equal "complete", context.dig("resolution_record", "gate_one_status")
     assert_equal "complete", context.dig("resolution_record", "gate_two_status")
+    assert_equal "high", context.dig("resolution_record", "priority")
     assert_equal [ "abc123" ], context.dig("resolution_record", "linked_commit_shas")
     assert_equal true, context.dig("resolution_record", "legacy_import")
     assert_equal "asana", context.dig("resolution_record", "legacy_source")

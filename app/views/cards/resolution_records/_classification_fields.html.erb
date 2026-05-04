@@ -1,0 +1,42 @@
+<% field_class = local_assigns.fetch(:field_class, "input full-width") %>
+<% include_labels = local_assigns.fetch(:include_labels, true) %>
+
+<div class="flex flex-column gap-half">
+  <% if include_labels %>
+    <%= form.label :priority, class: "txt-small txt-bold" %>
+  <% end %>
+  <%= form.select :priority,
+        options_for_select(Card::ResolutionRecord.priority_options(record.priority).map { |value| [ value.humanize, value ] }, record.priority),
+        { prompt: "Priority..." },
+        class: field_class %>
+</div>
+
+<div class="flex flex-column gap-half">
+  <% if include_labels %>
+    <%= form.label :category, class: "txt-small txt-bold" %>
+  <% end %>
+  <%= form.select :category,
+        options_for_select(Card::ResolutionRecord.category_options(record.category).map { |value| [ value.humanize, value ] }, record.category),
+        { prompt: "Category..." },
+        class: field_class %>
+</div>
+
+<div class="flex flex-column gap-half">
+  <% if include_labels %>
+    <%= form.label :domain, class: "txt-small txt-bold" %>
+  <% end %>
+  <%= form.select :domain,
+        options_for_select(Card::ResolutionRecord.domain_options(record.domain).map { |value| [ value.humanize, value ] }, record.domain),
+        { prompt: "Domain..." },
+        class: field_class %>
+</div>
+
+<div class="flex flex-column gap-half">
+  <% if include_labels %>
+    <%= form.label :severity, class: "txt-small txt-bold" %>
+  <% end %>
+  <%= form.select :severity,
+        options_for_select(Card::ResolutionRecord.severity_options(record.severity).map { |value| [ value.humanize, value ] }, record.severity),
+        { prompt: "Severity..." },
+        class: field_class %>
+</div>

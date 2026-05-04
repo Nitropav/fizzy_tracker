@@ -1,5 +1,6 @@
 class Cards::ResolutionsController < ApplicationController
   include CardScoped
+  before_action :ensure_can_resolve_cactus_issues
 
   def create
     capture_card_location
@@ -16,7 +17,7 @@ class Cards::ResolutionsController < ApplicationController
         }, status: :created
       end
     end
-  rescue Card::Closeable::GateTwoIncomplete => error
+  rescue Card::Closeable::GateTwoIncomplete, Card::Closeable::CodeEvidenceMissing, Card::Closeable::ResolutionNotReady => error
     respond_to do |format|
       format.html { redirect_to @card, alert: error.message }
       format.turbo_stream do
@@ -25,7 +26,8 @@ class Cards::ResolutionsController < ApplicationController
       format.json do
         render json: {
           error: error.message,
-          missing_gate_two_fields: @card.resolution_record.missing_gate_two_fields
+          missing_gate_two_fields: @card.resolution_record&.missing_gate_two_fields || [],
+          code_evidence_present: @card.cactus_code_evidence_present?
         }, status: :unprocessable_entity
       end
     end

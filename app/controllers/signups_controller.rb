@@ -1,5 +1,5 @@
 class SignupsController < ApplicationController
-  wrap_parameters :signup, include: %i[ email_address password ]
+  wrap_parameters :signup, include: %i[ email_address password password_confirmation ]
 
   disallow_account_scope
   allow_unauthenticated_access
@@ -14,15 +14,18 @@ class SignupsController < ApplicationController
   end
 
   def create
-    signup = Signup.new(signup_params)
-    if signup.valid?(:identity_creation)
-      start_new_session_for signup.create_identity
+    @signup = Signup.new(signup_params)
+    if @signup.valid?(:identity_creation)
+      start_new_session_for @signup.create_identity
       respond_to do |format|
         format.html { redirect_to new_signup_completion_path }
         format.json { render json: { session_token: session_token, requires_signup_completion: true }, status: :created }
       end
     else
-      head :unprocessable_entity
+      respond_to do |format|
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: { errors: @signup.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -36,6 +39,6 @@ class SignupsController < ApplicationController
     end
 
     def signup_params
-      params.expect signup: %i[ email_address password ]
+      params.expect signup: %i[ email_address password password_confirmation ]
     end
 end

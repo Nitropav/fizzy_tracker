@@ -36,8 +36,12 @@ module Authentication
     end
 
     def require_account
-      unless Current.account.present?
+      return if Current.account.present?
+
+      if resume_session
         redirect_to main_app.session_menu_path(script_name: nil)
+      else
+        redirect_to main_app.new_session_path(script_name: nil)
       end
     end
 
@@ -78,11 +82,11 @@ module Authentication
     end
 
     def after_authentication_url
-      session.delete(:return_to_after_authenticating) || landing_url
+      session.delete(:return_to_after_authenticating) || default_post_authentication_url
     end
 
     def redirect_authenticated_user
-      redirect_to main_app.root_url if authenticated?
+      redirect_to after_authentication_url if authenticated?
     end
 
     def redirect_tenanted_request
@@ -107,5 +111,17 @@ module Authentication
 
     def session_token
       cookies[:session_token]
+    end
+
+    def default_post_authentication_url
+      return landing_url if Current.account.present?
+
+      accounts = Current.identity.accounts.active
+
+      if accounts.one?
+        landing_url(script_name: accounts.first.slug)
+      else
+        session_menu_url(script_name: nil)
+      end
     end
 end

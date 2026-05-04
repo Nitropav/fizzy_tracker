@@ -17,12 +17,153 @@
     </div>
 
     <nav class="flex flex-wrap gap-half txt-small" aria-label="Cactus dashboard shortcuts">
-      <%= link_to "Open queue", cactus_queues_path, class: "btn" %>
-      <%= link_to "Review examples", training_examples_path, class: "btn" %>
-      <%= link_to "Integrations", cactus_integrations_path, class: "btn" %>
-      <%= link_to "Import Asana tasks", new_legacy_imports_asana_path, class: "btn" %>
+      <%= link_to "Open queue", cactus_queues_path, class: "btn" if Current.user.can_view_cactus_queue? %>
+      <%= link_to "Review examples", training_examples_path, class: "btn" if Current.user.can_review_training_examples? %>
+      <%= link_to "Integrations", cactus_integrations_path, class: "btn" if Current.user.can_manage_cactus_integrations? %>
+      <%= link_to "Import Asana tasks", new_legacy_imports_asana_path, class: "btn" if Current.user.can_import_cactus_issues? %>
     </nav>
   </header>
+
+  <section class="panel flex flex-wrap align-center justify-between gap-half">
+    <div>
+      <h2 class="txt-large margin-none">Activity window</h2>
+      <p class="txt-small txt-subtle margin-none">
+        Trends from <%= @metrics.period_started_at.to_date.to_fs(:long) %>
+        through <%= @metrics.period_ended_at.to_date.to_fs(:long) %>.
+      </p>
+    </div>
+
+    <nav class="flex flex-wrap gap-half txt-small" aria-label="Dashboard activity period">
+      <% @metrics.period_options.each do |period, label| %>
+        <%= link_to label,
+          cactus_dashboard_path(period: period),
+          class: "btn",
+          aria: { current: ("page" if period == @metrics.period) },
+          style: ("font-weight: 700;" if period == @metrics.period) %>
+      <% end %>
+    </nav>
+  </section>
+
+  <% if @metrics.operational_alerts.any? %>
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Operational alerts</h2>
+      <div class="grid gap-half" style="grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));">
+        <% @metrics.operational_alerts.each do |alert| %>
+          <% alert_path = case alert[:kind]
+             when :needs_info then cactus_queues_path(state: "needs_info")
+             when :review_queue then training_examples_path(status: "pending_review")
+             when :exports then training_examples_path(status: "approved")
+             when :github then cactus_integrations_path
+             end %>
+          <article class="panel border flex flex-column gap-half">
+            <strong><%= alert[:kind].to_s.humanize %></strong>
+            <p class="txt-small margin-none"><%= alert[:message] %></p>
+            <% if alert_path.present? %>
+              <%= link_to "Open", alert_path, class: "btn txt-small" %>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <section class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
+    <article class="panel flex flex-column gap-half">
+      <span class="txt-small txt-subtle">Active backlog</span>
+      <strong class="txt-x-large"><%= @metrics.backlog_health[:active_total] %></strong>
+      <span class="txt-small">Bottleneck: <%= @metrics.backlog_health[:bottleneck_state].to_s.humanize %> (<%= @metrics.backlog_health[:bottleneck_count] %>)</span>
+    </article>
+
+    <article class="panel flex flex-column gap-half">
+      <span class="txt-small txt-subtle">Gate 1 completion</span>
+      <strong class="txt-x-large"><%= @metrics.gate_completion_rates[:gate_one] %>%</strong>
+      <span class="txt-small"><%= @metrics.gate_counts[:gate_one_complete] %> of <%= @metrics.gate_counts[:total_records] %> structured records</span>
+    </article>
+
+    <article class="panel flex flex-column gap-half">
+      <span class="txt-small txt-subtle">Gate 2 completion</span>
+      <strong class="txt-x-large"><%= @metrics.gate_completion_rates[:gate_two] %>%</strong>
+      <span class="txt-small"><%= @metrics.gate_counts[:gate_two_complete] %> of <%= @metrics.gate_counts[:total_records] %> structured records</span>
+    </article>
+
+    <article class="panel flex flex-column gap-half">
+      <span class="txt-small txt-subtle">GitHub evidence coverage</span>
+      <strong class="txt-x-large"><%= @metrics.github_linkage_rate %>%</strong>
+      <span class="txt-small">Gate 2-complete issues with code evidence</span>
+    </article>
+
+    <article class="panel flex flex-column gap-half">
+      <span class="txt-small txt-subtle">Training export rate</span>
+      <strong class="txt-x-large"><%= @metrics.training_export_metrics[:export_rate] %>%</strong>
+      <span class="txt-small"><%= @metrics.training_export_metrics[:exported_examples] %> examples exported</span>
+    </article>
+
+    <article class="panel flex flex-column gap-half">
+      <span class="txt-small txt-subtle">AI suggestion acceptance</span>
+      <strong class="txt-x-large"><%= @metrics.ai_suggestion_metrics[:acceptance_rate] %>%</strong>
+      <span class="txt-small"><%= @metrics.ai_suggestion_metrics[:applied] %> applied, <%= @metrics.ai_suggestion_metrics[:dismissed] %> dismissed</span>
+    </article>
+  </section>
+
+  <% trend_labels = {
+    created_issues: "New issues",
+    gate_one_completed: "Gate 1 completed",
+    gate_two_completed: "Gate 2 completed",
+    training_examples_created: "Examples created",
+    training_examples_exported: "Examples exported",
+    github_webhook_failures: "GitHub failures",
+    ai_suggestions_completed: "AI suggestions"
+  } %>
+
+  <section class="panel flex flex-column gap">
+    <header class="flex flex-wrap align-center justify-between gap-half">
+      <div>
+        <h2 class="txt-large margin-none">Activity Trends</h2>
+        <p class="txt-small txt-subtle margin-none">
+          Daily activity for <%= @metrics.period_label.downcase %>. Current backlog cards above are not period-filtered.
+        </p>
+      </div>
+    </header>
+
+    <div class="grid gap-half" style="grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));">
+      <% trend_labels.each do |key, label| %>
+        <article class="panel border flex flex-column gap-half">
+          <span class="txt-small txt-subtle"><%= label %></span>
+          <strong class="txt-large"><%= @metrics.trend_totals[key] %></strong>
+        </article>
+      <% end %>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table class="txt-small full-width">
+        <thead>
+          <tr>
+            <th scope="col" class="txt-left">Date</th>
+            <% trend_labels.each_value do |label| %>
+              <th scope="col" class="txt-left"><%= label %></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% @metrics.trend_points.each do |point| %>
+            <tr>
+              <th scope="row" class="txt-left"><%= point[:date].strftime("%b %d") %></th>
+              <% trend_labels.each_key do |key| %>
+                <% count = point[key] %>
+                <% bar_width = @metrics.max_trend_value.zero? ? 0 : ((count.to_f / @metrics.max_trend_value) * 100).round %>
+                <td>
+                  <span class="flex align-center gap-half">
+                    <span style="min-width: 1.5rem;"><%= count %></span>
+                    <span aria-hidden="true" style="display: inline-block; height: 0.35rem; width: <%= bar_width %>%; min-width: <%= count.positive? ? "0.5rem" : "0" %>; border-radius: 999px; background: currentColor; opacity: 0.35;"></span>
+                  </span>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));">
     <section class="panel flex flex-column gap-half">
@@ -111,9 +252,21 @@
           </div>
         <% end %>
       </dl>
-      <% unless @metrics.ai_acceptance_tracking_available %>
-        <p class="txt-small txt-subtle margin-none">Suggestion acceptance is not tracked yet.</p>
-      <% end %>
+      <hr class="separator--horizontal full-width">
+      <dl class="margin-none">
+        <div class="flex justify-space-between gap-half">
+          <dt>Active suggestions</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.ai_suggestion_metrics[:active] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Applied suggestions</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.ai_suggestion_metrics[:applied] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Dismissed suggestions</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.ai_suggestion_metrics[:dismissed] %></dd>
+        </div>
+      </dl>
     </section>
 
     <section class="panel flex flex-column gap-half">
@@ -130,6 +283,93 @@
         <div class="flex justify-space-between gap-half">
           <dt>Structured</dt>
           <dd class="margin-none font-weight-bold"><%= @metrics.legacy_counts[:structured] %></dd>
+        </div>
+      </dl>
+    </section>
+  </div>
+
+  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));">
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Backlog Health</h2>
+      <dl class="margin-none">
+        <div class="flex justify-space-between gap-half">
+          <dt>Needs reporter info</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.backlog_health[:needs_info] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Ready for triage</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.backlog_health[:untriaged_open] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>In progress</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.backlog_health[:in_progress] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Ready for resolution</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.backlog_health[:needs_review] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Resolved pending review</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.backlog_health[:resolved_pending_training_review] %></dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Training Exports</h2>
+      <dl class="margin-none">
+        <div class="flex justify-space-between gap-half">
+          <dt>Approved and ready</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.training_export_metrics[:approved_ready] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Export batches</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.training_export_metrics[:export_batches] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Failed exports</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.training_export_metrics[:failed_exports] %></dd>
+        </div>
+      </dl>
+
+      <% if @metrics.training_export_metrics[:recent_exports].any? %>
+        <details class="txt-small">
+          <summary>Recent exports</summary>
+          <ul class="margin-block-end-none">
+            <% @metrics.training_export_metrics[:recent_exports].each do |export| %>
+              <li>
+                <%= export[:filename] %>
+                (<%= export[:example_count] %> examples,
+                <%= local_datetime_tag export[:completed_at], style: :shortdate %>)
+              </li>
+            <% end %>
+          </ul>
+        </details>
+      <% end %>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">GitHub Webhooks</h2>
+      <dl class="margin-none">
+        <div class="flex justify-space-between gap-half">
+          <dt>Total deliveries</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.github_webhook_metrics[:total] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Processed</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.github_webhook_metrics[:processed] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Failed</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.github_webhook_metrics[:failed] %></dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Failure rate</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.github_webhook_metrics[:failure_rate] %>%</dd>
+        </div>
+        <div class="flex justify-space-between gap-half">
+          <dt>Linked references</dt>
+          <dd class="margin-none font-weight-bold"><%= @metrics.github_webhook_metrics[:linked_code_references] %></dd>
         </div>
       </dl>
     </section>
@@ -173,6 +413,22 @@
         </dl>
       <% else %>
         <p class="txt-small txt-subtle margin-none">No structured domains yet.</p>
+      <% end %>
+    </section>
+
+    <section class="panel flex flex-column gap-half">
+      <h2 class="txt-large margin-none">AI Suggestion Types</h2>
+      <% if @metrics.ai_suggestion_metrics[:by_type].any? %>
+        <dl class="margin-none">
+          <% @metrics.ai_suggestion_metrics[:by_type].each do |run_type, count| %>
+            <div class="flex justify-space-between gap-half">
+              <dt><%= run_type.humanize %></dt>
+              <dd class="margin-none font-weight-bold"><%= count %></dd>
+            </div>
+          <% end %>
+        </dl>
+      <% else %>
+        <p class="txt-small txt-subtle margin-none">No suggestion runs yet.</p>
       <% end %>
     </section>
   </div>
