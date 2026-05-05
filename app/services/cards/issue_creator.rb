@@ -11,12 +11,15 @@ module Cards
       environment_context
     ].freeze
 
-    attr_reader :board, :user, :attributes, :card, :resolution_record
+    attr_reader :board, :user, :attributes, :attachments, :card, :resolution_record
 
     def initialize(board:, user:, attributes:, draft: false)
+      attributes = attributes.to_h.with_indifferent_access
+
       @board = board
       @user = user
-      @attributes = attributes.to_h.with_indifferent_access.slice(*REPORT_ATTRIBUTES)
+      @attachments = Array.wrap(attributes.delete(:attachments)).compact_blank
+      @attributes = attributes.slice(*REPORT_ATTRIBUTES)
       @draft = draft
       @card = build_card
       @resolution_record = Card::ResolutionRecord.new(resolution_attributes)
@@ -57,7 +60,7 @@ module Cards
           creator: user,
           status: draft? ? :drafted : :published,
           title: attributes[:title].presence || title_from(attributes[:problem_description]),
-          description: card_description
+          description: card_description_with_attachments
         )
       end
 
@@ -67,6 +70,39 @@ module Cards
 
       def card_description
         attributes[:description].presence || attributes[:problem_description].presence || attributes[:title].to_s
+      end
+
+      def card_description_with_attachments
+        return card_description if attachments.empty?
+
+        [
+          card_description,
+          *attachments.map { attachment_html_for(it) }
+        ].join("\n")
+      end
+
+      def attachment_html_for(upload)
+        blob = blob_for(upload)
+
+        <<~HTML.squish
+          <action-text-attachment
+            sgid="#{ERB::Util.html_escape(blob.attachable_sgid)}"
+            content-type="#{ERB::Util.html_escape(blob.content_type)}"
+            filename="#{ERB::Util.html_escape(blob.filename.to_s)}"
+            filesize="#{blob.byte_size}">
+          </action-text-attachment>
+        HTML
+      end
+
+      def blob_for(upload)
+        return ActiveStorage::Blob.find_signed!(upload) unless upload.respond_to?(:tempfile)
+
+        upload.tempfile.rewind
+        ActiveStorage::Blob.create_and_upload!(
+          io: upload.tempfile,
+          filename: upload.original_filename,
+          content_type: upload.content_type
+        )
       end
 
       def valid_report?

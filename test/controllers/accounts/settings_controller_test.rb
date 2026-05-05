@@ -8,6 +8,24 @@ class Account::SettingsControllerTest < ActionDispatch::IntegrationTest
   test "show" do
     get account_settings_path
     assert_response :success
+    assert_select "input[name='user[email_address]']"
+    assert_select "input[name='user[password]']"
+    assert_select "select[name='user[role]']" do
+      assert_select "option[value='member']", text: "Member"
+      assert_select "option[value='admin']", text: "Admin"
+    end
+    assert_select "select[name='user[cactus_role]']"
+    assert_select "p", text: /Admin: Can manage users/
+    assert_select "p", text: /Developer: Claims assigned work/
+    assert_select "form[action='#{user_password_path(users(:david))}']"
+  end
+
+  test "show requires admin" do
+    logout_and_sign_in_as :david
+
+    get account_settings_path
+
+    assert_response :forbidden
   end
 
   test "update" do

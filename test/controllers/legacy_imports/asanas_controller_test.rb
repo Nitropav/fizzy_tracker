@@ -12,6 +12,15 @@ class LegacyImports::AsanasControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Import Asana Tasks", response.body
     assert_match @board.name, response.body
+    assert_select "form[action=?][method=?]", legacy_imports_asana_path, "post"
+  end
+
+  test "post import path opens form on refresh" do
+    get legacy_imports_asana_path
+
+    assert_response :success
+    assert_match "Import Asana Tasks", response.body
+    assert_match @board.name, response.body
   end
 
   test "create imports Asana JSON tasks as legacy issues" do
@@ -31,6 +40,8 @@ class LegacyImports::AsanasControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Imported Asana issue", record.card.title
     assert_predicate record, :gate_one_legacy?
     assert_predicate record, :needs_structuring?
+    assert_equal "Reporter added screenshot context", record.legacy_metadata.dig("stories", 0, "text")
+    assert_equal "image.png", record.legacy_metadata.dig("attachments", 0, "name")
   end
 
   test "create skips duplicate Asana tasks" do

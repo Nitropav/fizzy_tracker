@@ -3,6 +3,10 @@
     <h2 class="divider">People on this account</h2>
   </header>
 
+  <% if Current.user.admin? %>
+    <%= render "account/settings/new_user", user_creation: local_assigns.fetch(:user_creation, Account::UserCreation.new(account: Current.account)) %>
+  <% end %>
+
   <%= tag.div class: "settings__user-filter flex flex-column gap", data: {
     controller: "filter navigable-list",
     action: "keydown->navigable-list#navigate filter:changed->navigable-list#reset",

@@ -8,7 +8,16 @@ class Cards::TriagesController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to @card }
-      format.turbo_stream { head :no_content }
+      format.turbo_stream do
+        if params[:return_to] == "cactus_queue"
+          render turbo_stream: [
+            turbo_stream.remove(ActionView::RecordIdentifier.dom_id(@card, :cactus_queue)),
+            turbo_stream_flash(notice: "Issue moved to #{column.name}.")
+          ]
+        else
+          head :no_content
+        end
+      end
       format.json { head :no_content }
     end
   rescue Card::Triageable::GateOneIncomplete => error

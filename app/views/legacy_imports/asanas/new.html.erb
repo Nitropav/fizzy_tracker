@@ -27,7 +27,7 @@
     </section>
   <% end %>
 
-  <%= form_with url: legacy_imports_asana_path, class: "flex flex-column gap", data: { controller: "form upload-preview" }, multipart: true do |form| %>
+  <%= form_with url: legacy_imports_asana_path, method: :post, class: "flex flex-column gap", data: { controller: "form upload-preview" }, multipart: true do |form| %>
     <label class="flex flex-column gap-half">
       <span class="txt-small font-weight-bold">Destination project</span>
       <%= form.select :board_id, options_from_collection_for_select(@boards, :id, :name, @board&.id), { prompt: "Choose a project..." }, required: true, class: "input" %>

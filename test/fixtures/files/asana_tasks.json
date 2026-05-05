@@ -1,5 +1,6 @@
 {
-  "data": [
+  "project_gid": "1207248643059756",
+  "tasks": [
     {
       "gid": "asana-1",
       "name": "Imported Asana issue",
@@ -10,7 +11,22 @@
       "permalink_url": "https://app.asana.com/0/1/asana-1",
       "workspace": { "name": "ES Windows" },
       "projects": [ { "name": "Support" } ],
-      "tags": [ { "name": "glass_visibility" } ]
+      "tags": [ { "name": "glass_visibility" } ],
+      "stories": [
+        {
+          "gid": "story-1",
+          "text": "Reporter added screenshot context",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        }
+      ],
+      "attachments": [
+        {
+          "gid": "asset-1",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=asset-1"
+        }
+      ]
     },
     {
       "gid": "asana-2",

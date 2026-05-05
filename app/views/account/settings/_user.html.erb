@@ -31,6 +31,34 @@
           data: { action: "form#submit" } %>
   <% end %>
 
+  <% if Current.user.can_administer?(user) %>
+    <details class="txt-small">
+      <summary class="btn">Reset password</summary>
+
+      <%= form_with url: user_password_path(user), scope: :user, method: :patch, class: "flex align-center gap-half margin-block-start" do |form| %>
+        <label class="for-screen-reader" for="<%= dom_id(user, :password) %>">New password</label>
+        <%= form.password_field :password,
+              id: dom_id(user, :password),
+              required: true,
+              minlength: Identity::MINIMUM_PASSWORD_LENGTH,
+              autocomplete: "new-password",
+              placeholder: "New password",
+              class: "input txt-small" %>
+
+        <label class="for-screen-reader" for="<%= dom_id(user, :password_confirmation) %>">Confirm password</label>
+        <%= form.password_field :password_confirmation,
+              id: dom_id(user, :password_confirmation),
+              required: true,
+              minlength: Identity::MINIMUM_PASSWORD_LENGTH,
+              autocomplete: "new-password",
+              placeholder: "Confirm password",
+              class: "input txt-small" %>
+
+        <%= form.submit "Save", class: "btn btn--reversed txt-small" %>
+      <% end %>
+    </details>
+  <% end %>
+
   <%# FIXME: Move this Current.user check to a stimulus controller that just checks for admin? or the like we so we can cache user list %>
   <%= button_to user, method: :delete, class: "btn btn--circle btn--negative",
         disabled: !Current.user.can_administer?(user),

@@ -26,7 +26,7 @@
       <% @cards.each do |card| %>
         <% resolution_record = card.resolution_record || card.build_resolution_record %>
 
-        <article class="panel border flex flex-column gap">
+        <article id="<%= dom_id(card, :cactus_queue) %>" class="panel border flex flex-column gap">
           <header class="flex flex-wrap align-start justify-between gap">
             <div class="flex flex-column gap-half">
               <%= link_to "##{card.number} #{card.title}", card, class: "txt-link txt-large" %>
@@ -114,6 +114,8 @@
                 <% columns = card.board.columns.sorted %>
                 <% if columns.any? %>
                   <%= form_with url: card_triage_path(card), method: :post, class: "flex flex-column gap-half txt-small" do |form| %>
+                    <%= hidden_field_tag :return_to, "cactus_queue" %>
+                    <%= hidden_field_tag :queue_state, @state %>
                     <%= form.select :column_id, options_from_collection_for_select(columns, :id, :name), { prompt: "Move to column..." }, class: "input txt-small" %>
                     <%= form.submit "Triage", class: "btn txt-small" %>
                   <% end %>

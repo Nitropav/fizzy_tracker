@@ -42,11 +42,21 @@ module LegacyImports
           "created_at",
           "modified_at",
           "workspace",
+          "project_gid",
           "projects",
           "memberships",
           "assignee",
+          "created_by",
+          "followers",
+          "due_at",
+          "due_on",
+          "num_subtasks",
+          "parent",
+          "resource_subtype",
           "tags",
-          "custom_fields"
+          "custom_fields",
+          "stories",
+          "attachments"
         )
       end
 

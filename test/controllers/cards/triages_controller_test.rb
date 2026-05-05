@@ -72,6 +72,18 @@ class Cards::TriagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal column, card.reload.column
   end
 
+  test "create from cactus queue removes the triaged row" do
+    card = cards(:logo)
+    column = columns(:writebook_in_progress)
+
+    post card_triage_path(card, column_id: column.id, return_to: "cactus_queue", queue_state: "open"), as: :turbo_stream
+
+    assert_response :success
+    assert_equal column, card.reload.column
+    assert_match %(<turbo-stream action="remove" target="#{ActionView::RecordIdentifier.dom_id(card, :cactus_queue)}">), response.body
+    assert_match "Issue moved to #{column.name}.", response.body
+  end
+
   test "destroy as JSON" do
     card = cards(:shipping)
 

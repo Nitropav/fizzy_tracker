@@ -148,8 +148,8 @@
     }
 
     option {
-      background-color: var(--color-canvas);
-      color: var(--color-ink);
+      background-color: Canvas;
+      color: CanvasText;
     }
   }
 

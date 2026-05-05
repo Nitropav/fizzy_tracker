@@ -15,6 +15,9 @@ class LegacyImports::AsanaTaskImporterTest < ActiveSupport::TestCase
     assert_equal "Customer says glass is invisible", result.resolution_record.problem_description
     assert_equal "ES Windows / Glass", result.resolution_record.environment_context
     assert_equal "glass_visibility", result.resolution_record.domain
+    assert_equal "Daniel", result.resolution_record.legacy_metadata.dig("created_by", "name")
+    assert_equal "Looks fixed", result.resolution_record.legacy_metadata.dig("stories", 0, "text")
+    assert_equal "screenshot.png", result.resolution_record.legacy_metadata.dig("attachments", 0, "name")
     assert_predicate result.resolution_record, :needs_structuring?
   end
 
@@ -31,7 +34,14 @@ class LegacyImports::AsanaTaskImporterTest < ActiveSupport::TestCase
         workspace: { name: "ES Windows" },
         projects: [ { name: "Glass" } ],
         tags: [ { name: "glass_visibility" } ],
-        assignee: { name: "Developer" }
+        assignee: { name: "Developer" },
+        created_by: { name: "Daniel" },
+        stories: [
+          { gid: "story-1", text: "Looks fixed", type: "comment", resource_subtype: "comment_added" }
+        ],
+        attachments: [
+          { gid: "attachment-1", name: "screenshot.png", permanent_url: "https://app.asana.com/app/asana/-/get_asset?asset_id=attachment-1" }
+        ]
       }
     end
 end

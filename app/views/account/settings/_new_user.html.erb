@@ -1,0 +1,72 @@
+<div class="panel border flex flex-column gap margin-block-half">
+  <div class="flex flex-column gap-half">
+    <h3 class="txt-medium font-weight-bold margin-none">Create user login</h3>
+    <p class="txt-small txt-subtle margin-none">
+      Create a production login with an email, password, account role, and Cactus role.
+    </p>
+  </div>
+
+  <% if user_creation.errors.any? %>
+    <div class="txt-small txt-negative">
+      <strong>Could not create user:</strong>
+      <ul>
+        <% user_creation.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: user_creation, scope: :user, url: users_path, class: "grid gap-half", style: "grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));" do |form| %>
+    <label class="flex flex-column gap-half txt-small">
+      <span>Name</span>
+      <%= form.text_field :name, required: true, class: "input full-width", autocomplete: "name" %>
+    </label>
+
+    <label class="flex flex-column gap-half txt-small">
+      <span>Email</span>
+      <%= form.email_field :email_address, required: true, class: "input full-width", autocomplete: "email" %>
+    </label>
+
+    <label class="flex flex-column gap-half txt-small">
+      <span>Password</span>
+      <%= form.password_field :password, required: true, minlength: Identity::MINIMUM_PASSWORD_LENGTH, class: "input full-width", autocomplete: "new-password" %>
+    </label>
+
+    <label class="flex flex-column gap-half txt-small">
+      <span>Confirm password</span>
+      <%= form.password_field :password_confirmation, required: true, minlength: Identity::MINIMUM_PASSWORD_LENGTH, class: "input full-width", autocomplete: "new-password" %>
+    </label>
+
+    <label class="flex flex-column gap-half txt-small">
+      <span>Account role</span>
+      <%= form.select :role, options_for_select(account_role_options, user_creation.role), {}, class: "input full-width" %>
+      <span class="txt-subtle"><%= account_role_description(user_creation.role) %></span>
+    </label>
+
+    <label class="flex flex-column gap-half txt-small">
+      <span>Cactus role</span>
+      <%= form.select :cactus_role, options_for_select(cactus_role_options, user_creation.cactus_role), {}, class: "input full-width" %>
+      <span class="txt-subtle"><%= cactus_role_description(user_creation.cactus_role) %></span>
+    </label>
+
+    <div class="flex align-end">
+      <%= form.submit "Create user", class: "btn btn--reversed full-width" %>
+    </div>
+  <% end %>
+
+  <div class="grid gap-half txt-small" style="grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));">
+    <div class="panel">
+      <strong>Account roles</strong>
+      <p class="margin-none-block-end">Member: <%= account_role_description("member") %></p>
+      <p class="margin-none-block-end">Admin: <%= account_role_description("admin") %></p>
+    </div>
+
+    <div class="panel">
+      <strong>Cactus roles</strong>
+      <% User::CactusRole::ROLES.each do |role| %>
+        <p class="margin-none-block-end"><%= role.titleize %>: <%= cactus_role_description(role) %></p>
+      <% end %>
+    </div>
+  </div>
+</div>

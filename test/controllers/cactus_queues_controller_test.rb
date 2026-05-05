@@ -45,7 +45,10 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "Priority: Urgent", response.body
+    assert_select "##{ActionView::RecordIdentifier.dom_id(cards(:buy_domain), :cactus_queue)}"
     assert_select "form[action=?][method=?]", card_triage_path(cards(:buy_domain)), "post"
+    assert_select "input[name='return_to'][value='cactus_queue']", visible: false
+    assert_select "input[name='queue_state'][value='open']", visible: false
     assert_select "select[name='column_id']"
     assert_select "option", text: "Triage"
     assert_select "form[action=?][method=?]", card_resolution_record_path(cards(:buy_domain)), "post" do
@@ -168,5 +171,6 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
     get cactus_queues_path
 
     assert_response :forbidden
+    assert_match "Access denied", response.body
   end
 end

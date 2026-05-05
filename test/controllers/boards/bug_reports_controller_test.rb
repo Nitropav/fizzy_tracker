@@ -18,6 +18,7 @@ class Boards::BugReportsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_select "textarea[name='bug_report[problem_description]']"
     assert_select "lexxy-editor[name='bug_report[description]']"
+    assert_select "input[type='file'][name='bug_report[attachments][]'][multiple='multiple']"
   end
 
   test "create makes published card with structured gate one record" do
@@ -46,6 +47,28 @@ class Boards::BugReportsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "The customer subtotal changes after refreshing the quote.", card.description.to_plain_text
     assert record.gate_one_complete?
     assert_equal "Customer portal quote screen", record.environment_context
+  end
+
+  test "create stores uploaded evidence files as issue attachments" do
+    assert_difference -> { ActiveStorage::Blob.count }, +1 do
+      post board_bug_report_path(@board), params: {
+        bug_report: {
+          title: "Checkout total evidence",
+          problem_description: "The customer subtotal changes after refreshing the quote.",
+          reproduction_steps: "Open quote\nRefresh page",
+          expected_behavior: "Subtotal should stay the same",
+          actual_behavior: "Subtotal changes",
+          environment_context: "Customer portal quote screen",
+          attachments: [ fixture_file_upload("moon.jpg", "image/jpeg") ]
+        }
+      }
+    end
+
+    card = Card.last
+
+    assert_redirected_to card_path(card)
+    assert card.has_attachments?
+    assert_equal "moon.jpg", card.attachments.first.filename.to_s
   end
 
   test "create keeps partial report in needs info state" do

@@ -12,7 +12,7 @@
 <div class="settings margin-block-start-half">
   <div class="settings__panel settings__panel--users panel shadow center">
     <%= render "account/settings/name", account: @account %>
-    <%= render "account/settings/users", users: @users %>
+    <%= render "account/settings/users", users: @users, user_creation: @user_creation %>
   </div>
 
   <div class="settings__panel settings__panel--entropy panel shadow center">

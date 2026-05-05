@@ -33,11 +33,17 @@ class LegacyImports::AsanasController < ApplicationController
 
     def parse_tasks
       payload = JSON.parse(file.read)
-      tasks = payload.is_a?(Hash) ? payload["data"] : payload
+      tasks = tasks_from(payload)
 
-      raise JSON::ParserError, "expected an array of Asana tasks or an object with a data array" unless tasks.is_a?(Array)
+      raise JSON::ParserError, "expected an array of Asana tasks or an object with a data/tasks array" unless tasks.is_a?(Array)
 
       tasks
+    end
+
+    def tasks_from(payload)
+      return payload unless payload.is_a?(Hash)
+
+      payload["data"] || payload["tasks"]
     end
 
     def file

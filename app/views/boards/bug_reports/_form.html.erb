@@ -32,7 +32,7 @@
   </ul>
 </section>
 
-<%= form_with model: card, url: form_url, scope: form_scope, class: "flex flex-column gap", data: { controller: "form" } do |form| %>
+<%= form_with model: card, url: form_url, scope: form_scope, class: "flex flex-column gap", data: { controller: "form upload-preview" }, multipart: true do |form| %>
   <% if local_assigns[:projects].present? %>
     <div class="flex flex-column gap-half">
       <%= form.label :board_id, "Project", class: "txt-small txt-bold" %>
@@ -89,6 +89,22 @@
     </p>
     <%= form.rich_textarea :description, class: "lexxy-content input full-width",
           placeholder: "Drop screenshots/files here or add extra notes for support and developers." %>
+  </div>
+
+  <div class="flex flex-column gap-half">
+    <span class="txt-small txt-bold">Upload evidence files</span>
+    <label class="btn input--upload">
+      <div data-upload-preview-target="placeholder">Choose screenshots, logs, or files...</div>
+      <div data-upload-preview-target="fileName" hidden></div>
+      <%= form.file_field :attachments,
+            multiple: true,
+            class: "input",
+            accept: "image/*,video/*,.pdf,.txt,.log,.csv,.json",
+            data: { action: "upload-preview#previewFileName", upload_preview_target: "input" } %>
+    </label>
+    <p class="txt-small txt-subtle margin-none">
+      Uploaded files are stored on the issue and included in AI/training context as attachment metadata.
+    </p>
   </div>
 
   <div class="flex align-center justify-between gap">

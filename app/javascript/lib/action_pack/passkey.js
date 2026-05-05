@@ -156,7 +156,7 @@ class PasskeySignInButton extends PasskeyButton {
       this.fillForm(passkey)
       this.form.submit()
     } catch (error) {
-      if (error.name === "AbortError") return
+      if (conditionalMediationWasCancelled(error)) return
 
       console.error("Passkey conditional mediation failed", error)
       const type = errorType(error)
@@ -190,6 +190,10 @@ function errorType(error) {
 
 function passkeysAvailable() {
   return !!window.PublicKeyCredential
+}
+
+function conditionalMediationWasCancelled(error) {
+  return [ "AbortError", "NotAllowedError" ].includes(error.name)
 }
 
 async function refreshChallenge(options, challengeUrl, purpose) {

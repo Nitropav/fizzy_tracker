@@ -1,11 +1,106 @@
 require "test_helper"
 
 class UsersControllerTest < ActionDispatch::IntegrationTest
+  STRONG_PASSWORD = "correct horse battery staple"
+
   test "show" do
     sign_in_as :kevin
 
     get user_path(users(:david))
     assert_in_body users(:david).name
+  end
+
+  test "create user login as admin" do
+    sign_in_as :kevin
+    email_address = "new-user-#{SecureRandom.hex(6)}@example.com"
+
+    assert_difference -> { Identity.count }, +1 do
+      assert_difference -> { users(:kevin).account.users.active.count }, +1 do
+        post users_path, params: {
+          user: {
+            name: "New User",
+            email_address: email_address,
+            password: STRONG_PASSWORD,
+            password_confirmation: STRONG_PASSWORD,
+            role: "admin",
+            cactus_role: "developer"
+          }
+        }
+      end
+    end
+
+    assert_redirected_to account_settings_path
+
+    identity = Identity.find_by!(email_address: email_address)
+    user = users(:kevin).account.users.find_by!(identity: identity)
+    assert identity.authenticate(STRONG_PASSWORD)
+    assert_equal "New User", user.name
+    assert user.admin?
+    assert user.developer?
+    assert user.verified?
+  end
+
+  test "create user rejects weak password" do
+    sign_in_as :kevin
+
+    assert_no_difference -> { Identity.count } do
+      assert_no_difference -> { users(:kevin).account.users.active.count } do
+        post users_path, params: {
+          user: {
+            name: "Weak User",
+            email_address: "weak-user-#{SecureRandom.hex(6)}@example.com",
+            password: "short",
+            password_confirmation: "short",
+            role: "member",
+            cactus_role: "reporter"
+          }
+        }
+      end
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "Password is too short", response.body
+  end
+
+  test "create user rejects existing email" do
+    sign_in_as :kevin
+
+    assert_no_difference -> { Identity.count } do
+      assert_no_difference -> { users(:kevin).account.users.active.count } do
+        post users_path, params: {
+          user: {
+            name: "Existing User",
+            email_address: identities(:david).email_address,
+            password: STRONG_PASSWORD,
+            password_confirmation: STRONG_PASSWORD,
+            role: "member",
+            cactus_role: "reporter"
+          }
+        }
+      end
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "Email address is already in use", response.body
+  end
+
+  test "non-admins cannot create user logins" do
+    sign_in_as :jz
+
+    assert_no_difference -> { Identity.count } do
+      post users_path, params: {
+        user: {
+          name: "Blocked User",
+          email_address: "blocked-user-#{SecureRandom.hex(6)}@example.com",
+          password: STRONG_PASSWORD,
+          password_confirmation: STRONG_PASSWORD,
+          role: "member",
+          cactus_role: "reporter"
+        }
+      }
+    end
+
+    assert_response :forbidden
   end
 
   test "update oneself" do

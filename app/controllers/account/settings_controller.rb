@@ -1,12 +1,15 @@
 class Account::SettingsController < ApplicationController
   wrap_parameters :account, include: %i[ name ]
 
-  before_action :ensure_admin, only: :update
+  before_action :ensure_admin
   before_action :set_account
 
   def show
     respond_to do |format|
-      format.html { @users = @account.users.active.alphabetically.includes(:identity) }
+      format.html do
+        @users = @account.users.active.alphabetically.includes(:identity)
+        @user_creation = Account::UserCreation.new(account: @account)
+      end
       format.json
     end
   end

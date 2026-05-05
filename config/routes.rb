@@ -14,6 +14,7 @@ Rails.application.routes.draw do
     scope module: :users do
       resource :avatar
       resource :role
+      resource :password, only: :update
       resource :events
       resources :push_subscriptions
 
@@ -168,6 +169,8 @@ Rails.application.routes.draw do
   resources :training_example_exports, only: %i[ index show ]
 
   namespace :legacy_imports do
+    get "asana", to: "asanas#new"
+
     resource :asana, only: %i[ new create ] do
       resources :issues, only: :index, controller: :asana_issues do
         resource :structuring_suggestion, only: :create, controller: :asana_structuring_suggestions do

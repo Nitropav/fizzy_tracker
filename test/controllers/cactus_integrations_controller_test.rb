@@ -76,6 +76,7 @@ class CactusIntegrationsControllerTest < ActionDispatch::IntegrationTest
     get cactus_integrations_path
 
     assert_response :forbidden
+    assert_match "Access denied", response.body
   end
 
   test "cactus reviewers cannot access integrations" do
@@ -85,5 +86,6 @@ class CactusIntegrationsControllerTest < ActionDispatch::IntegrationTest
     get cactus_integrations_path
 
     assert_response :forbidden
+    assert_match "Access denied", response.body
   end
 end

@@ -156,6 +156,7 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     get training_examples_path
 
     assert_response :forbidden
+    assert_match "Access denied", response.body
   end
 
   test "non admins cannot export examples" do
@@ -164,6 +165,7 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     get export_training_examples_path
 
     assert_response :forbidden
+    assert_match "Access denied", response.body
   end
 
   test "cannot access another account training example" do

@@ -34,6 +34,7 @@ class TrainingExampleExportsControllerTest < ActionDispatch::IntegrationTest
     get training_example_exports_path
 
     assert_response :forbidden
+    assert_match "Access denied", response.body
   end
 
   test "cannot download another account export" do

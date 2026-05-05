@@ -29,7 +29,8 @@ class Boards::BugReportsController < ApplicationController
         :reproduction_steps,
         :expected_behavior,
         :actual_behavior,
-        :environment_context
+        :environment_context,
+        attachments: []
       ])
     end
 end

@@ -573,7 +573,7 @@ Status:
 - Done: project-level `New issue` and Cactus `New Issue` share one issue creation service.
 - Done: focused issue intake supports saving empty or partial issues as drafts.
 - Done: intake shows Gate 1 readiness and missing-field prompts before submit.
-- Done: intake supports rich-text additional evidence so reporters can add screenshots, files, links, and context without polluting required Gate 1 fields.
+- Done: intake supports rich-text additional evidence and explicit multi-file evidence uploads so reporters can add screenshots, logs, files, links, and context without polluting required Gate 1 fields.
 - Done: issue detail shows all missing Gate 1 items inline while the next reporter answer remains actionable.
 - Done: focused issue intake is covered by controller tests.
 
@@ -835,6 +835,7 @@ Status:
 - Done: webhook hardening is covered by controller tests.
 - Done: production email/password login path is standardized with generic credential errors, safe missing-parameter handling, 12-character password policy for new/reset passwords, password confirmation for signup/reset, reset-session invalidation, and consistent join-code onboarding policy.
 - Done: production login/onboarding behavior is covered by session, password reset, signup, join-code, identity, signup model, mailer, and flat JSON API tests.
+- Done: full happy-path integration coverage verifies issue intake -> Gate 1 -> triage -> claim -> Gate 2 -> resolve -> training review -> JSONL export.
 
 Tasks:
 
@@ -846,7 +847,7 @@ Tasks:
 - production email/password login; DONE
 - backup/restore expectations;
 - seed/setup flow for new accounts/projects;
-- system tests for the full happy path.
+- system tests for the full happy path. PARTIAL
 
 Exit criteria:
 

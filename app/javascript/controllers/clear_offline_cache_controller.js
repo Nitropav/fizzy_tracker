@@ -3,6 +3,6 @@ import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   clearCache() {
-    Turbo.offline.clearCache()
+    Turbo.offline?.clearCache?.()
   }
 }

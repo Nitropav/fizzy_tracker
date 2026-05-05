@@ -15,7 +15,7 @@ export default class extends Controller {
   }
 
   #showFileName() {
-    this.fileNameTarget.innerText = this.#file.name
+    this.fileNameTarget.innerText = this.#files.length > 1 ? `${this.#files.length} files selected` : this.#file.name
     this.fileNameTarget.removeAttribute("hidden")
     this.placeholderTarget.setAttribute("hidden", true)
   }
@@ -27,5 +27,9 @@ export default class extends Controller {
 
   get #file() {
     return this.inputTarget.files[0]
+  }
+
+  get #files() {
+    return Array.from(this.inputTarget.files)
   }
 }

@@ -1,0 +1,21 @@
+<% @page_title = "Access denied" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Cactus Home", cactus_home_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel center flex flex-column gap text-center">
+  <div class="flex flex-column gap-half">
+    <h1 class="txt-x-large font-weight-black margin-none">Access denied</h1>
+    <p class="txt-subtle margin-none">
+      Your current Cactus role cannot open this page or perform this action.
+    </p>
+  </div>
+
+  <div class="flex justify-center gap-half flex-wrap">
+    <%= link_to "Back to Cactus Home", cactus_home_path, class: "btn btn--reversed" %>
+    <%= link_to "Create an issue", new_cactus_issue_path, class: "btn" if Current.user&.can_create_cactus_issue? %>
+  </div>
+</section>

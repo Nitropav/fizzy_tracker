@@ -1,7 +1,8 @@
 class UsersController < ApplicationController
-  wrap_parameters :user, include: %i[ name avatar ]
+  wrap_parameters :user, include: %i[ name avatar email_address password password_confirmation role cactus_role ]
 
-  before_action :set_user, except: %i[ index ]
+  before_action :set_user, except: %i[ index create ]
+  before_action :ensure_admin, only: :create
   before_action :ensure_permission_to_change_user, only: %i[ update destroy ]
 
   def index
@@ -12,6 +13,18 @@ class UsersController < ApplicationController
   end
 
   def edit
+  end
+
+  def create
+    @user_creation = Account::UserCreation.new(user_creation_params.with_defaults(account: Current.account))
+
+    if @user_creation.save
+      redirect_to account_settings_path, notice: "User created. Share the email and password with them securely."
+    else
+      @account = Current.account
+      @users = @account.users.active.alphabetically.includes(:identity)
+      render "account/settings/show", status: :unprocessable_entity
+    end
   end
 
   def update
@@ -44,6 +57,10 @@ class UsersController < ApplicationController
 
     def ensure_permission_to_change_user
       head :forbidden unless Current.user.can_change?(@user)
+    end
+
+    def user_creation_params
+      params.expect(user: %i[ name email_address password password_confirmation role cactus_role ])
     end
 
     def user_params

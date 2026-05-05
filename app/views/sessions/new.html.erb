@@ -41,7 +41,7 @@
     <%= link_to "Forgot your password?", new_session_password_reset_path, class: "txt-link" %>
   </p>
 
-  <% if Rails.env.local? %>
+  <% if Rails.env.local? && ENV["ENABLE_DEVELOPMENT_LOGIN"] == "true" %>
     <div class="panel flex flex-column gap-half margin-block-start txt-small">
       <strong>Development login</strong>
       <p class="margin-none txt-subtle">Use a fixture identity without the password flow.</p>

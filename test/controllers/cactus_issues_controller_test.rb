@@ -18,6 +18,7 @@ class CactusIssuesControllerTest < ActionDispatch::IntegrationTest
     end
     assert_select "textarea[name='cactus_issue[problem_description]']"
     assert_select "lexxy-editor[name='cactus_issue[description]']"
+    assert_select "input[type='file'][name='cactus_issue[attachments][]'][multiple='multiple']"
     assert_select "button[name='cactus_issue[draft]']", text: "Save draft"
   end
 
@@ -48,6 +49,29 @@ class CactusIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Screenshot and console log attached.", card.description.to_plain_text.strip
     assert_equal "high", card.resolution_record.priority
     assert card.resolution_record.gate_one_complete?
+  end
+
+  test "create stores uploaded evidence files as issue attachments" do
+    assert_difference -> { ActiveStorage::Blob.count }, +1 do
+      post cactus_issues_path, params: {
+        cactus_issue: {
+          board_id: boards(:writebook).id,
+          title: "Checkout total evidence",
+          problem_description: "The customer subtotal changes after refreshing the quote.",
+          reproduction_steps: "Open quote\nRefresh page",
+          expected_behavior: "Subtotal should stay the same",
+          actual_behavior: "Subtotal changes",
+          environment_context: "Customer portal quote screen",
+          attachments: [ fixture_file_upload("moon.jpg", "image/jpeg") ]
+        }
+      }
+    end
+
+    card = Card.last
+
+    assert_redirected_to card_path(card)
+    assert card.has_attachments?
+    assert_equal "moon.jpg", card.attachments.first.filename.to_s
   end
 
   test "create keeps sparse issue in needs info state" do
