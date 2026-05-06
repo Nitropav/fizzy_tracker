@@ -23,154 +23,156 @@
 
   <% if @cards.any? %>
     <div class="flex flex-column gap">
-      <% @cards.each do |card| %>
-        <% resolution_record = card.resolution_record || card.build_resolution_record %>
+      <%= with_manual_pagination :cactus_queue_cards, @page do %>
+        <% @cards.each do |card| %>
+          <% resolution_record = card.resolution_record || card.build_resolution_record %>
 
-        <article id="<%= dom_id(card, :cactus_queue) %>" class="panel border flex flex-column gap">
-          <header class="flex flex-wrap align-start justify-between gap">
-            <div class="flex flex-column gap-half">
-              <%= link_to "##{card.number} #{card.title}", card, class: "txt-link txt-large" %>
+          <article id="<%= dom_id(card, :cactus_queue) %>" class="panel border flex flex-column gap">
+            <header class="flex flex-wrap align-start justify-between gap">
+              <div class="flex flex-column gap-half">
+                <%= link_to "##{card.number} #{card.title}", card, class: "txt-link txt-large" %>
 
-              <% if resolution_record.legacy_import? %>
-                <span class="txt-small txt-subtle">
-                  Legacy <%= resolution_record.legacy_source %>
-                  <% if resolution_record.legacy_external_id.present? %>
-                    #<%= resolution_record.legacy_external_id %>
-                  <% end %>
-                  <% if resolution_record.needs_structuring? %>
-                    &middot; needs structuring
-                  <% end %>
-                </span>
-              <% end %>
-            </div>
-
-            <div class="flex flex-wrap gap-half txt-small">
-              <span class="badge"><%= card.cactus_workflow_state_label %></span>
-              <span class="badge">Priority: <%= resolution_record.priority&.humanize || "N/A" %></span>
-              <span class="badge">Gate 1: <%= resolution_record.gate_one_status&.humanize || "N/A" %></span>
-              <span class="badge">Gate 2: <%= resolution_record.gate_two_status&.humanize || "N/A" %></span>
-            </div>
-          </header>
-
-          <dl class="grid gap-half txt-small margin-none" style="grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));">
-            <div>
-              <dt class="txt-subtle">Project</dt>
-              <dd class="margin-none"><%= card.board.name %></dd>
-            </div>
-            <div>
-              <dt class="txt-subtle">Column</dt>
-              <dd class="margin-none"><%= card.column&.name || "N/A" %></dd>
-            </div>
-            <div>
-              <dt class="txt-subtle">Priority</dt>
-              <dd class="margin-none"><%= resolution_record.priority&.humanize || "N/A" %></dd>
-            </div>
-            <div>
-              <dt class="txt-subtle">Updated</dt>
-              <dd class="margin-none"><%= local_datetime_tag card.updated_at, style: :shortdate %></dd>
-            </div>
-          </dl>
-
-          <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));">
-            <section class="flex flex-column gap-half">
-              <h2 class="txt-small txt-bold margin-none">Classification</h2>
-
-              <%= form_with model: resolution_record, scope: :card_resolution_record, url: card_resolution_record_path(card), method: :put,
-                    class: "flex flex-column gap-half txt-small",
-                    data: { controller: "form" } do |form| %>
-                <%= hidden_field_tag :return_to, "cactus_queue" %>
-                <%= hidden_field_tag :queue_state, @state %>
-
-                <%= render "cards/resolution_records/classification_fields",
-                      form: form,
-                      record: resolution_record,
-                      field_class: "input txt-small",
-                      include_labels: false %>
-                <%= form.submit "Save classification", class: "btn txt-small" %>
-              <% end %>
-            </section>
-
-            <section class="flex flex-column gap-half">
-              <h2 class="txt-small txt-bold margin-none">Next action</h2>
-
-              <% case card.cactus_workflow_state %>
-              <% when "needs_info" %>
-                <% if resolution_record.legacy_import? && resolution_record.needs_structuring? %>
-                  <div class="flex flex-column gap-half txt-small">
-                    <span><strong>Structure legacy import</strong></span>
-                    <span class="txt-subtle">Review imported data and complete missing Gate 1 fields.</span>
-                    <%= link_to "Open card", card, class: "btn txt-small" %>
-                  </div>
-                <% elsif (next_item = CardResolutionRecords::GateOneGuidance.new(card).next_item) %>
-                  <div class="flex flex-column gap-half txt-small">
-                    <span><strong>Ask:</strong> <%= next_item.label %></span>
-                    <span class="txt-subtle"><%= next_item.prompt %></span>
-                    <%= link_to "Open card", card, class: "btn txt-small" %>
-                  </div>
-                <% else %>
-                  <%= link_to "Review card", card, class: "btn txt-small" %>
-                <% end %>
-              <% when "open" %>
-                <% columns = card.board.columns.sorted %>
-                <% if columns.any? %>
-                  <%= form_with url: card_triage_path(card), method: :post, class: "flex flex-column gap-half txt-small" do |form| %>
-                    <%= hidden_field_tag :return_to, "cactus_queue" %>
-                    <%= hidden_field_tag :queue_state, @state %>
-                    <%= form.select :column_id, options_from_collection_for_select(columns, :id, :name), { prompt: "Move to column..." }, class: "input txt-small" %>
-                    <%= form.submit "Triage", class: "btn txt-small" %>
-                  <% end %>
-                <% else %>
-                  <div class="flex flex-column gap-half txt-small">
-                    <span class="txt-subtle">No project columns configured.</span>
-                    <% if Current.user.can_manage_cactus_project?(card.board) %>
-                      <%= link_to "Create project column", new_board_column_path(card.board), class: "btn txt-small" %>
-                    <% else %>
-                      <span class="txt-subtle">Ask an admin to create project columns before triage.</span>
+                <% if resolution_record.legacy_import? %>
+                  <span class="txt-small txt-subtle">
+                    Legacy <%= resolution_record.legacy_source %>
+                    <% if resolution_record.legacy_external_id.present? %>
+                      #<%= resolution_record.legacy_external_id %>
                     <% end %>
-                  </div>
+                    <% if resolution_record.needs_structuring? %>
+                      &middot; needs structuring
+                    <% end %>
+                  </span>
                 <% end %>
-              <% when "in_progress" %>
-                <% missing_gate_two = resolution_record.missing_gate_two_fields || [] %>
-                <% assigned_names = card.assignees.active.alphabetically.map(&:name) %>
-                <% assigned_ids = card.assignees.map(&:id) %>
-                <% assignable_users = (@assignable_users_by_board_id.fetch(card.board_id, [])).reject { |user| assigned_ids.include?(user.id) } %>
-                <div class="flex flex-column gap-half txt-small">
-                  <% if missing_gate_two.any? %>
-                    <span><strong>Complete Gate 2:</strong> <%= missing_gate_two.map { it.to_s.humanize.downcase }.to_sentence %></span>
+              </div>
+
+              <div class="flex flex-wrap gap-half txt-small">
+                <span class="badge"><%= card.cactus_workflow_state_label %></span>
+                <span class="badge">Priority: <%= resolution_record.priority&.humanize || "N/A" %></span>
+                <span class="badge">Gate 1: <%= resolution_record.gate_one_status&.humanize || "N/A" %></span>
+                <span class="badge">Gate 2: <%= resolution_record.gate_two_status&.humanize || "N/A" %></span>
+              </div>
+            </header>
+
+            <dl class="grid gap-half txt-small margin-none" style="grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));">
+              <div>
+                <dt class="txt-subtle">Project</dt>
+                <dd class="margin-none"><%= card.board.name %></dd>
+              </div>
+              <div>
+                <dt class="txt-subtle">Column</dt>
+                <dd class="margin-none"><%= card.column&.name || "N/A" %></dd>
+              </div>
+              <div>
+                <dt class="txt-subtle">Priority</dt>
+                <dd class="margin-none"><%= resolution_record.priority&.humanize || "N/A" %></dd>
+              </div>
+              <div>
+                <dt class="txt-subtle">Updated</dt>
+                <dd class="margin-none"><%= local_datetime_tag card.updated_at, style: :shortdate %></dd>
+              </div>
+            </dl>
+
+            <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));">
+              <section class="flex flex-column gap-half">
+                <h2 class="txt-small txt-bold margin-none">Classification</h2>
+
+                <%= form_with model: resolution_record, scope: :card_resolution_record, url: card_resolution_record_path(card), method: :put,
+                      class: "flex flex-column gap-half txt-small",
+                      data: { controller: "form" } do |form| %>
+                  <%= hidden_field_tag :return_to, "cactus_queue" %>
+                  <%= hidden_field_tag :queue_state, @state %>
+
+                  <%= render "cards/resolution_records/classification_fields",
+                        form: form,
+                        record: resolution_record,
+                        field_class: "input txt-small",
+                        include_labels: false %>
+                  <%= form.submit "Save classification", class: "btn txt-small" %>
+                <% end %>
+              </section>
+
+              <section class="flex flex-column gap-half">
+                <h2 class="txt-small txt-bold margin-none">Next action</h2>
+
+                <% case card.cactus_workflow_state %>
+                <% when "needs_info" %>
+                  <% if resolution_record.legacy_import? && resolution_record.needs_structuring? %>
+                    <div class="flex flex-column gap-half txt-small">
+                      <span><strong>Structure legacy import</strong></span>
+                      <span class="txt-subtle">Review imported data and complete missing Gate 1 fields.</span>
+                      <%= link_to "Open card", card, class: "btn txt-small" %>
+                    </div>
+                  <% elsif (next_item = CardResolutionRecords::GateOneGuidance.new(card).next_item) %>
+                    <div class="flex flex-column gap-half txt-small">
+                      <span><strong>Ask:</strong> <%= next_item.label %></span>
+                      <span class="txt-subtle"><%= next_item.prompt %></span>
+                      <%= link_to "Open card", card, class: "btn txt-small" %>
+                    </div>
                   <% else %>
-                    <span><strong>Review Gate 2 details</strong></span>
+                    <%= link_to "Review card", card, class: "btn txt-small" %>
                   <% end %>
-                  <span class="txt-subtle">Assigned to: <%= assigned_names.any? ? assigned_names.to_sentence : "nobody" %></span>
-                  <div class="flex flex-wrap align-center gap-half">
-                    <% if Current.user.can_claim_cactus_issues? && !assigned_ids.include?(Current.user.id) %>
-                      <%= button_to "Claim",
-                            card_self_assignment_path(card),
-                            params: { return_to: "cactus_queue", queue_state: @state },
-                            class: "btn btn--reversed txt-small" %>
+                <% when "open" %>
+                  <% columns = card.board.columns.sorted %>
+                  <% if columns.any? %>
+                    <%= form_with url: card_triage_path(card), method: :post, class: "flex flex-column gap-half txt-small" do |form| %>
+                      <%= hidden_field_tag :return_to, "cactus_queue" %>
+                      <%= hidden_field_tag :queue_state, @state %>
+                      <%= form.select :column_id, options_from_collection_for_select(columns, :id, :name), { prompt: "Move to column..." }, class: "input txt-small" %>
+                      <%= form.submit "Triage", class: "btn txt-small" %>
                     <% end %>
-                    <%= link_to "Fill resolution", edit_card_resolution_record_path(card), class: "btn txt-small" %>
-                  </div>
+                  <% else %>
+                    <div class="flex flex-column gap-half txt-small">
+                      <span class="txt-subtle">No project columns configured.</span>
+                      <% if Current.user.can_manage_cactus_project?(card.board) %>
+                        <%= link_to "Create project column", new_board_column_path(card.board), class: "btn txt-small" %>
+                      <% else %>
+                        <span class="txt-subtle">Ask an admin to create project columns before triage.</span>
+                      <% end %>
+                    </div>
+                  <% end %>
+                <% when "in_progress" %>
+                  <% missing_gate_two = resolution_record.missing_gate_two_fields || [] %>
+                  <% assigned_names = card.assignees.active.alphabetically.map(&:name) %>
+                  <% assigned_ids = card.assignees.map(&:id) %>
+                  <% assignable_users = (@assignable_users_by_board_id.fetch(card.board_id, [])).reject { |user| assigned_ids.include?(user.id) } %>
+                  <div class="flex flex-column gap-half txt-small">
+                    <% if missing_gate_two.any? %>
+                      <span><strong>Complete Gate 2:</strong> <%= missing_gate_two.map { it.to_s.humanize.downcase }.to_sentence %></span>
+                    <% else %>
+                      <span><strong>Review Gate 2 details</strong></span>
+                    <% end %>
+                    <span class="txt-subtle">Assigned to: <%= assigned_names.any? ? assigned_names.to_sentence : "nobody" %></span>
+                    <div class="flex flex-wrap align-center gap-half">
+                      <% if Current.user.can_claim_cactus_issues? && !assigned_ids.include?(Current.user.id) %>
+                        <%= button_to "Claim",
+                              card_self_assignment_path(card),
+                              params: { return_to: "cactus_queue", queue_state: @state },
+                              class: "btn btn--reversed txt-small" %>
+                      <% end %>
+                      <%= link_to "Fill resolution", edit_card_resolution_record_path(card), class: "btn txt-small" %>
+                    </div>
 
-                  <% if assignable_users.any? %>
-                    <%= form_with url: card_assignments_path(card), method: :post, class: "flex flex-column gap-half" do |form| %>
-                      <%= form.select :assignee_id, options_from_collection_for_select(assignable_users, :id, :name), { prompt: "Assign developer..." }, class: "input txt-small" %>
-                      <%= form.submit "Assign", class: "btn txt-small" %>
+                    <% if assignable_users.any? %>
+                      <%= form_with url: card_assignments_path(card), method: :post, class: "flex flex-column gap-half" do |form| %>
+                        <%= form.select :assignee_id, options_from_collection_for_select(assignable_users, :id, :name), { prompt: "Assign developer..." }, class: "input txt-small" %>
+                        <%= form.submit "Assign", class: "btn txt-small" %>
+                      <% end %>
                     <% end %>
-                  <% end %>
-                </div>
-              <% when "needs_review" %>
-                <div class="flex flex-wrap align-center gap-half">
-                  <%= link_to "Review resolution", edit_card_resolution_record_path(card), class: "btn txt-small" %>
-                  <% if Current.user.can_resolve_cactus_issues? %>
-                    <%= button_to "Mark resolved", card_resolution_path(card), class: "btn btn--reversed txt-small" %>
-                  <% end %>
-                </div>
-              <% else %>
-                <%= link_to "Open card", card, class: "btn txt-small" %>
-              <% end %>
-            </section>
-          </div>
-        </article>
+                  </div>
+                <% when "needs_review" %>
+                  <div class="flex flex-wrap align-center gap-half">
+                    <%= link_to "Review resolution", edit_card_resolution_record_path(card), class: "btn txt-small" %>
+                    <% if Current.user.can_resolve_cactus_issues? %>
+                      <%= button_to "Mark resolved", card_resolution_path(card), class: "btn btn--reversed txt-small" %>
+                    <% end %>
+                  </div>
+                <% else %>
+                  <%= link_to "Open card", card, class: "btn txt-small" %>
+                <% end %>
+              </section>
+            </div>
+          </article>
+        <% end %>
       <% end %>
     </div>
   <% else %>

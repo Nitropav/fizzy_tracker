@@ -113,7 +113,22 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
       legacy_imported_at: Time.current,
       legacy_metadata: {
         "completed" => false,
-        "permalink_url" => "https://app.asana.com/0/1/1200"
+        "permalink_url" => "https://app.asana.com/0/1/1200",
+        "created_by" => { "name" => "Reporter User" },
+        "assignee" => { "name" => "Developer User" },
+        "stories" => [
+          {
+            "text" => "Reporter added screenshot context",
+            "type" => "comment",
+            "resource_subtype" => "comment_added"
+          }
+        ],
+        "attachments" => [
+          {
+            "name" => "image.png",
+            "permanent_url" => "https://app.asana.com/app/asana/-/get_asset?asset_id=asset-1"
+          }
+        ]
       },
       gate_one_legacy: true,
       needs_structuring: true
@@ -124,7 +139,12 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Legacy import", response.body
     assert_match "Needs structuring", response.body
+    assert_match "Asana source context", response.body
+    assert_match "Reporter User", response.body
+    assert_match "Developer User", response.body
+    assert_match "Reporter added screenshot context", response.body
     assert_select "a[href=?]", "https://app.asana.com/0/1/1200", text: "Open original task"
+    assert_select "a[href=?]", "https://app.asana.com/app/asana/-/get_asset?asset_id=asset-1", text: "image.png"
   end
 
   test "show renders linked code evidence" do

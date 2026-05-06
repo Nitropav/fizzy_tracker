@@ -13,6 +13,27 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
     assert_match "The logo", response.body
   end
 
+  test "index paginates large queues" do
+    board = boards(:writebook)
+
+    with_current_user :kevin do
+      60.times do |index|
+        board.cards.create!(
+          account: board.account,
+          creator: users(:kevin),
+          status: :published,
+          title: "Bulk queue issue #{index}",
+          description: "Bulk queue issue #{index}"
+        )
+      end
+    end
+
+    get cactus_queues_path
+
+    assert_response :success
+    assert_select ".pagination-link"
+  end
+
   test "index filters by workflow state" do
     get cactus_queues_path(state: "needs_info")
 

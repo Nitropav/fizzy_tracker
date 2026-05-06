@@ -10,7 +10,7 @@
   <header class="flex align-center justify-between flex-wrap gap">
     <div class="min-width">
       <h1 class="txt-x-large font-weight-black margin-none">Training Export History</h1>
-      <p class="txt-small txt-subtle margin-none">Completed JSONL export batches for this account.</p>
+      <p class="txt-small txt-subtle margin-none">JSONL export batches for this account. Large exports run in the background.</p>
     </div>
 
     <%= link_to "Back to examples", training_examples_path, class: "btn txt-small" %>
@@ -35,9 +35,26 @@
               <td><code><%= training_example_export.filename %></code></td>
               <td><%= training_example_export.example_count %></td>
               <td><%= training_example_export.user.name %></td>
-              <td><%= training_example_export.status.humanize %></td>
-              <td><%= local_datetime_tag training_example_export.completed_at, style: :shortdate %></td>
-              <td><%= link_to "Download", training_example_export_path(training_example_export), class: "btn txt-small" %></td>
+              <td>
+                <%= training_example_export.status.humanize %>
+                <% if training_example_export.error_message.present? %>
+                  <div class="txt-small txt-subtle"><%= training_example_export.error_message %></div>
+                <% end %>
+              </td>
+              <td>
+                <% if training_example_export.completed_at.present? %>
+                  <%= local_datetime_tag training_example_export.completed_at, style: :shortdate %>
+                <% else %>
+                  Pending
+                <% end %>
+              </td>
+              <td>
+                <% if training_example_export.downloadable? %>
+                  <%= link_to "Download", training_example_export_path(training_example_export), class: "btn txt-small" %>
+                <% else %>
+                  <span class="btn txt-small" aria-disabled="true">Not ready</span>
+                <% end %>
+              </td>
             </tr>
           <% end %>
         </tbody>

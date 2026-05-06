@@ -14,19 +14,6 @@
     </p>
   </header>
 
-  <% if @summary %>
-    <section class="panel flex flex-column gap-half">
-      <h2 class="txt-large margin-none">Import summary</h2>
-      <ul class="margin-none">
-        <li>Total tasks processed: <%= @summary[:total] %></li>
-        <li>Issues created: <%= @summary[:created] %></li>
-        <li>Duplicates skipped: <%= @summary[:skipped] %></li>
-        <li>Issues needing structuring: <%= @summary[:needs_structuring] %></li>
-      </ul>
-      <%= link_to "Review legacy issues", legacy_imports_asana_issues_path, class: "btn txt-small" %>
-    </section>
-  <% end %>
-
   <%= form_with url: legacy_imports_asana_path, method: :post, class: "flex flex-column gap", data: { controller: "form upload-preview" }, multipart: true do |form| %>
     <label class="flex flex-column gap-half">
       <span class="txt-small font-weight-bold">Destination project</span>
@@ -43,6 +30,28 @@
       <span>Import Asana Tasks</span>
       <%= icon_tag "arrow-right" %>
     </button>
+  <% end %>
+
+  <% if @recent_imports&.any? %>
+    <section class="panel border flex flex-column gap-half">
+      <h2 class="txt-large margin-none">Recent Asana imports</h2>
+      <ul class="list-unindented margin-none txt-small">
+        <% @recent_imports.each do |asana_import| %>
+          <li class="flex flex-wrap align-center justify-between gap-half">
+            <span>
+              <%= link_to asana_import.file.attached? ? asana_import.file.filename.to_s : "Asana import",
+                    legacy_imports_asana_import_path(asana_import),
+                    class: "txt-link" %>
+              &middot; <%= asana_import.status.humanize %>
+              &middot; <%= asana_import.board.name %>
+            </span>
+            <span class="txt-subtle">
+              <%= local_datetime_tag asana_import.created_at, style: :shortdate %>
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    </section>
   <% end %>
 
   <section class="panel border flex flex-wrap align-center justify-between gap">

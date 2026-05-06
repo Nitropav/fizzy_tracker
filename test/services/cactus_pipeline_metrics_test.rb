@@ -40,6 +40,7 @@ class CactusPipelineMetricsTest < ActiveSupport::TestCase
     training_export = TrainingExampleExport.create!(
       account: @account,
       user: users(:kevin),
+      status: :completed,
       filename: "training-examples.jsonl",
       example_count: 1,
       training_example_ids: [ training_example.id ],

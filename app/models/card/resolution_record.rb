@@ -74,6 +74,8 @@ class Card::ResolutionRecord < ApplicationRecord
   validate :account_matches_card
   validate :legacy_source_present_for_legacy_import
 
+  scope :legacy_training_candidates, -> { where(legacy_import: true, gate_one_status: "complete", gate_two_status: "complete") }
+
   def missing_gate_one_fields
     missing_fields(GATE_ONE_REQUIRED_FIELDS)
   end
@@ -129,6 +131,38 @@ class Card::ResolutionRecord < ApplicationRecord
     ]
   end
 
+  def legacy_attachments
+    legacy_metadata_entries("attachments").select do |attachment|
+      attachment["name"].present? || legacy_attachment_url(attachment).present?
+    end
+  end
+
+  def legacy_attachment_url(attachment)
+    attachment["permanent_url"].presence || attachment["view_url"].presence || attachment["download_url"].presence
+  end
+
+  def legacy_attachment_blob(attachment)
+    signed_id = attachment["cactus_blob_signed_id"]
+    return if signed_id.blank?
+
+    ActiveStorage::Blob.find_signed(signed_id)
+  rescue ActiveSupport::MessageVerifier::InvalidSignature
+    nil
+  end
+
+  def legacy_comment_stories
+    legacy_metadata_entries("stories").select do |story|
+      legacy_comment_story?(story) && story["text"].present?
+    end
+  end
+
+  def legacy_source_context_present?
+    legacy_metadata["assignee"].present? ||
+      legacy_metadata["created_by"].present? ||
+      legacy_attachments.any? ||
+      legacy_comment_stories.any?
+  end
+
   def self.category_options(current_value = nil)
     options_with_current(CATEGORIES, current_value)
   end
@@ -157,6 +191,14 @@ class Card::ResolutionRecord < ApplicationRecord
 
     def missing_fields(fields)
       fields.select { public_send(it).blank? }
+    end
+
+    def legacy_metadata_entries(key)
+      Array(legacy_metadata[key]).select { it.is_a?(Hash) }
+    end
+
+    def legacy_comment_story?(story)
+      story["type"] == "comment" || story["resource_subtype"] == "comment_added"
     end
 
     def account_matches_card

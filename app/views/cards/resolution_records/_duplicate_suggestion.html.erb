@@ -1,8 +1,8 @@
 <% latest_duplicate_run = card.ai_runs.duplicate_issue_suggestions.completed.latest_first.detect(&:active_suggestion?) %>
 <% candidates = Array(latest_duplicate_run&.output&.fetch("candidates", [])) %>
 
-<section class="panel flex flex-column gap-half txt-small">
-  <div class="flex flex-wrap align-center justify-between gap">
+<section class="card__cactus-panel panel flex flex-column gap-half txt-small">
+  <div class="card__cactus-panel-header flex flex-wrap align-start justify-between gap">
     <div>
       <strong>Duplicate check</strong>
       <p class="txt-subtle margin-none">

@@ -32,7 +32,7 @@
   </header>
 
   <% if can_view_internal_issue_data && (latest_review = card.ai_runs.card_quality_reviews.completed.latest_first.first) %>
-    <div class="panel txt-small">
+    <div class="card__cactus-panel panel txt-small">
       <strong>Latest quality review:</strong>
       <%= latest_review.output["summary"] %>
 
@@ -48,8 +48,8 @@
 
   <% if latest_issue_structuring_run %>
     <% suggested_fields = latest_issue_structuring_run.output.fetch("suggested_fields", {}) %>
-    <section class="panel flex flex-column gap-half txt-small">
-      <div class="flex flex-wrap align-center justify-between gap">
+    <section class="card__cactus-panel panel flex flex-column gap-half txt-small">
+      <div class="card__cactus-panel-header flex flex-wrap align-start justify-between gap">
         <div>
           <strong>Latest issue structuring suggestion</strong>
           <p class="txt-subtle margin-none">
@@ -101,8 +101,8 @@
   <% end %>
 
   <% if record.legacy_import? %>
-    <section class="panel flex flex-column gap-half">
-      <div class="flex flex-wrap align-center justify-between gap">
+    <section class="card__cactus-panel panel flex flex-column gap-half">
+      <div class="card__cactus-panel-header flex flex-wrap align-start justify-between gap">
         <div>
           <strong>Legacy import</strong>
           <p class="txt-small txt-subtle margin-none">
@@ -134,6 +134,8 @@
           <%= link_to "Open original task", permalink, class: "txt-link", target: "_blank", rel: "noopener noreferrer" %>
         </p>
       <% end %>
+
+      <%= render "legacy_imports/asanas/source_context", record: record, compact: false %>
 
       <% if record.legacy_metadata.present? %>
         <details class="txt-small">
@@ -213,30 +215,30 @@
     <%= form_with model: record, scope: :card_resolution_record, url: card_resolution_record_path(card), method: :put,
           class: "flex flex-column gap",
           data: { controller: "form" } do |form| %>
-      <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));">
+      <div class="card__gate-grid grid gap">
         <% if Current.user.can_update_cactus_gate_one? %>
-          <fieldset class="panel flex flex-column gap-half">
+          <fieldset class="card__gate-panel panel flex flex-column gap-half">
             <legend class="txt-small txt-bold">Gate 1 - Reporter side</legend>
 
             <%= form.label :problem_description, "Problem description", class: "txt-small txt-bold" %>
-            <%= form.text_area :problem_description, rows: 3, class: "input input--textarea full-width", placeholder: "What is broken or confusing?" %>
+            <%= form.text_area :problem_description, rows: 10, class: "input input--textarea card__gate-textarea card__gate-textarea--large full-width", placeholder: "What is broken or confusing?" %>
 
             <%= form.label :reproduction_steps, "Reproduction steps", class: "txt-small txt-bold" %>
-            <%= form.text_area :reproduction_steps, rows: 3, class: "input input--textarea full-width", placeholder: "Step-by-step path to reproduce" %>
+            <%= form.text_area :reproduction_steps, rows: 5, class: "input input--textarea card__gate-textarea full-width", placeholder: "Step-by-step path to reproduce" %>
 
             <%= form.label :expected_behavior, "Expected behavior", class: "txt-small txt-bold" %>
-            <%= form.text_area :expected_behavior, rows: 2, class: "input input--textarea full-width" %>
+            <%= form.text_area :expected_behavior, rows: 4, class: "input input--textarea card__gate-textarea full-width" %>
 
             <%= form.label :actual_behavior, "Actual behavior", class: "txt-small txt-bold" %>
-            <%= form.text_area :actual_behavior, rows: 2, class: "input input--textarea full-width" %>
+            <%= form.text_area :actual_behavior, rows: 4, class: "input input--textarea card__gate-textarea full-width" %>
 
             <%= form.label :environment_context, "Environment context", class: "txt-small txt-bold" %>
-            <%= form.text_area :environment_context, rows: 2, class: "input input--textarea full-width", placeholder: "Product, UI, customer account, browser, etc." %>
+            <%= form.text_area :environment_context, rows: 4, class: "input input--textarea card__gate-textarea full-width", placeholder: "Product, UI, customer account, browser, etc." %>
           </fieldset>
         <% end %>
 
         <% if Current.user.can_update_cactus_gate_two? %>
-          <fieldset class="panel flex flex-column gap-half">
+          <fieldset class="card__gate-panel panel flex flex-column gap-half">
             <legend class="txt-small txt-bold">Gate 2 - Developer side</legend>
 
             <%= form.label :root_cause, "Root cause", class: "txt-small txt-bold" %>

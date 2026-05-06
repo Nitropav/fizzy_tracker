@@ -3,58 +3,39 @@ class LegacyImports::AsanasController < ApplicationController
 
   def new
     @boards = Current.user.boards.order(:name)
+    @recent_imports = recent_imports
   end
 
   def create
     @boards = Current.user.boards.order(:name)
     @board = @boards.find(params.expect(:board_id))
-    @summary = import_tasks
+    @asana_import = build_import
+    @asana_import.save!
+    @asana_import.process_later
 
-    render :new, status: :created
-  rescue JSON::ParserError, ActionController::ParameterMissing, ActiveRecord::RecordInvalid => error
-    @summary = nil
+    redirect_to legacy_imports_asana_import_path(@asana_import), notice: "Asana import queued."
+  rescue ActionController::ParameterMissing, ActiveRecord::RecordInvalid => error
+    @recent_imports = recent_imports
     flash.now[:alert] = "Asana import failed: #{failure_message(error)}"
     render :new, status: :unprocessable_entity
   end
 
   private
-    def import_tasks
-      tasks = parse_tasks
-      importer = LegacyImports::AsanaTaskImporter.new(account: Current.account, board: @board, creator: Current.user)
-      results = tasks.map { importer.import(it) }
-
-      {
-        total: results.size,
-        created: results.count(&:created),
-        skipped: results.count { !it.created },
-        needs_structuring: results.count { it.resolution_record.needs_structuring? }
-      }
-    end
-
-    def parse_tasks
-      payload = JSON.parse(file.read)
-      tasks = tasks_from(payload)
-
-      raise JSON::ParserError, "expected an array of Asana tasks or an object with a data/tasks array" unless tasks.is_a?(Array)
-
-      tasks
-    end
-
-    def tasks_from(payload)
-      return payload unless payload.is_a?(Hash)
-
-      payload["data"] || payload["tasks"]
+    def build_import
+      Current.account.legacy_asana_imports.build(board: @board, creator: Current.user).tap do |asana_import|
+        asana_import.file.attach(file)
+      end
     end
 
     def file
       params.expect(:file)
     end
 
+    def recent_imports
+      Current.account.legacy_asana_imports.includes(:board, :creator, file_attachment: :blob).latest_first.limit(5)
+    end
+
     def failure_message(error)
-      if error.is_a?(JSON::ParserError)
-        "invalid JSON file"
-      else
-        error.message.to_s.scrub
-      end
+      error.message.to_s.scrub
     end
 end

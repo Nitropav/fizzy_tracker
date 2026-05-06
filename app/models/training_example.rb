@@ -16,7 +16,7 @@ class TrainingExample < ApplicationRecord
   validate :reviewer_matches_account
 
   scope :reviewable, -> { where(status: :pending_review) }
-  scope :approved_for_export, -> { where(status: :approved) }
+  scope :approved_for_export, -> { where(status: :approved, training_example_export_id: nil) }
   scope :latest_first, -> { order(created_at: :desc, id: :desc) }
 
   def submit_for_review!

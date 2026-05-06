@@ -147,25 +147,38 @@
       }
     }
 
-    option {
-      background-color: Canvas;
-      color: CanvasText;
-    }
+  }
+
+  select.input,
+  .input:where(select) {
+    /*
+     * Native option popovers are painted by the browser/OS. In dark pages,
+     * Chrome can inherit a light text color while using a white popup.
+     */
+    color-scheme: light;
+  }
+
+  select option,
+  select optgroup {
+    background-color: #ffffff;
+    color: #111827;
+  }
+
+  select option:disabled {
+    color: #6b7280;
   }
 
   .input--textarea {
-    --input-padding: 0;
+    --input-padding: 0.5em 0.8em;
 
     line-height: inherit;
-    min-block-size: calc(3lh + (2 * var(--input-padding)));
+    min-block-size: calc(3lh + 1em);
     min-inline-size: 100%;
-    padding-block: var(--input-padding);
-    padding-inline: calc(var(--input-padding) + calc((1lh - 1ex) / 2));
 
     @supports (field-sizing: content) {
       field-sizing: content;
-      max-block-size: calc(3lh + (2 * var(--input-padding)));
-      min-block-size: calc(1lh + (2 * var(--input-padding)));
+      max-block-size: calc(3lh + 1em);
+      min-block-size: calc(1lh + 1em);
     }
   }
 

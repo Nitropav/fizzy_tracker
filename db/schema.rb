@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_06_123000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -466,6 +466,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_140000) do
     t.index ["identity_id"], name: "index_access_token_on_identity_id"
   end
 
+  create_table "legacy_imports_asana_imports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.uuid "board_id", null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.integer "created_count", default: 0, null: false
+    t.uuid "creator_id", null: false
+    t.text "error_message"
+    t.integer "failed_count", default: 0, null: false
+    t.integer "needs_structuring_count", default: 0, null: false
+    t.integer "skipped_count", default: 0, null: false
+    t.datetime "started_at"
+    t.string "status", limit: 255, default: "pending", null: false
+    t.integer "total_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "created_at"], name: "idx_on_account_id_created_at_cf4a023b65"
+    t.index ["account_id", "status"], name: "index_legacy_imports_asana_imports_on_account_id_and_status"
+    t.index ["account_id"], name: "index_legacy_imports_asana_imports_on_account_id"
+    t.index ["board_id"], name: "index_legacy_imports_asana_imports_on_board_id"
+    t.index ["creator_id"], name: "index_legacy_imports_asana_imports_on_creator_id"
+  end
+
   create_table "magic_links", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "code", limit: 255, null: false
     t.datetime "created_at", null: false
@@ -870,11 +892,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_140000) do
 
   create_table "training_example_exports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "account_id", null: false
-    t.datetime "completed_at", null: false
+    t.datetime "completed_at"
     t.datetime "created_at", null: false
+    t.text "error_message"
     t.integer "example_count", default: 0, null: false
     t.string "filename", limit: 255, null: false
-    t.string "status", limit: 255, default: "completed", null: false
+    t.datetime "started_at"
+    t.string "status", limit: 255, default: "pending", null: false
     t.json "training_example_ids", default: [], null: false
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false

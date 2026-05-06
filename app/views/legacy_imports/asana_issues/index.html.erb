@@ -28,153 +28,167 @@
 
   <% if @records.any? %>
     <div class="flex flex-column gap">
-      <% @records.each do |record| %>
-        <% card = record.card %>
-        <% missing_gate_one = record.missing_gate_one_fields %>
-        <% missing_gate_two = record.legacy_resolved? ? record.missing_gate_two_fields : [] %>
-        <% latest_structuring_run = card.ai_runs.legacy_issue_structurings.completed.latest_first.detect(&:active_suggestion?) %>
+      <%= with_manual_pagination :legacy_asana_issues, @page do %>
+        <% @records.each do |record| %>
+          <% card = record.card %>
+          <% existing_training_example = card.training_examples.reject(&:rejected?).max_by(&:created_at) %>
+          <% missing_gate_one = record.missing_gate_one_fields %>
+          <% missing_gate_two = record.legacy_resolved? ? record.missing_gate_two_fields : [] %>
+          <% latest_structuring_run = card.ai_runs.legacy_issue_structurings.completed.latest_first.detect(&:active_suggestion?) %>
 
-        <article class="panel border flex flex-column gap">
-          <header class="flex flex-wrap align-start justify-between gap">
-            <div class="flex flex-column gap-half">
-              <%= link_to "##{card.number} #{card.title}", card, class: "txt-link txt-large" %>
-              <p class="txt-small txt-subtle margin-none">
-                Imported from Asana
-                <% if record.legacy_external_id.present? %>
-                  #<%= record.legacy_external_id %>
-                <% end %>
-                <% if record.legacy_imported_at.present? %>
-                  on <%= local_datetime_tag record.legacy_imported_at, style: :shortdate %>
-                <% end %>
-              </p>
-            </div>
-
-            <div class="flex flex-wrap gap-half txt-small">
-              <span class="badge"><%= record.needs_structuring? ? "Needs structuring" : "Structured" %></span>
-              <% if record.legacy_training_candidate_ready? %>
-                <span class="badge">Ready for training candidate</span>
-              <% end %>
-              <span class="badge">Gate 1: <%= record.gate_one_status.humanize %></span>
-              <span class="badge">Gate 2: <%= record.gate_two_status.humanize %></span>
-              <span class="badge">Resolved in Asana: <%= record.legacy_resolved? ? "Yes" : "No" %></span>
-            </div>
-          </header>
-
-          <dl class="grid gap-half txt-small margin-none" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
-            <div>
-              <dt class="txt-subtle">Project</dt>
-              <dd class="margin-none"><%= card.board.name %></dd>
-            </div>
-            <div>
-              <dt class="txt-subtle">Column</dt>
-              <dd class="margin-none"><%= card.column&.name || "N/A" %></dd>
-            </div>
-            <div>
-              <dt class="txt-subtle">Category</dt>
-              <dd class="margin-none"><%= record.category.presence || "N/A" %></dd>
-            </div>
-            <div>
-              <dt class="txt-subtle">Domain</dt>
-              <dd class="margin-none"><%= record.domain.presence || "N/A" %></dd>
-            </div>
-          </dl>
-
-          <% if record.structured_summary.present? || record.problem_description.present? %>
-            <section class="txt-small">
-              <strong>Imported summary</strong>
-              <p class="margin-block-end-none"><%= record.structured_summary.presence || record.problem_description %></p>
-            </section>
-          <% end %>
-
-          <section class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));">
-            <div class="flex flex-column gap-half txt-small">
-              <strong>Missing structure</strong>
-              <% if record.legacy_training_candidate_blockers.any? %>
-                <% if missing_gate_one.any? %>
-                  <span>Gate 1 missing: <%= missing_gate_one.map { it.to_s.humanize.downcase }.to_sentence %>.</span>
-                <% end %>
-
-                <% if record.missing_gate_two_fields.any? %>
-                  <span>Gate 2 missing for training: <%= record.missing_gate_two_fields.map { it.to_s.humanize.downcase }.to_sentence %>.</span>
-                <% end %>
-              <% else %>
-                <span class="txt-subtle">Ready to generate a pending-review training example.</span>
-              <% end %>
-            </div>
-
-            <div class="flex flex-wrap align-center justify-end gap-half txt-small">
-              <% if (permalink = record.legacy_metadata["permalink_url"]).present? %>
-                <%= link_to "Open Asana task", permalink, class: "btn txt-small", target: "_blank", rel: "noopener noreferrer" %>
-              <% end %>
-
-              <%= link_to "Structure issue",
-                    card_path(card, anchor: dom_id(card, :resolution_record)),
-                    class: "btn btn--reversed txt-small" %>
-
-              <% if record.legacy_training_candidate_blockers.any? %>
-                <%= button_to "Suggest structure",
-                      legacy_imports_asana_issue_structuring_suggestion_path(record, status: @status),
-                      class: "btn txt-small" %>
-              <% end %>
-
-              <% if record.legacy_training_candidate_ready? %>
-                <%= button_to "Generate training example",
-                      legacy_imports_asana_issue_training_example_path(record),
-                      class: "btn btn--reversed txt-small" %>
-              <% end %>
-            </div>
-          </section>
-
-          <% if latest_structuring_run %>
-            <% suggested_fields = latest_structuring_run.output.fetch("suggested_fields", {}) %>
-            <section class="panel flex flex-column gap-half txt-small">
-              <div class="flex flex-wrap align-center justify-between gap">
-                <div>
-                  <strong>Latest AI structuring suggestion</strong>
-                  <p class="txt-subtle margin-none">
-                    <%= latest_structuring_run.metadata["completed_by"].presence&.humanize || "Deterministic" %>
-                    suggestion generated <%= local_datetime_tag latest_structuring_run.completed_at, style: :shortdate %>.
-                  </p>
-                </div>
-
-                <div class="flex flex-wrap align-center gap-half">
-                  <%= button_to "Dismiss",
-                        card_ai_run_dismissal_path(card, latest_structuring_run),
-                        params: { return_to: "legacy_asana", status: @status },
-                        class: "btn txt-small" %>
-                  <%= button_to "Apply suggestion",
-                        apply_legacy_imports_asana_issue_structuring_suggestion_path(record, ai_run_id: latest_structuring_run.id, status: @status),
-                        class: "btn btn--reversed txt-small" %>
-                </div>
+          <article class="panel border flex flex-column gap">
+            <header class="flex flex-wrap align-start justify-between gap">
+              <div class="flex flex-column gap-half">
+                <%= link_to "##{card.number} #{card.title}", card, class: "txt-link txt-large" %>
+                <p class="txt-small txt-subtle margin-none">
+                  Imported from Asana
+                  <% if record.legacy_external_id.present? %>
+                    #<%= record.legacy_external_id %>
+                  <% end %>
+                  <% if record.legacy_imported_at.present? %>
+                    on <%= local_datetime_tag record.legacy_imported_at, style: :shortdate %>
+                  <% end %>
+                </p>
               </div>
 
-              <p class="margin-none"><%= latest_structuring_run.output["summary"] %></p>
+              <div class="flex flex-wrap gap-half txt-small">
+                <span class="badge"><%= record.needs_structuring? ? "Needs structuring" : "Structured" %></span>
+                <% if record.legacy_training_candidate_ready? %>
+                  <span class="badge">Ready for training candidate</span>
+                <% end %>
+                <% if existing_training_example %>
+                  <span class="badge">Training example: <%= existing_training_example.status.humanize %></span>
+                <% end %>
+                <span class="badge">Gate 1: <%= record.gate_one_status.humanize %></span>
+                <span class="badge">Gate 2: <%= record.gate_two_status.humanize %></span>
+                <span class="badge">Resolved in Asana: <%= record.legacy_resolved? ? "Yes" : "No" %></span>
+              </div>
+            </header>
 
-              <% if latest_structuring_run.output["warnings"].present? %>
-                <div>
-                  <strong>Warnings</strong>
-                  <ul class="margin-block-end-none">
-                    <% latest_structuring_run.output["warnings"].each do |warning| %>
-                      <li><%= warning %></li>
-                    <% end %>
-                  </ul>
-                </div>
-              <% end %>
+            <dl class="grid gap-half txt-small margin-none" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
+              <div>
+                <dt class="txt-subtle">Project</dt>
+                <dd class="margin-none"><%= card.board.name %></dd>
+              </div>
+              <div>
+                <dt class="txt-subtle">Column</dt>
+                <dd class="margin-none"><%= card.column&.name || "N/A" %></dd>
+              </div>
+              <div>
+                <dt class="txt-subtle">Category</dt>
+                <dd class="margin-none"><%= record.category.presence || "N/A" %></dd>
+              </div>
+              <div>
+                <dt class="txt-subtle">Domain</dt>
+                <dd class="margin-none"><%= record.domain.presence || "N/A" %></dd>
+              </div>
+            </dl>
 
-              <% if suggested_fields.any? %>
-                <details>
-                  <summary>Preview suggested fields</summary>
-                  <dl class="grid gap-half margin-block-start" style="grid-template-columns: max-content 1fr;">
-                    <% suggested_fields.each do |field, value| %>
-                      <dt><%= field.humanize %></dt>
-                      <dd class="margin-none"><%= value %></dd>
-                    <% end %>
-                  </dl>
-                </details>
-              <% end %>
+            <% if record.structured_summary.present? || record.problem_description.present? %>
+              <section class="txt-small">
+                <strong>Imported summary</strong>
+                <p class="margin-block-end-none"><%= record.structured_summary.presence || record.problem_description %></p>
+              </section>
+            <% end %>
+
+            <%= render "legacy_imports/asanas/source_context", record: record, compact: true %>
+
+            <section class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));">
+              <div class="flex flex-column gap-half txt-small">
+                <strong>Missing structure</strong>
+                <% if record.legacy_training_candidate_blockers.any? %>
+                  <% if missing_gate_one.any? %>
+                    <span>Gate 1 missing: <%= missing_gate_one.map { it.to_s.humanize.downcase }.to_sentence %>.</span>
+                  <% end %>
+
+                  <% if record.missing_gate_two_fields.any? %>
+                    <span>Gate 2 missing for training: <%= record.missing_gate_two_fields.map { it.to_s.humanize.downcase }.to_sentence %>.</span>
+                  <% end %>
+                <% else %>
+                  <span class="txt-subtle">Ready to generate a pending-review training example.</span>
+                <% end %>
+              </div>
+
+              <div class="flex flex-wrap align-center justify-end gap-half txt-small">
+                <% if (permalink = record.legacy_metadata["permalink_url"]).present? %>
+                  <%= link_to "Open Asana task", permalink, class: "btn txt-small", target: "_blank", rel: "noopener noreferrer" %>
+                <% end %>
+
+                <%= link_to "Structure issue",
+                      card_path(card, anchor: dom_id(card, :resolution_record)),
+                      class: "btn btn--reversed txt-small" %>
+
+                <% if record.legacy_training_candidate_blockers.any? %>
+                  <%= button_to "Suggest structure",
+                        legacy_imports_asana_issue_structuring_suggestion_path(record, status: @status),
+                        class: "btn txt-small" %>
+                <% end %>
+
+                <% if existing_training_example %>
+                  <% if Current.user.can_review_training_examples? %>
+                    <%= link_to "Review training example", training_example_path(existing_training_example), class: "btn btn--reversed txt-small" %>
+                  <% else %>
+                    <span class="badge">Training example <%= existing_training_example.status.humanize.downcase %></span>
+                  <% end %>
+                <% elsif record.legacy_training_candidate_ready? %>
+                  <%= button_to "Generate training example",
+                        legacy_imports_asana_issue_training_example_path(record),
+                        class: "btn btn--reversed txt-small" %>
+                <% end %>
+              </div>
             </section>
-          <% end %>
-        </article>
+
+            <% if latest_structuring_run %>
+              <% suggested_fields = latest_structuring_run.output.fetch("suggested_fields", {}) %>
+              <section class="panel flex flex-column gap-half txt-small">
+                <div class="flex flex-wrap align-center justify-between gap">
+                  <div>
+                    <strong>Latest AI structuring suggestion</strong>
+                    <p class="txt-subtle margin-none">
+                      <%= latest_structuring_run.metadata["completed_by"].presence&.humanize || "Deterministic" %>
+                      suggestion generated <%= local_datetime_tag latest_structuring_run.completed_at, style: :shortdate %>.
+                    </p>
+                  </div>
+
+                  <div class="flex flex-wrap align-center gap-half">
+                    <%= button_to "Dismiss",
+                          card_ai_run_dismissal_path(card, latest_structuring_run),
+                          params: { return_to: "legacy_asana", status: @status },
+                          class: "btn txt-small" %>
+                    <%= button_to "Apply suggestion",
+                          apply_legacy_imports_asana_issue_structuring_suggestion_path(record, ai_run_id: latest_structuring_run.id, status: @status),
+                          class: "btn btn--reversed txt-small" %>
+                  </div>
+                </div>
+
+                <p class="margin-none"><%= latest_structuring_run.output["summary"] %></p>
+
+                <% if latest_structuring_run.output["warnings"].present? %>
+                  <div>
+                    <strong>Warnings</strong>
+                    <ul class="margin-block-end-none">
+                      <% latest_structuring_run.output["warnings"].each do |warning| %>
+                        <li><%= warning %></li>
+                      <% end %>
+                    </ul>
+                  </div>
+                <% end %>
+
+                <% if suggested_fields.any? %>
+                  <details>
+                    <summary>Preview suggested fields</summary>
+                    <dl class="grid gap-half margin-block-start" style="grid-template-columns: max-content 1fr;">
+                      <% suggested_fields.each do |field, value| %>
+                        <dt><%= field.humanize %></dt>
+                        <dd class="margin-none"><%= value %></dd>
+                      <% end %>
+                    </dl>
+                  </details>
+                <% end %>
+              </section>
+            <% end %>
+          </article>
+        <% end %>
       <% end %>
     </div>
   <% else %>

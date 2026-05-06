@@ -1,0 +1,106 @@
+<% compact = local_assigns.fetch(:compact, false) %>
+<% metadata = record.legacy_metadata %>
+<% attachments = record.legacy_attachments %>
+<% comments = record.legacy_comment_stories %>
+<% visible_attachments = attachments.first(compact ? 3 : 12) %>
+<% visible_comments = comments.first(compact ? 2 : 5) %>
+<% created_by = metadata["created_by"].is_a?(Hash) ? metadata["created_by"] : {} %>
+<% assignee = metadata["assignee"].is_a?(Hash) ? metadata["assignee"] : {} %>
+
+<% if record.legacy_source_context_present? %>
+  <section class="card__cactus-panel panel border flex flex-column gap-half txt-small">
+    <div class="card__cactus-panel-header flex flex-wrap align-start justify-between gap-half">
+      <strong>Asana source context</strong>
+      <span class="txt-subtle">
+        <%= pluralize(attachments.size, "attachment") %>,
+        <%= pluralize(comments.size, "comment") %>
+      </span>
+    </div>
+
+    <% if created_by.present? || assignee.present? %>
+      <dl class="grid gap-half margin-none" style="grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));">
+        <% if created_by.present? %>
+          <div>
+            <dt class="txt-subtle">Reporter</dt>
+            <dd class="margin-none"><%= created_by["name"].presence || created_by["email"].presence || "N/A" %></dd>
+          </div>
+        <% end %>
+
+        <% if assignee.present? %>
+          <div>
+            <dt class="txt-subtle">Assignee</dt>
+            <dd class="margin-none"><%= assignee["name"].presence || assignee["email"].presence || "N/A" %></dd>
+          </div>
+        <% end %>
+      </dl>
+    <% end %>
+
+    <% if visible_attachments.any? %>
+      <div class="flex flex-column gap-half">
+        <strong>Attachments</strong>
+        <ul class="card__legacy-attachments margin-none">
+          <% visible_attachments.each do |attachment| %>
+            <% attachment_url = record.legacy_attachment_url(attachment) %>
+            <% attachment_blob = record.legacy_attachment_blob(attachment) %>
+            <li class="card__legacy-attachment">
+              <div class="flex flex-column gap-quarter">
+                <% if attachment_blob&.image? %>
+                  <%= image_tag rails_blob_path(attachment_blob), class: "card__legacy-attachment-preview", loading: "lazy", alt: attachment_blob.filename.to_s %>
+                <% elsif attachment_blob.present? %>
+                  <%= link_to attachment_blob.filename.to_s, rails_blob_path(attachment_blob, disposition: :attachment), class: "txt-link", download: attachment_blob.filename %>
+                <% elsif attachment_url.present? %>
+                  <%= link_to attachment["name"].presence || attachment_url, attachment_url, class: "txt-link", target: "_blank", rel: "noopener noreferrer" %>
+                <% else %>
+                  <%= attachment["name"] %>
+                <% end %>
+
+                <span>
+                  <% if attachment_url.present? && attachment_blob.present? %>
+                    <%= link_to "Open original", attachment_url, class: "txt-link", target: "_blank", rel: "noopener noreferrer" %>
+                  <% end %>
+                  <% if attachment["created_at"].present? %>
+                    <span class="txt-subtle">(<%= attachment["created_at"] %>)</span>
+                  <% end %>
+                  <% if attachment["cactus_attachment_import_status"].present? && attachment["cactus_attachment_import_status"] != "attached" %>
+                    <span class="txt-subtle">Import <%= attachment["cactus_attachment_import_status"] %></span>
+                  <% end %>
+                </span>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+
+        <% if attachments.size > visible_attachments.size %>
+          <span class="txt-subtle">Showing first <%= visible_attachments.size %> of <%= attachments.size %> attachments.</span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if visible_comments.any? %>
+      <div class="flex flex-column gap-half">
+        <strong>Imported comments</strong>
+        <% visible_comments.each do |story| %>
+          <% author = story["created_by"].is_a?(Hash) ? story["created_by"] : {} %>
+          <article class="panel flex flex-column gap-half">
+            <div class="flex flex-wrap align-center justify-between gap-half txt-subtle">
+              <span><%= author["name"].presence || author["email"].presence || "Asana user" %></span>
+              <% if story["created_at"].present? %>
+                <span><%= story["created_at"] %></span>
+              <% end %>
+            </div>
+            <p class="margin-none"><%= truncate(story["text"].to_s, length: compact ? 240 : 800) %></p>
+            <% if story["cactus_comment_import_status"].present? %>
+              <p class="margin-none txt-subtle">
+                Comment import: <%= story["cactus_comment_import_status"] %>
+              </p>
+            <% end %>
+          </article>
+        <% end %>
+
+        <% if comments.size > visible_comments.size %>
+          <span class="txt-subtle">Showing first <%= visible_comments.size %> of <%= comments.size %> imported comments. Full raw metadata remains available below.</span>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+<% end %>

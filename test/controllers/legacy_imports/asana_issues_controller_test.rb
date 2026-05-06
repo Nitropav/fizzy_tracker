@@ -17,6 +17,10 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_match "Gate 1 missing", response.body
     assert_match "Open Asana task", response.body
     assert_match "Structure issue", response.body
+    assert_match "Asana source context", response.body
+    assert_match "1 attachment", response.body
+    assert_match "image.png", response.body
+    assert_match "Reporter added screenshot context", response.body
   end
 
   test "index can show all imported issues" do
@@ -25,6 +29,34 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "All (2)", response.body
     assert_match "Imported Asana issue", response.body
+  end
+
+  test "index paginates large legacy imports" do
+    with_current_user :kevin do
+      60.times do |index|
+        card = @board.cards.create!(
+          account: @board.account,
+          creator: users(:kevin),
+          status: :published,
+          title: "Bulk imported Asana issue #{index}",
+          description: "Bulk imported issue #{index}"
+        )
+
+        card.create_resolution_record!(
+          legacy_import: true,
+          legacy_source: "asana",
+          legacy_external_id: "bulk-asana-#{index}",
+          legacy_imported_at: index.minutes.ago,
+          problem_description: "Bulk imported problem #{index}"
+        )
+      end
+    end
+
+    get legacy_imports_asana_issues_path(status: "all")
+
+    assert_response :success
+    assert_match "All (62)", response.body
+    assert_select ".pagination-link"
   end
 
   test "index can show structured imported issues" do
@@ -43,12 +75,26 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
     record = Card::ResolutionRecord.find_by!(legacy_source: "asana", legacy_external_id: "asana-2")
     record.update!(gate_one_attrs.merge(gate_two_attrs))
 
-    get legacy_imports_asana_issues_path(status: "structured")
+    get legacy_imports_asana_issues_path(status: "training_candidates")
 
     assert_response :success
+    assert_match "Training candidates (1)", response.body
     assert_match "Ready for training candidate", response.body
     assert_select "form[action=?]", legacy_imports_asana_issue_training_example_path(record)
     assert_match "Generate training example", response.body
+  end
+
+  test "index links existing training example instead of showing duplicate generation action" do
+    record = Card::ResolutionRecord.find_by!(legacy_source: "asana", legacy_external_id: "asana-2")
+    record.update!(gate_one_attrs.merge(gate_two_attrs))
+    training_example = TrainingExamples::Generator.new(record.card).generate
+
+    get legacy_imports_asana_issues_path(status: "training_candidates")
+
+    assert_response :success
+    assert_match "Training example: Pending review", response.body
+    assert_select "a[href=?]", training_example_path(training_example), text: "Review training example"
+    assert_select "form[action=?]", legacy_imports_asana_issue_training_example_path(record), count: 0
   end
 
   test "index shows latest structuring suggestion and apply action" do
@@ -75,7 +121,7 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "non import users cannot review imported issues" do
-    logout_and_sign_in_as :david
+    users(:kevin).update!(role: :member, cactus_role: :developer)
 
     get legacy_imports_asana_issues_path
 
@@ -84,12 +130,16 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
 
   private
     def import_asana_tasks
-      post legacy_imports_asana_path, params: {
-        board_id: @board.id,
-        file: fixture_file_upload("asana_tasks.json", "application/json")
-      }
+      perform_enqueued_jobs do
+        post legacy_imports_asana_path, params: {
+          board_id: @board.id,
+          file: fixture_file_upload("asana_tasks.json", "application/json")
+        }
+      end
 
-      assert_response :created
+      asana_import = LegacyImports::AsanaImport.latest_first.first
+      assert_redirected_to legacy_imports_asana_import_path(asana_import)
+      assert_predicate asana_import.reload, :completed?
     end
 
     def gate_one_attrs

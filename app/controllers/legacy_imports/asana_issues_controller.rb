@@ -1,14 +1,16 @@
 class LegacyImports::AsanaIssuesController < ApplicationController
   before_action :ensure_can_import_cactus_issues
 
-  STATUSES = %w[ needs_structuring structured all ].freeze
+  STATUSES = %w[ needs_structuring structured training_candidates all ].freeze
 
   def index
     @status = params[:status].presence_in(STATUSES) || "needs_structuring"
     @counts = status_counts
-    @records = filtered_records
-      .includes(card: [ :board, :column, :ai_runs ])
+
+    set_page_and_extract_portion_from filtered_records
+      .includes(card: [ :board, :column, :ai_runs, :training_examples ])
       .order(legacy_imported_at: :desc, created_at: :desc)
+    @records = @page.records
   end
 
   private
@@ -26,6 +28,8 @@ class LegacyImports::AsanaIssuesController < ApplicationController
         base_records.where(needs_structuring: true)
       when "structured"
         base_records.where(needs_structuring: false)
+      when "training_candidates"
+        base_records.legacy_training_candidates
       else
         base_records
       end
@@ -35,6 +39,7 @@ class LegacyImports::AsanaIssuesController < ApplicationController
       {
         "needs_structuring" => base_records.where(needs_structuring: true).count,
         "structured" => base_records.where(needs_structuring: false).count,
+        "training_candidates" => base_records.legacy_training_candidates.count,
         "all" => base_records.count
       }
     end

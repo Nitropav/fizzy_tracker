@@ -8,6 +8,7 @@ class Account < ApplicationRecord
   has_many :cards, dependent: :destroy
   has_many :card_code_links, class_name: "Card::CodeLink", dependent: :destroy
   has_many :github_webhook_deliveries, class_name: "Github::WebhookDelivery", dependent: :destroy
+  has_many :legacy_asana_imports, class_name: "LegacyImports::AsanaImport", dependent: :destroy
   has_many :training_examples, dependent: :destroy
   has_many :training_example_exports, dependent: :destroy
   has_many :webhooks, dependent: :destroy

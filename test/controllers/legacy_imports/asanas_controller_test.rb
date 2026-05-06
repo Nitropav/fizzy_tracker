@@ -23,17 +23,37 @@ class LegacyImports::AsanasControllerTest < ActionDispatch::IntegrationTest
     assert_match @board.name, response.body
   end
 
-  test "create imports Asana JSON tasks as legacy issues" do
-    assert_difference -> { Card.count }, 2 do
-      assert_difference -> { Card::ResolutionRecord.where(legacy_import: true).count }, 2 do
-        post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("asana_tasks.json", "application/json") }
+  test "create queues Asana import" do
+    assert_enqueued_with(job: LegacyImports::AsanaImportJob) do
+      assert_difference -> { LegacyImports::AsanaImport.count }, +1 do
+        assert_no_difference -> { Card.count } do
+          post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("asana_tasks.json", "application/json") }
+        end
       end
     end
 
-    assert_response :created
-    assert_match "Issues created: 2", response.body
-    assert_match "Issues needing structuring: 2", response.body
-    assert_match "Review legacy issues", response.body
+    asana_import = LegacyImports::AsanaImport.latest_first.first
+    assert_redirected_to legacy_imports_asana_import_path(asana_import)
+    assert_predicate asana_import, :pending?
+    assert_predicate asana_import.file, :attached?
+  end
+
+  test "create imports Asana JSON tasks as legacy issues in background" do
+    assert_difference -> { Card.count }, 2 do
+      assert_difference -> { Card::ResolutionRecord.where(legacy_import: true).count }, 2 do
+        perform_enqueued_jobs do
+          post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("asana_tasks.json", "application/json") }
+        end
+      end
+    end
+
+    asana_import = LegacyImports::AsanaImport.latest_first.first
+    assert_redirected_to legacy_imports_asana_import_path(asana_import)
+    assert_predicate asana_import.reload, :completed?
+    assert_equal 2, asana_import.total_count
+    assert_equal 2, asana_import.created_count
+    assert_equal 0, asana_import.skipped_count
+    assert_equal 2, asana_import.needs_structuring_count
 
     record = Card::ResolutionRecord.find_by!(legacy_source: "asana", legacy_external_id: "asana-1")
     assert_equal @board, record.card.board
@@ -45,24 +65,50 @@ class LegacyImports::AsanasControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create skips duplicate Asana tasks" do
-    post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("asana_tasks.json", "application/json") }
-    assert_response :created
+    perform_enqueued_jobs do
+      post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("asana_tasks.json", "application/json") }
+    end
+    assert_predicate LegacyImports::AsanaImport.latest_first.first.reload, :completed?
 
     assert_no_difference -> { Card.count } do
       assert_no_difference -> { Card::ResolutionRecord.count } do
-        post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("asana_tasks.json", "application/json") }
+        perform_enqueued_jobs do
+          post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("asana_tasks.json", "application/json") }
+        end
       end
     end
 
-    assert_response :created
-    assert_match "Duplicates skipped: 2", response.body
+    asana_import = LegacyImports::AsanaImport.latest_first.first
+    assert_predicate asana_import.reload, :completed?
+    assert_equal 2, asana_import.total_count
+    assert_equal 0, asana_import.created_count
+    assert_equal 2, asana_import.skipped_count
   end
 
-  test "create rejects invalid JSON" do
-    post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("moon.jpg", "application/json") }
+  test "invalid JSON marks queued import as failed" do
+    perform_enqueued_jobs do
+      post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("moon.jpg", "application/json") }
+    end
 
-    assert_response :unprocessable_entity
-    assert_match "Asana import failed", response.body
+    asana_import = LegacyImports::AsanaImport.latest_first.first
+    assert_redirected_to legacy_imports_asana_import_path(asana_import)
+    assert_predicate asana_import.reload, :failed?
+    assert_equal "invalid JSON file", asana_import.error_message
+  end
+
+  test "show displays import status" do
+    perform_enqueued_jobs do
+      post legacy_imports_asana_path, params: { board_id: @board.id, file: fixture_file_upload("asana_tasks.json", "application/json") }
+    end
+    asana_import = LegacyImports::AsanaImport.latest_first.first
+
+    get legacy_imports_asana_import_path(asana_import)
+
+    assert_response :success
+    assert_match "Asana Import Status", response.body
+    assert_match "Status: Completed", response.body
+    assert_match "Issues created", response.body
+    assert_match "Review legacy issues", response.body
   end
 
   test "non admins cannot import" do
@@ -95,9 +141,28 @@ class LegacyImports::AsanasControllerTest < ActionDispatch::IntegrationTest
   test "admins cannot import into another account board" do
     other_account_board = boards(:miltons_wish_list)
 
-    assert_no_difference -> { Card.count } do
+    assert_no_difference -> { LegacyImports::AsanaImport.count } do
       post legacy_imports_asana_path, params: { board_id: other_account_board.id, file: fixture_file_upload("asana_tasks.json", "application/json") }
     end
+
+    assert_response :not_found
+  end
+
+  test "cannot access another account Asana import" do
+    other_account_import = Current.set(account: accounts(:initech), user: users(:mike), identity: users(:mike).identity) do
+      LegacyImports::AsanaImport.create!(
+        account: accounts(:initech),
+        board: boards(:miltons_wish_list),
+        creator: users(:mike),
+        file: {
+          io: StringIO.new(JSON.generate(tasks: [])),
+          filename: "asana.json",
+          content_type: "application/json"
+        }
+      )
+    end
+
+    get legacy_imports_asana_import_path(other_account_import)
 
     assert_response :not_found
   end

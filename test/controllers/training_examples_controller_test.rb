@@ -16,6 +16,23 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     assert_match "Export history", response.body
   end
 
+  test "index paginates large training example lists" do
+    60.times do |index|
+      TrainingExample.create!(
+        account: accounts("37s"),
+        card: cards(:logo),
+        status: :pending_review,
+        input_context: { "card" => { "id" => cards(:logo).id } },
+        metadata: { "priority" => "normal", "domain" => "ui", "bulk_index" => index }
+      )
+    end
+
+    get training_examples_path
+
+    assert_response :success
+    assert_select ".pagination-link"
+  end
+
   test "index is visible to cactus reviewers" do
     users(:david).update!(cactus_role: :reviewer)
     logout_and_sign_in_as :david
@@ -105,17 +122,32 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
   test "export approved examples as jsonl" do
     @training_example.approve!(reviewer: users(:kevin), notes: "Good example")
 
-    assert_difference -> { TrainingExampleExport.count }, +1 do
-      get export_training_examples_path
+    assert_enqueued_with(job: TrainingExamples::ExportJob) do
+      assert_difference -> { TrainingExampleExport.count }, +1 do
+        post export_training_examples_path
+      end
     end
 
-    assert_response :success
-    assert_includes response.headers["Content-Disposition"], ".jsonl"
+    assert_redirected_to training_example_exports_path
+    assert_equal "JSONL export queued.", flash[:notice]
 
     training_example_export = TrainingExampleExport.latest_first.first
     assert_equal users(:kevin), training_example_export.user
     assert_equal [ @training_example.id ], training_example_export.training_example_ids
+    assert_predicate training_example_export, :pending?
+    assert @training_example.reload.approved?
+    assert_equal training_example_export, @training_example.training_example_export
 
+    perform_enqueued_jobs
+
+    assert_predicate training_example_export.reload, :completed?
+    assert_predicate training_example_export.file, :attached?
+    assert @training_example.reload.exported?
+    assert_equal training_example_export, @training_example.training_example_export
+
+    get training_example_export_path(training_example_export)
+    assert_response :success
+    assert_includes response.headers["Content-Disposition"], ".jsonl"
     line = response.body.lines.first
     payload = JSON.parse(line)
     assert_equal "system", payload.dig("messages", 0, "role")
@@ -123,8 +155,6 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "assistant", payload.dig("messages", 2, "role")
     assert_equal @training_example.id, payload.dig("metadata", "training_example_id")
     assert_equal training_example_export.completed_at.iso8601, payload.dig("metadata", "exported_at")
-    assert @training_example.reload.exported?
-    assert_equal training_example_export, @training_example.training_example_export
   end
 
   test "export only includes current account approved examples" do
@@ -132,8 +162,12 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     other_account_example = create_other_account_training_example
     other_account_example.approve!(reviewer: users(:mike), notes: "Other account example")
 
-    get export_training_examples_path
+    perform_enqueued_jobs do
+      post export_training_examples_path
+    end
 
+    training_example_export = TrainingExampleExport.latest_first.first
+    get training_example_export_path(training_example_export)
     assert_response :success
     exported_ids = response.body.lines.map { JSON.parse(it).dig("metadata", "training_example_id") }
     assert_equal [ @training_example.id ], exported_ids
@@ -143,7 +177,7 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
 
   test "export redirects when no examples are approved" do
     assert_no_difference -> { TrainingExampleExport.count } do
-      get export_training_examples_path
+      post export_training_examples_path
     end
 
     assert_redirected_to training_examples_path
@@ -162,7 +196,7 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
   test "non admins cannot export examples" do
     logout_and_sign_in_as :david
 
-    get export_training_examples_path
+    post export_training_examples_path
 
     assert_response :forbidden
     assert_match "Access denied", response.body

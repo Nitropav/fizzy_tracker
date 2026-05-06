@@ -397,6 +397,84 @@
     min-inline-size: 0;
   }
 
+  .card__resolution-record {
+    text-align: start;
+    overflow-wrap: anywhere;
+
+    :where(.grid, .panel, fieldset, label, textarea, input, select) {
+      min-inline-size: 0;
+    }
+
+    :where(textarea, input, select) {
+      max-inline-size: 100%;
+    }
+
+    :where(textarea) {
+      overflow-x: hidden;
+      resize: vertical;
+    }
+  }
+
+  .card__gate-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  }
+
+  .card__gate-panel {
+    inline-size: 100%;
+    overflow: hidden;
+  }
+
+  .card__gate-textarea {
+    min-block-size: 8rem;
+  }
+
+  .card__gate-textarea--large {
+    min-block-size: clamp(22rem, 70dvh, 42rem);
+  }
+
+  .card__cactus-panel {
+    align-items: stretch;
+    text-align: start;
+
+    > * {
+      min-inline-size: 0;
+    }
+  }
+
+  .card__cactus-panel-header {
+    align-items: start;
+
+    > :first-child {
+      flex: 1 1 22rem;
+      min-inline-size: 0;
+    }
+
+    > :last-child {
+      flex: 0 1 auto;
+    }
+  }
+
+  .card__legacy-attachments {
+    display: grid;
+    gap: var(--block-space-half);
+    list-style-position: inside;
+    padding-inline-start: 0;
+  }
+
+  .card__legacy-attachment {
+    min-inline-size: 0;
+  }
+
+  .card__legacy-attachment-preview {
+    block-size: auto;
+    border: var(--border);
+    border-radius: var(--radius);
+    display: block;
+    max-block-size: min(18rem, 55dvh);
+    max-inline-size: 100%;
+    object-fit: contain;
+  }
+
   @media (max-width: 799px) {
     .card-perma__actions {
       display: flex;

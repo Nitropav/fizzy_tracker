@@ -20,6 +20,30 @@
     }
   }
 
+  .settings--cactus {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    inline-size: min(100%, calc(100vw - 2rem));
+    max-inline-size: 92rem;
+
+    @media (min-width: 1100px) {
+      grid-template-columns: minmax(42rem, 1fr) minmax(20rem, 26rem);
+    }
+
+    .settings__panel {
+      inline-size: 100%;
+      max-inline-size: none;
+    }
+
+    .settings__panel--users {
+      max-height: none;
+    }
+
+    .settings__panel--account-tools {
+      min-block-size: auto;
+    }
+  }
+
   /* Sections & Panels
   /* -------------------------------------------------------------------------- */
 

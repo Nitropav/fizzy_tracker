@@ -70,10 +70,11 @@ class TrainingExampleExportsControllerTest < ActionDispatch::IntegrationTest
 
     def create_export(training_example)
       accounts(:"37s").training_example_exports.create!(
-        user: users(:kevin),
-        filename: "training-examples-test.jsonl",
-        example_count: 1,
-        training_example_ids: [ training_example.id ],
+      user: users(:kevin),
+      status: :completed,
+      filename: "training-examples-test.jsonl",
+      example_count: 1,
+      training_example_ids: [ training_example.id ],
         completed_at: Time.current
       )
     end

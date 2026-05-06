@@ -157,7 +157,7 @@ Rails.application.routes.draw do
 
   resources :training_examples, only: %i[ index show ] do
     collection do
-      get :export
+      post :export
     end
 
     member do
@@ -170,6 +170,7 @@ Rails.application.routes.draw do
 
   namespace :legacy_imports do
     get "asana", to: "asanas#new"
+    resources :asana_imports, only: :show
 
     resource :asana, only: %i[ new create ] do
       resources :issues, only: :index, controller: :asana_issues do

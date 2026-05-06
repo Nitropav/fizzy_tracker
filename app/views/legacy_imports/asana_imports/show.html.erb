@@ -1,0 +1,78 @@
+<% @page_title = "Asana Import Status" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Import Asana Tasks", new_legacy_imports_asana_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap">
+  <header class="flex flex-wrap align-start justify-between gap">
+    <div class="flex flex-column gap-half">
+      <h1 class="txt-x-large font-weight-black margin-none">Asana Import Status</h1>
+      <p class="txt-small txt-subtle margin-none">
+        Imported tasks are processed in the background so large Asana exports do not block the browser.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-half txt-small">
+      <% unless @asana_import.finished? %>
+        <%= link_to "Refresh status", legacy_imports_asana_import_path(@asana_import), class: "btn" %>
+      <% end %>
+      <%= link_to "Review legacy issues", legacy_imports_asana_issues_path, class: "btn btn--reversed" %>
+    </div>
+  </header>
+
+  <section class="panel border flex flex-column gap">
+    <div class="flex flex-wrap gap-half txt-small">
+      <span class="badge">Status: <%= @asana_import.status.humanize %></span>
+      <span class="badge">Project: <%= @asana_import.board.name %></span>
+      <span class="badge">Uploaded by: <%= @asana_import.creator.name %></span>
+    </div>
+
+    <dl class="grid gap-half txt-small margin-none" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
+      <div>
+        <dt class="txt-subtle">Uploaded file</dt>
+        <dd class="margin-none"><%= @asana_import.file.filename if @asana_import.file.attached? %></dd>
+      </div>
+      <div>
+        <dt class="txt-subtle">Started</dt>
+        <dd class="margin-none"><%= @asana_import.started_at ? local_datetime_tag(@asana_import.started_at, style: :shortdate) : "Not started" %></dd>
+      </div>
+      <div>
+        <dt class="txt-subtle">Completed</dt>
+        <dd class="margin-none"><%= @asana_import.completed_at ? local_datetime_tag(@asana_import.completed_at, style: :shortdate) : "Pending" %></dd>
+      </div>
+    </dl>
+
+    <section class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));">
+      <article class="panel flex flex-column gap-half">
+        <span class="txt-small txt-subtle">Total tasks</span>
+        <strong class="txt-large"><%= @asana_import.total_count %></strong>
+      </article>
+      <article class="panel flex flex-column gap-half">
+        <span class="txt-small txt-subtle">Issues created</span>
+        <strong class="txt-large"><%= @asana_import.created_count %></strong>
+      </article>
+      <article class="panel flex flex-column gap-half">
+        <span class="txt-small txt-subtle">Duplicates skipped</span>
+        <strong class="txt-large"><%= @asana_import.skipped_count %></strong>
+      </article>
+      <article class="panel flex flex-column gap-half">
+        <span class="txt-small txt-subtle">Needs structuring</span>
+        <strong class="txt-large"><%= @asana_import.needs_structuring_count %></strong>
+      </article>
+      <article class="panel flex flex-column gap-half">
+        <span class="txt-small txt-subtle">Failed tasks</span>
+        <strong class="txt-large"><%= @asana_import.failed_count %></strong>
+      </article>
+    </section>
+
+    <% if @asana_import.error_message.present? %>
+      <section class="panel border txt-small">
+        <strong>Import errors</strong>
+        <pre class="margin-block-end-none"><%= @asana_import.error_message %></pre>
+      </section>
+    <% end %>
+  </section>
+</section>

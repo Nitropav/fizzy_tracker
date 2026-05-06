@@ -18,6 +18,7 @@ class Account::SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", text: /Admin: Can manage users/
     assert_select "p", text: /Developer: Claims assigned work/
     assert_select "form[action='#{user_password_path(users(:david))}']"
+    assert_select "h2", text: "Auto close", count: 0
   end
 
   test "show requires admin" do

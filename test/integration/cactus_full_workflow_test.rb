@@ -83,15 +83,21 @@ class CactusFullWorkflowTest < ActionDispatch::IntegrationTest
     assert_equal "closed", card.reload.cactus_workflow_state
 
     assert_difference -> { TrainingExampleExport.count }, +1 do
-      get export_training_examples_path
+      perform_enqueued_jobs do
+        post export_training_examples_path
+      end
     end
+
+    export = TrainingExampleExport.latest_first.first
+    assert_redirected_to training_example_exports_path
+    assert_predicate export.reload, :completed?
+
+    get training_example_export_path(export)
 
     assert_response :success
     assert_includes response.headers["Content-Disposition"], ".jsonl"
 
     payload = JSON.parse(response.body.lines.first)
-    export = TrainingExampleExport.latest_first.first
-
     assert_equal training_example.id, payload.dig("metadata", "training_example_id")
     assert_equal card.id, payload.dig("metadata", "card_id")
     assert_equal export.completed_at.iso8601, payload.dig("metadata", "exported_at")

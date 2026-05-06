@@ -9,6 +9,7 @@ class TrainingExampleExportTest < ActiveSupport::TestCase
   test "belongs to an account user and ordered example ids" do
     training_example_export = accounts(:"37s").training_example_exports.create!(
       user: users(:kevin),
+      status: :completed,
       filename: "training-examples.jsonl",
       example_count: 1,
       training_example_ids: [ @training_example.id ],
@@ -29,6 +30,15 @@ class TrainingExampleExportTest < ActiveSupport::TestCase
 
     assert_not training_example_export.valid?
     assert_includes training_example_export.errors[:user], "must belong to the export account"
+  end
+
+  test "queue_for reserves approved examples for one export" do
+    export = TrainingExampleExport.queue_for!(account: accounts(:"37s"), user: users(:kevin))
+
+    assert_predicate export, :pending?
+    assert_equal [ @training_example.id ], export.training_example_ids
+    assert_equal export, @training_example.reload.training_example_export
+    assert_nil TrainingExampleExport.queue_for!(account: accounts(:"37s"), user: users(:kevin))
   end
 
   private

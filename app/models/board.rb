@@ -8,6 +8,7 @@ class Board < ApplicationRecord
 
   has_many :tags, -> { distinct }, through: :cards
   has_many :events
+  has_many :legacy_asana_imports, class_name: "LegacyImports::AsanaImport", dependent: :destroy
   has_many :webhooks, dependent: :destroy
 
   scope :alphabetically, -> { order("lower(name)") }

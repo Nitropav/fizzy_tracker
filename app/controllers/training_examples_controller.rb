@@ -5,8 +5,10 @@ class TrainingExamplesController < ApplicationController
 
   def index
     @status = params[:status].presence
-    @training_examples = Current.account.training_examples.includes(:card, :reviewed_by).order(created_at: :desc)
-    @training_examples = @training_examples.where(status: @status) if TrainingExample.statuses.key?(@status)
+    training_examples = Current.account.training_examples.includes(:card, :reviewed_by).order(created_at: :desc)
+    training_examples = training_examples.where(status: @status) if TrainingExample.statuses.key?(@status)
+    set_page_and_extract_portion_from training_examples
+    @training_examples = @page.records
     @approved_export_count = Current.account.training_examples.approved_for_export.count
     @latest_training_example_exports = Current.account.training_example_exports.includes(:user).latest_first.limit(5)
     @exported_without_batch_count = Current.account.training_examples.exported.where(training_example_export_id: nil).count
@@ -21,34 +23,15 @@ class TrainingExamplesController < ApplicationController
   end
 
   def export
-    training_examples = Current.account.training_examples.approved_for_export.includes(:card, :reviewed_by).order(:created_at).to_a
-    if training_examples.empty?
+    training_example_export = TrainingExampleExport.queue_for!(account: Current.account, user: Current.user)
+    if training_example_export.blank?
       redirect_to training_examples_path, alert: "No approved training examples are ready for export."
       return
     end
 
-    exported_at = Time.current
-    filename = "training-examples-#{exported_at.utc.strftime('%Y%m%d%H%M%S')}.jsonl"
-    payload = TrainingExamples::JsonlExporter.new(training_examples, exported_at: exported_at).to_jsonl
+    training_example_export.process_later
 
-    TrainingExample.transaction do
-      training_example_export = Current.account.training_example_exports.create!(
-        user: Current.user,
-        filename: filename,
-        example_count: training_examples.size,
-        training_example_ids: training_examples.map(&:id),
-        completed_at: exported_at
-      )
-
-      training_examples.each { it.mark_exported!(training_example_export: training_example_export, exported_at: exported_at) }
-    end
-
-    send_data(
-      payload,
-      filename: filename,
-      type: "application/jsonl; charset=utf-8",
-      disposition: "attachment"
-    )
+    redirect_to training_example_exports_path, notice: "JSONL export queued."
   end
 
   def approve

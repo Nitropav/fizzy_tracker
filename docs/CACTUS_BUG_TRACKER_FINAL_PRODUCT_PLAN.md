@@ -704,6 +704,8 @@ Status:
 - Done: approved examples show clear export readiness and a disabled export state when nothing is ready.
 - Done: JSONL exports are stored as export batches with filename, exported examples, user, count, timestamp, and repeat download.
 - Done: training example list links to export history and recent export batches.
+- Done: JSONL export now runs asynchronously through `TrainingExamples::ExportJob` and `TrainingExampleExport` statuses instead of blocking the request.
+- Done: export history shows pending/processing/completed/failed status and only exposes download when a batch is ready.
 
 Tasks:
 
@@ -711,7 +713,8 @@ Tasks:
 - add JSONL preview; DONE
 - add approve/reject notes; DONE
 - add export confirmation/status; DONE
-- add exported history. DONE
+- add exported history; DONE
+- queue large JSONL export work and expose batch status. DONE
 
 Exit criteria:
 
@@ -730,11 +733,19 @@ Status:
 - Done: duplicate Asana tasks are skipped by account/source/external id.
 - Done: Cactus Home, Cactus menu, and import summary link to a dedicated legacy Asana review queue.
 - Done: legacy Asana review queue filters `needs_structuring`, `structured`, and `all` imported issues.
+- Done: legacy Asana review queue has a dedicated `training_candidates` filter for fully structured imports that can generate training examples.
 - Done: legacy review rows show project, Asana source id, original task link, Gate 1/Gate 2 status, missing fields, and direct `Structure issue` action.
 - Done: fully structured legacy issues show `Ready for training candidate`.
 - Done: reviewers/admins can generate a pending-review `TrainingExample` from a fully structured legacy Asana issue.
 - Done: incomplete legacy issues are blocked from training example generation with explicit missing Gate field messaging.
 - Done: repeated generation reuses existing draft/pending candidates instead of creating duplicates.
+- Done: imported Asana attachments, comment stories, reporter, and assignee context are visible on the legacy review queue and issue detail page without requiring users to inspect raw JSON metadata.
+- Done: direct Asana attachment URLs are downloaded into Active Storage and embedded into the imported card; expired or non-direct URLs are preserved as source links without failing the import.
+- Done: Asana comment stories are imported into the normal card comment thread as idempotent system-authored comments with original author/date preserved in the body.
+- Done: GitHub PR/commit URLs found in Asana notes and comments are imported as card code evidence and synced into Gate 2 PR/commit evidence fields.
+- Done: legacy Asana review queue is paginated so large imports are reviewed in manageable chunks instead of rendering every imported task at once.
+- Done: Asana JSON imports now run asynchronously through a queued `LegacyImports::AsanaImport` record instead of blocking the request.
+- Done: Asana import status page shows processing outcome, created/skipped/failed counts, errors, source file, project, and review links.
 
 Tasks:
 
@@ -742,7 +753,14 @@ Tasks:
 - map Asana fields to issue/Gate fields; DONE
 - mark legacy imports; DONE
 - expose `needs_structuring` queue; DONE
+- expose training-candidate filter; DONE
 - allow AI-assisted structuring; DONE
+- show original Asana source context in the review UI; DONE
+- import direct Asana attachments into card media; DONE
+- import Asana comments into the card discussion thread; DONE
+- import GitHub evidence from legacy Asana text; DONE
+- paginate the legacy Asana review queue for large imports; DONE
+- queue Asana JSON import work and expose import status/results; DONE
 - allow human review before training example generation. DONE
 
 Exit criteria:
@@ -836,11 +854,16 @@ Status:
 - Done: production email/password login path is standardized with generic credential errors, safe missing-parameter handling, 12-character password policy for new/reset passwords, password confirmation for signup/reset, reset-session invalidation, and consistent join-code onboarding policy.
 - Done: production login/onboarding behavior is covered by session, password reset, signup, join-code, identity, signup model, mailer, and flat JSON API tests.
 - Done: full happy-path integration coverage verifies issue intake -> Gate 1 -> triage -> claim -> Gate 2 -> resolve -> training review -> JSONL export.
+- Done: legacy Asana review queue uses the shared pagination helper and has controller coverage for large imported task volumes.
+- Done: Cactus Queue uses the shared pagination helper and has controller coverage for large issue volumes.
+- Done: Training Examples index uses the shared pagination helper and has controller coverage for large review/export lists.
+- Done: Asana JSON import is queued in ActiveJob and has model/job/controller coverage for success, duplicates, invalid JSON, per-task failures, and account scoping.
+- Done: JSONL training export is queued in ActiveJob, reserves approved examples to avoid duplicate batches, stores the generated file, supports repeat download, and releases reserved examples on failure.
 
 Tasks:
 
-- pagination and performance for large issue volume;
-- async jobs for AI/import/export;
+- pagination and performance for large issue volume; PARTIAL
+- async jobs for AI/import/export; PARTIAL - Asana JSON import and JSONL export are async, AI suggestions still need queue-backed execution.
 - robust error states; PARTIAL
 - audit logs;
 - webhook security; PARTIAL

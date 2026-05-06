@@ -3,9 +3,11 @@ class CactusQueuesController < ApplicationController
 
   def index
     @state = params[:state].presence_in(Cards::CactusWorkflowQuery::STATES)
-    @cards = Cards::CactusWorkflowQuery.new(Current.user.accessible_cards).for(@state)
+    cards = Cards::CactusWorkflowQuery.new(Current.user.accessible_cards).for(@state)
       .includes(:board, :column, :resolution_record, :closure, :not_now, :assignees, training_examples: :reviewed_by)
       .latest
+    set_page_and_extract_portion_from cards
+    @cards = @page.records
     @assignable_users_by_board_id = assignable_users_by_board_id(@cards)
   end
 
