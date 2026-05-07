@@ -23,7 +23,9 @@ module LegacyImports
       def import_one(story)
         return story unless comment_story?(story)
         return mark_skipped(story, "Empty Asana comment") if story["text"].blank?
-        return story if imported_comment_exists?(story)
+        if (existing_comment = existing_imported_comment(story))
+          return mark_imported(story, existing_comment)
+        end
 
         comment = Current.with(account: card.account, user: card.account.system_user, identity: nil) do
           card.comments.create!(
@@ -36,11 +38,6 @@ module LegacyImports
         mark_imported(story, comment)
       rescue => error
         mark_failed(story, error)
-      end
-
-      def imported_comment_exists?(story)
-        comment_id = story["cactus_comment_id"]
-        comment_id.present? && card.comments.exists?(id: comment_id)
       end
 
       def comment_body_for(story)
@@ -67,6 +64,15 @@ module LegacyImports
         )
       end
 
+      def existing_imported_comment(story)
+        comment_id = story["cactus_comment_id"]
+        if comment_id.present? && (comment = card.comments.find_by(id: comment_id))
+          return comment
+        end
+
+        find_existing_imported_comment_by_body(story)
+      end
+
       def mark_failed(story, error)
         story.merge(
           "cactus_comment_import_status" => "failed",
@@ -87,6 +93,27 @@ module LegacyImports
 
       def parse_time(value)
         Time.zone.parse(value) if value.present?
+      end
+
+      def find_existing_imported_comment_by_body(story)
+        comment_text = normalized_comment_text(story["text"])
+        return if comment_text.blank?
+
+        author = normalized_comment_text(story_author(story))
+        timestamp = parse_time(story["created_at"])
+        timestamp_text = normalized_comment_text(timestamp&.to_fs(:db))
+
+        card.comments.preloaded.find do |comment|
+          body = normalized_comment_text(comment.body.to_plain_text)
+          body.include?("imported asana comment") &&
+            body.include?(comment_text) &&
+            (author.blank? || body.include?(author)) &&
+            (timestamp_text.blank? || body.include?(timestamp_text))
+        end
+      end
+
+      def normalized_comment_text(value)
+        value.to_s.squish.downcase
       end
   end
 end

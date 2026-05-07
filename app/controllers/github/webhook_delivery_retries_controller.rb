@@ -10,6 +10,15 @@ class Github::WebhookDeliveryRetriesController < ApplicationController
     end
 
     code_links = webhook_delivery.process!
+    AuditEvent.record(
+      action: "github_delivery.retried",
+      auditable: webhook_delivery,
+      metadata: {
+        delivery_id: webhook_delivery.delivery_id,
+        event: webhook_delivery.event,
+        linked_code_references: code_links.size
+      }
+    )
 
     redirect_to cactus_integrations_path, notice: "GitHub delivery retried. Linked #{code_links.size} code references."
   rescue KeyError => error

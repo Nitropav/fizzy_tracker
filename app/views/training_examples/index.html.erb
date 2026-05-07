@@ -20,7 +20,12 @@
       <% end %>
       <%= link_to "Export history", training_example_exports_path, class: "btn" %>
       <% if @approved_export_count.positive? %>
-        <%= button_to "Export #{@approved_export_count} approved JSONL", export_training_examples_path, class: "btn btn--reversed" %>
+        <%= button_to "Export #{@approved_export_count} approved JSONL",
+          export_training_examples_path,
+          class: "btn btn--reversed",
+          data: {
+            turbo_confirm: "Queue a JSONL export for #{@approved_export_count} approved #{'example'.pluralize(@approved_export_count)}? The selected examples will be reserved for this export batch."
+          } %>
       <% else %>
         <span class="btn" aria-disabled="true">No approved examples to export</span>
       <% end %>
@@ -36,11 +41,22 @@
     <article class="panel border flex flex-column gap-half">
       <span class="txt-small txt-subtle">Recent exports</span>
       <% if @latest_training_example_exports.any? %>
-        <ul class="list-unindented margin-none txt-small">
+        <ul class="list-unindented margin-none txt-small flex flex-column gap-half">
           <% @latest_training_example_exports.each do |training_example_export| %>
             <li>
-              <%= link_to training_example_export.filename, training_example_export_path(training_example_export), class: "txt-link" %>
-              &middot; <%= pluralize(training_example_export.example_count, "example") %>
+              <div class="flex flex-wrap align-center gap-half">
+                <code><%= training_example_export.filename %></code>
+                <span class="badge"><%= training_example_export.status.humanize %></span>
+                <span class="txt-subtle"><%= pluralize(training_example_export.example_count, "example") %></span>
+                <% if training_example_export.downloadable? %>
+                  <%= link_to "Download", training_example_export_path(training_example_export), class: "txt-link" %>
+                <% else %>
+                  <%= link_to "View history", training_example_exports_path, class: "txt-link" %>
+                <% end %>
+              </div>
+              <% if training_example_export.error_message.present? %>
+                <div class="txt-subtle"><%= training_example_export.error_message %></div>
+              <% end %>
             </li>
           <% end %>
         </ul>
@@ -75,7 +91,7 @@
             <% @training_examples.each do |training_example| %>
               <tr>
                 <td>
-                  <%= link_to "##{training_example.card.number} #{training_example.card.title}", training_example, class: "txt-link" %>
+                  <%= link_to "##{training_example.card.number} #{training_example.card.title}", training_example, class: "txt-link", data: { turbo_frame: "_top" } %>
                 </td>
                 <td><%= training_example.status.humanize %></td>
                 <td><%= training_example.metadata["priority"].presence&.humanize || "N/A" %></td>

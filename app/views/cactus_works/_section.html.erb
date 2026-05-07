@@ -1,9 +1,11 @@
-<section class="flex flex-column gap-half">
-  <h2 class="txt-large margin-none"><%= title %></h2>
+<section class="cactus-section">
+  <div class="cactus-section__header">
+    <h2 class="txt-large margin-none"><%= title %></h2>
+  </div>
 
   <% if cards.any? %>
-    <div class="overflow-auto">
-      <table class="full-width">
+    <div class="cactus-table-wrap">
+      <table class="cactus-table">
         <thead>
           <tr>
             <th class="txt-align-start">Issue</th>
@@ -23,9 +25,9 @@
               <td><%= card.board.name %></td>
               <td><%= card.column&.name || "N/A" %></td>
               <td><%= card.resolution_record&.priority&.humanize || "N/A" %></td>
-              <td><%= card.cactus_workflow_state_label %></td>
-              <td><%= card.resolution_record&.gate_one_status&.humanize || "N/A" %></td>
-              <td><%= card.resolution_record&.gate_two_status&.humanize || "N/A" %></td>
+              <td><span class="badge"><%= card.cactus_workflow_state_label %></span></td>
+              <td><span class="badge"><%= card.resolution_record&.gate_one_status&.humanize || "N/A" %></span></td>
+              <td><span class="badge"><%= card.resolution_record&.gate_two_status&.humanize || "N/A" %></span></td>
               <td><%= yield card %></td>
             </tr>
           <% end %>

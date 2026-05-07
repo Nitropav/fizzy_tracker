@@ -1,80 +1,20 @@
-unless Rails.env.development?
-  puts "WARN: Seeding is configured for development bootstrap only."
-else
-  require "active_support/testing/time_helpers"
-  include ActiveSupport::Testing::TimeHelpers
+result = Cactus::Bootstrapper.from_env.run
 
-  DEFAULT_ADMIN_PASSWORD = "CactusAdmin123!".freeze
+puts "Seeded Cactus account:"
+puts "  URL: #{result.account.slug}"
+puts "  Project: #{result.project.name}"
+puts "  Admin email: #{result.admin_user.identity.email_address}"
+puts "  Admin password: set via CACTUS_ADMIN_PASSWORD"
 
-  def bootstrap_cactus_account
-    account_name = ENV.fetch("CACTUS_ACCOUNT_NAME", "Cactus Bug Tracker")
-    external_account_id = ENV["CACTUS_ACCOUNT_EXTERNAL_ID"].presence&.to_i
-    default_project_name = ENV.fetch("CACTUS_DEFAULT_PROJECT_NAME", "Cactus Product Bugs")
-    admin_name = ENV.fetch("CACTUS_ADMIN_NAME", "Cactus Admin")
-    admin_email = ENV.fetch("CACTUS_ADMIN_EMAIL", "admin@cactus.local").strip.downcase
-    admin_password = ENV.fetch("CACTUS_ADMIN_PASSWORD", DEFAULT_ADMIN_PASSWORD)
+if ENV["SEED_SAMPLE_DATA"] == "true"
+  if !Rails.env.development?
+    puts "WARN: SEED_SAMPLE_DATA is only supported in development. Skipping sample Fizzy data."
+  else
+    require "active_support/testing/time_helpers"
+    include ActiveSupport::Testing::TimeHelpers
 
-    identity = Identity.find_or_initialize_by(email_address: admin_email)
-    identity.assign_attributes(staff: true)
-    identity.assign_attributes(password: admin_password, password_confirmation: admin_password) if identity.new_record? || identity.password_digest.blank?
-    identity.save!
+    DEFAULT_SAMPLE_PASSWORD = "CactusAdmin123!".freeze
 
-    account = Account.joins(users: :identity).find_by(name: account_name, identities: { email_address: admin_email })
-    configured_account = Account.find_by(external_account_id: external_account_id) if external_account_id
-
-    if account.nil? && configured_account&.users&.joins(:identity)&.exists?(identities: { email_address: admin_email })
-      account = configured_account
-    elsif account.nil? && configured_account.present?
-      puts "WARN: CACTUS_ACCOUNT_EXTERNAL_ID=#{external_account_id} is already used by '#{configured_account.name}', creating a separate Cactus account with a new slug."
-    end
-
-    if account.nil?
-      account_attributes = { name: account_name }
-      account_attributes[:external_account_id] = external_account_id if external_account_id && configured_account.nil?
-
-      account = Account.create_with_owner(
-        account: account_attributes,
-        owner: {
-          name: admin_name,
-          identity: identity,
-          cactus_role: "reviewer"
-        }
-      )
-    else
-      account.update!(name: account_name)
-      account.users.find_or_create_by!(role: :system) { |user| user.name = "System" }
-      account.users.find_or_initialize_by(identity: identity).tap do |user|
-        user.assign_attributes(
-          name: admin_name,
-          role: :owner,
-          cactus_role: "reviewer",
-          verified_at: Time.current,
-          active: true
-        )
-        user.save!
-      end
-    end
-
-    admin_user = account.users.find_by!(identity: identity)
-    Current.account = account
-    Current.user = admin_user
-
-    project = account.boards.find_or_initialize_by(name: default_project_name)
-    project.assign_attributes(creator: admin_user, all_access: true)
-    project.save!
-    project.accesses.find_or_create_by!(user: admin_user) do |access|
-      access.account = account
-      access.involvement = "watching"
-    end
-
-    puts "Seeded Cactus account:"
-    puts "  URL: #{account.slug}"
-    puts "  Project: #{project.name}"
-    puts "  Admin email: #{admin_email}"
-    puts "  Admin password: #{admin_password}"
-  end
-
-  def seed_sample_accounts
     def seed_account(name)
       print "  #{name}..."
       elapsed = Benchmark.realtime { require_relative "seeds/#{name}" }
@@ -84,7 +24,7 @@ else
     def create_tenant(signal_account_name)
       tenant_id = ActiveRecord::FixtureSet.identify signal_account_name
       email_address = "david@example.com"
-      password = ENV.fetch("SAMPLE_ADMIN_PASSWORD", DEFAULT_ADMIN_PASSWORD)
+      password = ENV.fetch("SAMPLE_ADMIN_PASSWORD", DEFAULT_SAMPLE_PASSWORD)
       identity = Identity.find_or_initialize_by(email_address: email_address)
       identity.assign_attributes(password: password, password_confirmation: password, staff: true) if identity.new_record? || identity.password_digest.blank?
       identity.save!
@@ -106,7 +46,7 @@ else
     end
 
     def find_or_create_user(full_name, email_address)
-      password = ENV.fetch("SAMPLE_USER_PASSWORD", DEFAULT_ADMIN_PASSWORD)
+      password = ENV.fetch("SAMPLE_USER_PASSWORD", DEFAULT_SAMPLE_PASSWORD)
       identity = Identity.find_or_initialize_by(email_address: email_address)
       identity.assign_attributes(password: password, password_confirmation: password) if identity.new_record? || identity.password_digest.blank?
       identity.save!
@@ -133,11 +73,5 @@ else
     seed_account "cleanslate"
     seed_account "37signals"
     seed_account "honcho"
-  end
-
-  bootstrap_cactus_account
-
-  if ENV["SEED_SAMPLE_DATA"] == "true"
-    seed_sample_accounts
   end
 end

@@ -33,13 +33,15 @@
           <% card = record.card %>
           <% existing_training_example = card.training_examples.reject(&:rejected?).max_by(&:created_at) %>
           <% missing_gate_one = record.missing_gate_one_fields %>
-          <% missing_gate_two = record.legacy_resolved? ? record.missing_gate_two_fields : [] %>
+          <% missing_gate_two = record.missing_gate_two_fields %>
+          <% structuring_blockers = record.legacy_structuring_blockers %>
+          <% training_blockers = record.legacy_training_candidate_blockers %>
           <% latest_structuring_run = card.ai_runs.legacy_issue_structurings.completed.latest_first.detect(&:active_suggestion?) %>
 
           <article class="panel border flex flex-column gap">
             <header class="flex flex-wrap align-start justify-between gap">
               <div class="flex flex-column gap-half">
-                <%= link_to "##{card.number} #{card.title}", card, class: "txt-link txt-large" %>
+                <%= link_to "##{card.number} #{card.title}", card, class: "txt-link txt-large", data: { turbo_frame: "_top" } %>
                 <p class="txt-small txt-subtle margin-none">
                   Imported from Asana
                   <% if record.legacy_external_id.present? %>
@@ -96,16 +98,22 @@
             <section class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));">
               <div class="flex flex-column gap-half txt-small">
                 <strong>Missing structure</strong>
-                <% if record.legacy_training_candidate_blockers.any? %>
+                <% if structuring_blockers.any? %>
                   <% if missing_gate_one.any? %>
                     <span>Gate 1 missing: <%= missing_gate_one.map { it.to_s.humanize.downcase }.to_sentence %>.</span>
                   <% end %>
 
-                  <% if record.missing_gate_two_fields.any? %>
-                    <span>Gate 2 missing for training: <%= record.missing_gate_two_fields.map { it.to_s.humanize.downcase }.to_sentence %>.</span>
+                  <% if record.legacy_resolved? && missing_gate_two.any? %>
+                    <span>Gate 2 missing for resolved legacy task: <%= missing_gate_two.map { it.to_s.humanize.downcase }.to_sentence %>.</span>
                   <% end %>
-                <% else %>
+                <% elsif record.legacy_training_candidate_ready? %>
                   <span class="txt-subtle">Ready to generate a pending-review training example.</span>
+                <% elsif !record.legacy_resolved? %>
+                  <span class="txt-subtle">Structured legacy issue. The Asana task is still unresolved, so it needs a real developer resolution before it can become training data.</span>
+                <% elsif training_blockers.any? %>
+                  <span>Training candidate missing: <%= training_blockers.map(&:downcase).to_sentence %>.</span>
+                <% else %>
+                  <span class="txt-subtle">Structured legacy issue.</span>
                 <% end %>
               </div>
 
@@ -116,24 +124,27 @@
 
                 <%= link_to "Structure issue",
                       card_path(card, anchor: dom_id(card, :resolution_record)),
-                      class: "btn btn--reversed txt-small" %>
+                      class: "btn btn--reversed txt-small",
+                      data: { turbo_frame: "_top" } %>
 
-                <% if record.legacy_training_candidate_blockers.any? %>
+                <% if structuring_blockers.any? %>
                   <%= button_to "Suggest structure",
                         legacy_imports_asana_issue_structuring_suggestion_path(record, status: @status),
-                        class: "btn txt-small" %>
+                        class: "btn txt-small",
+                        form: { data: { turbo_frame: "_top" } } %>
                 <% end %>
 
                 <% if existing_training_example %>
                   <% if Current.user.can_review_training_examples? %>
-                    <%= link_to "Review training example", training_example_path(existing_training_example), class: "btn btn--reversed txt-small" %>
+                    <%= link_to "Review training example", training_example_path(existing_training_example), class: "btn btn--reversed txt-small", data: { turbo_frame: "_top" } %>
                   <% else %>
                     <span class="badge">Training example <%= existing_training_example.status.humanize.downcase %></span>
                   <% end %>
                 <% elsif record.legacy_training_candidate_ready? %>
                   <%= button_to "Generate training example",
                         legacy_imports_asana_issue_training_example_path(record),
-                        class: "btn btn--reversed txt-small" %>
+                        class: "btn btn--reversed txt-small",
+                        form: { data: { turbo_frame: "_top" } } %>
                 <% end %>
               </div>
             </section>
@@ -154,10 +165,12 @@
                     <%= button_to "Dismiss",
                           card_ai_run_dismissal_path(card, latest_structuring_run),
                           params: { return_to: "legacy_asana", status: @status },
-                          class: "btn txt-small" %>
+                          class: "btn txt-small",
+                          form: { data: { turbo_frame: "_top" } } %>
                     <%= button_to "Apply suggestion",
                           apply_legacy_imports_asana_issue_structuring_suggestion_path(record, ai_run_id: latest_structuring_run.id, status: @status),
-                          class: "btn btn--reversed txt-small" %>
+                          class: "btn btn--reversed txt-small",
+                          form: { data: { turbo_frame: "_top" } } %>
                   </div>
                 </div>
 

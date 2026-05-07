@@ -131,6 +131,13 @@ class Card::ResolutionRecord < ApplicationRecord
     ]
   end
 
+  def legacy_structuring_blockers
+    [
+      *missing_gate_one_fields.map { "Gate 1 #{it.to_s.humanize.downcase}" },
+      *(legacy_resolved? ? missing_gate_two_fields.map { "Gate 2 #{it.to_s.humanize.downcase}" } : [])
+    ]
+  end
+
   def legacy_attachments
     legacy_metadata_entries("attachments").select do |attachment|
       attachment["name"].present? || legacy_attachment_url(attachment).present?
@@ -139,6 +146,27 @@ class Card::ResolutionRecord < ApplicationRecord
 
   def legacy_attachment_url(attachment)
     attachment["permanent_url"].presence || attachment["view_url"].presence || attachment["download_url"].presence
+  end
+
+  def legacy_attachment_preview_url(attachment)
+    return if legacy_attachment_blob(attachment).present?
+    return unless legacy_attachment_image?(attachment)
+
+    attachment["view_url"].presence || attachment["download_url"].presence
+  end
+
+  def legacy_attachment_image?(attachment)
+    blob = legacy_attachment_blob(attachment)
+    return blob.image? if blob.present?
+
+    content_type = attachment["cactus_blob_content_type"].presence ||
+      attachment["content_type"].presence ||
+      attachment["mime_type"].presence
+    return content_type.start_with?("image/") if content_type.present?
+
+    [ attachment["name"], attachment["view_url"], attachment["download_url"] ].compact.any? do |value|
+      value.match?(/\.(png|jpe?g|gif|webp|bmp|svg)(?:[?#]|\z)/i)
+    end
   end
 
   def legacy_attachment_blob(attachment)

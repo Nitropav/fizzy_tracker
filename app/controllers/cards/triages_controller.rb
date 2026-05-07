@@ -5,6 +5,16 @@ class Cards::TriagesController < ApplicationController
   def create
     column = @card.board.columns.find(params[:column_id])
     @card.triage_into(column)
+    AuditEvent.record(
+      action: "card.triaged",
+      auditable: @card,
+      metadata: {
+        card_id: @card.id,
+        column_id: column.id,
+        column_name: column.name,
+        workflow_state: @card.reload.cactus_workflow_state
+      }
+    )
 
     respond_to do |format|
       format.html { redirect_to @card }
@@ -39,6 +49,14 @@ class Cards::TriagesController < ApplicationController
 
   def destroy
     @card.send_back_to_triage
+    AuditEvent.record(
+      action: "card.sent_back_to_triage",
+      auditable: @card,
+      metadata: {
+        card_id: @card.id,
+        workflow_state: @card.reload.cactus_workflow_state
+      }
+    )
 
     respond_to do |format|
       format.html { redirect_to @card }

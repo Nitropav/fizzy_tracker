@@ -4,7 +4,7 @@
 <% latest_issue_structuring_run = card.ai_runs.issue_structurings.completed.latest_first.detect(&:active_suggestion?) if can_manage_issue_structuring_suggestions %>
 
 <section id="<%= dom_id(card, :resolution_record) %>" class="card__resolution-record flex flex-column gap margin-block-start">
-  <header class="flex flex-wrap align-center justify-between gap">
+  <header class="cactus-page-header">
     <div>
       <h2 class="txt-large margin-none">Bug training data</h2>
       <p class="txt-small txt-subtle margin-none">
@@ -16,7 +16,7 @@
       </p>
     </div>
 
-    <div class="flex flex-wrap align-center gap-half txt-small">
+    <div class="cactus-actions txt-small">
       <span class="badge">State: <%= card.cactus_workflow_state_label %></span>
       <span class="badge">Gate 1: <%= record.gate_one_complete? ? "Complete" : "Incomplete" %></span>
       <% if can_view_internal_issue_data %>
@@ -58,7 +58,7 @@
           </p>
         </div>
 
-        <div class="flex flex-wrap align-center gap-half">
+        <div class="cactus-actions">
           <%= button_to "Dismiss",
                 card_ai_run_dismissal_path(card, latest_issue_structuring_run),
                 params: { return_to: "card" },
@@ -85,7 +85,7 @@
       <% if suggested_fields.any? %>
         <details>
           <summary>Preview suggested fields</summary>
-          <dl class="grid gap-half margin-block-start" style="grid-template-columns: max-content 1fr;">
+          <dl class="cactus-kv-grid margin-block-start">
             <% suggested_fields.each do |field, value| %>
               <dt><%= field.humanize %></dt>
               <dd class="margin-none"><%= value %></dd>
@@ -101,7 +101,7 @@
   <% end %>
 
   <% if record.legacy_import? %>
-    <section class="card__cactus-panel panel flex flex-column gap-half">
+    <section class="card__cactus-panel cactus-card panel flex flex-column gap-half">
       <div class="card__cactus-panel-header flex flex-wrap align-start justify-between gap">
         <div>
           <strong>Legacy import</strong>
@@ -116,7 +116,7 @@
           </p>
         </div>
 
-        <div class="flex flex-wrap align-center gap-half txt-small">
+        <div class="cactus-actions txt-small">
           <span class="badge"><%= record.gate_one_legacy? ? "Gate 1 legacy" : "Gate 1 native" %></span>
           <span class="badge"><%= record.needs_structuring? ? "Needs structuring" : "Structured" %></span>
         </div>
@@ -150,7 +150,7 @@
     <% guidance = CardResolutionRecords::GateOneGuidance.new(card) %>
 
     <% unless guidance.complete? %>
-      <div class="panel flex flex-column gap-half">
+      <div class="cactus-gate-callout panel flex flex-column gap-half">
         <div>
           <strong>Needs reporter information</strong>
           <p class="txt-small txt-subtle margin-none">
@@ -217,7 +217,7 @@
           data: { controller: "form" } do |form| %>
       <div class="card__gate-grid grid gap">
         <% if Current.user.can_update_cactus_gate_one? %>
-          <fieldset class="card__gate-panel panel flex flex-column gap-half">
+          <fieldset class="card__gate-panel cactus-card panel flex flex-column gap-half">
             <legend class="txt-small txt-bold">Gate 1 - Reporter side</legend>
 
             <%= form.label :problem_description, "Problem description", class: "txt-small txt-bold" %>
@@ -238,17 +238,17 @@
         <% end %>
 
         <% if Current.user.can_update_cactus_gate_two? %>
-          <fieldset class="card__gate-panel panel flex flex-column gap-half">
+          <fieldset class="card__gate-panel cactus-card panel flex flex-column gap-half">
             <legend class="txt-small txt-bold">Gate 2 - Developer side</legend>
 
             <%= form.label :root_cause, "Root cause", class: "txt-small txt-bold" %>
-            <%= form.text_area :root_cause, rows: 3, class: "input input--textarea full-width", placeholder: "Plain-language technical cause" %>
+            <%= form.text_area :root_cause, rows: 3, class: "input input--textarea cactus-input-tall full-width", placeholder: "Plain-language technical cause" %>
 
             <%= form.label :fix_summary, "Fix summary", class: "txt-small txt-bold" %>
-            <%= form.text_area :fix_summary, rows: 3, class: "input input--textarea full-width", placeholder: "What changed and why" %>
+            <%= form.text_area :fix_summary, rows: 3, class: "input input--textarea cactus-input-tall full-width", placeholder: "What changed and why" %>
 
             <%= form.label :verification_steps, "Verification steps", class: "txt-small txt-bold" %>
-            <%= form.text_area :verification_steps, rows: 3, class: "input input--textarea full-width", placeholder: "How the fix was checked" %>
+            <%= form.text_area :verification_steps, rows: 3, class: "input input--textarea cactus-input-tall full-width", placeholder: "How the fix was checked" %>
 
             <%= form.label :linked_commit_shas, "Linked commit SHAs", class: "txt-small txt-bold" %>
             <%= form.text_field :linked_commit_shas, value: record.linked_commit_shas.join(", "), name: "card_resolution_record[linked_commit_shas][]", class: "input full-width", placeholder: "abc123, def456" %>
@@ -260,10 +260,10 @@
       </div>
 
       <% if Current.user.can_update_cactus_classification? %>
-        <fieldset class="panel flex flex-column gap-half">
+        <fieldset class="cactus-card panel flex flex-column gap-half">
           <legend class="txt-small txt-bold">Classification</legend>
 
-          <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
+          <div class="cactus-form-grid">
             <%= render "cards/resolution_records/classification_fields", form: form, record: record %>
           </div>
 

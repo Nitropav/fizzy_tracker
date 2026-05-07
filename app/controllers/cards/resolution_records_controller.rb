@@ -12,7 +12,20 @@ class Cards::ResolutionRecordsController < ApplicationController
   end
 
   def update
-    @card.ensure_resolution_record.update!(resolution_record_params)
+    attributes = resolution_record_params
+    record = @card.ensure_resolution_record
+    record.update!(attributes)
+    AuditEvent.record(
+      action: "card.resolution_record_updated",
+      auditable: @card,
+      metadata: {
+        card_id: @card.id,
+        changed_fields: attributes.keys,
+        gate_one_complete: record.gate_one_complete?,
+        gate_two_complete: record.gate_two_complete?,
+        workflow_state: @card.reload.cactus_workflow_state
+      }
+    )
 
     respond_to do |format|
       format.turbo_stream { render_card_replacement }

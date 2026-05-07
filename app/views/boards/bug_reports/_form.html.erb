@@ -8,8 +8,8 @@
 <% gate_one_missing_fields = resolution_record.missing_gate_one_fields %>
 <% gate_one_prompts = CardResolutionRecords::GateOneGuidance::PROMPTS %>
 
-<section class="panel border flex flex-column gap-half txt-small">
-  <div class="flex flex-wrap align-center justify-between gap-half">
+<section class="cactus-gate-callout panel border flex flex-column gap-half txt-small">
+  <div class="cactus-section__header">
     <div>
       <strong>Gate 1 readiness</strong>
       <p class="txt-subtle margin-none">These reporter-side details are required before the issue can enter the queue.</p>
@@ -34,7 +34,7 @@
 
 <%= form_with model: card, url: form_url, scope: form_scope, class: "flex flex-column gap", data: { controller: "form upload-preview" }, multipart: true do |form| %>
   <% if local_assigns[:projects].present? %>
-    <div class="flex flex-column gap-half">
+    <div class="cactus-form-field">
       <%= form.label :board_id, "Project", class: "txt-small txt-bold" %>
       <%= form.collection_select :board_id, projects, :id, :name,
             { selected: selected_project&.id, prompt: "Select project" },
@@ -42,12 +42,12 @@
     </div>
   <% end %>
 
-  <div class="flex flex-column gap-half">
+  <div class="cactus-form-field">
     <%= form.label :title, "Short title", class: "txt-small txt-bold" %>
     <%= form.text_field :title, value: card.title, class: "input full-width", placeholder: "Example: Checkout total changes after refresh", autofocus: true %>
   </div>
 
-  <div class="flex flex-column gap-half">
+  <div class="cactus-form-field">
     <%= form.label :priority, class: "txt-small txt-bold" %>
     <%= form.select :priority,
           options_for_select(Card::ResolutionRecord.priority_options(resolution_record.priority).map { |value| [ value.humanize, value ] }, resolution_record.priority),
@@ -55,34 +55,34 @@
           class: "input input--select full-width" %>
   </div>
 
-  <div class="flex flex-column gap-half">
+  <div class="cactus-form-field">
     <%= form.label :problem_description, "Problem description", class: "txt-small txt-bold" %>
-    <%= form.text_area :problem_description, value: resolution_record.problem_description, rows: 4, class: "input input--textarea full-width", placeholder: "Describe what is broken, confusing, or not working." %>
+    <%= form.text_area :problem_description, value: resolution_record.problem_description, rows: 6, class: "input input--textarea cactus-input-tall full-width", placeholder: "Describe what is broken, confusing, or not working." %>
   </div>
 
-  <div class="flex flex-column gap-half">
+  <div class="cactus-form-field">
     <%= form.label :reproduction_steps, "Reproduction steps", class: "txt-small txt-bold" %>
-    <%= form.text_area :reproduction_steps, value: resolution_record.reproduction_steps, rows: 4, class: "input input--textarea full-width", placeholder: "Step 1...\nStep 2...\nStep 3..." %>
+    <%= form.text_area :reproduction_steps, value: resolution_record.reproduction_steps, rows: 5, class: "input input--textarea cactus-input-tall full-width", placeholder: "Step 1...\nStep 2...\nStep 3..." %>
   </div>
 
-  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));">
-    <div class="flex flex-column gap-half">
+  <div class="cactus-form-grid">
+    <div class="cactus-form-field">
       <%= form.label :expected_behavior, "Expected behavior", class: "txt-small txt-bold" %>
       <%= form.text_area :expected_behavior, value: resolution_record.expected_behavior, rows: 3, class: "input input--textarea full-width", placeholder: "What should have happened?" %>
     </div>
 
-    <div class="flex flex-column gap-half">
+    <div class="cactus-form-field">
       <%= form.label :actual_behavior, "Actual behavior", class: "txt-small txt-bold" %>
       <%= form.text_area :actual_behavior, value: resolution_record.actual_behavior, rows: 3, class: "input input--textarea full-width", placeholder: "What actually happened?" %>
     </div>
   </div>
 
-  <div class="flex flex-column gap-half">
+  <div class="cactus-form-field">
     <%= form.label :environment_context, "Environment context", class: "txt-small txt-bold" %>
     <%= form.text_area :environment_context, value: resolution_record.environment_context, rows: 3, class: "input input--textarea full-width", placeholder: "Product area, UI screen, customer account, browser, device, or relevant data." %>
   </div>
 
-  <div class="flex flex-column gap-half">
+  <div class="cactus-form-field">
     <%= form.label :description, "Additional evidence / attachments", class: "txt-small txt-bold" %>
     <p class="txt-small txt-subtle margin-none">
       Add screenshots, files, links, or extra context. This supports the issue but does not replace the required Gate 1 fields above.
@@ -91,7 +91,7 @@
           placeholder: "Drop screenshots/files here or add extra notes for support and developers." %>
   </div>
 
-  <div class="flex flex-column gap-half">
+  <div class="cactus-form-field">
     <span class="txt-small txt-bold">Upload evidence files</span>
     <label class="btn input--upload">
       <div data-upload-preview-target="placeholder">Choose screenshots, logs, or files...</div>
@@ -107,7 +107,7 @@
     </p>
   </div>
 
-  <div class="flex align-center justify-between gap">
+  <div class="cactus-form-footer">
     <%= link_to "Cancel", cancel_path, class: "btn" %>
 
     <div class="flex flex-wrap align-center gap-half">

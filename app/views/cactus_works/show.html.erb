@@ -6,28 +6,30 @@
   </div>
 <% end %>
 
-<section class="panel panel--wide center flex flex-column gap">
-  <header class="flex flex-column gap-half">
-    <h1 class="txt-x-large font-weight-black margin-none">My Work</h1>
-    <p class="txt-small txt-subtle margin-none">
-      Developer-focused issue queue for assigned work, Gate 2 completion, review, and claiming ready issues.
-    </p>
+<section class="cactus-shell panel panel--wide center flex flex-column gap">
+  <header class="cactus-page-header">
+    <div>
+      <h1 class="txt-x-large font-weight-black margin-none">My Work</h1>
+      <p class="txt-small txt-subtle margin-none">
+        Developer-focused issue queue for assigned work, Gate 2 completion, review, and claiming ready issues.
+      </p>
+    </div>
   </header>
 
-  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));">
-    <article class="panel border flex flex-column gap-half">
+  <div class="cactus-stat-grid">
+    <article class="cactus-card panel border flex flex-column gap-half">
       <span class="txt-small txt-subtle">Assigned active</span>
       <strong class="txt-large"><%= @assigned_cards.size %></strong>
     </article>
-    <article class="panel border flex flex-column gap-half">
+    <article class="cactus-card panel border flex flex-column gap-half">
       <span class="txt-small txt-subtle">Needs Gate 2</span>
       <strong class="txt-large"><%= @needs_gate_two_cards.size %></strong>
     </article>
-    <article class="panel border flex flex-column gap-half">
+    <article class="cactus-card panel border flex flex-column gap-half">
       <span class="txt-small txt-subtle">Needs review</span>
       <strong class="txt-large"><%= @needs_review_cards.size %></strong>
     </article>
-    <article class="panel border flex flex-column gap-half">
+    <article class="cactus-card panel border flex flex-column gap-half">
       <span class="txt-small txt-subtle">Ready to claim</span>
       <strong class="txt-large"><%= @ready_to_claim_cards.size %></strong>
     </article>

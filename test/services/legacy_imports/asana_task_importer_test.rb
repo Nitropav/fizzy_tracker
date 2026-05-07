@@ -135,6 +135,74 @@ class LegacyImports::AsanaTaskImporterTest < ActiveSupport::TestCase
     end
   end
 
+  test "repeat import rehydrates missing Asana comment ids without duplicating comments" do
+    importer = LegacyImports::AsanaTaskImporter.new(
+      account: accounts("37s"),
+      board: boards(:writebook),
+      creator: users(:david)
+    )
+    first_result = importer.import(asana_task)
+    stories_without_cactus_ids = first_result.resolution_record.reload.legacy_metadata.fetch("stories").map do |story|
+      story.except("cactus_comment_id", "cactus_comment_import_status")
+    end
+    first_result.resolution_record.update!(
+      legacy_metadata: first_result.resolution_record.legacy_metadata.merge("stories" => stories_without_cactus_ids)
+    )
+
+    assert_no_difference -> { first_result.card.comments.count } do
+      second_result = importer.import(asana_task)
+
+      assert_not second_result.created
+    end
+
+    story = first_result.resolution_record.reload.legacy_metadata.fetch("stories").first
+    assert_equal "imported", story["cactus_comment_import_status"]
+    assert_equal first_result.card.comments.first.id, story["cactus_comment_id"]
+  end
+
+  test "repeat import updates source snapshot without overwriting structured gate fields" do
+    importer = LegacyImports::AsanaTaskImporter.new(
+      account: accounts("37s"),
+      board: boards(:writebook),
+      creator: users(:david)
+    )
+    first_result = importer.import(asana_task)
+    first_result.resolution_record.update!(
+      problem_description: "Manually structured problem",
+      domain: "manual-domain"
+    )
+
+    updated_task = asana_task.deep_merge(
+      name: "Updated legacy glass issue",
+      notes: "Updated Asana notes",
+      completed: false,
+      modified_at: "2025-01-03T10:00:00Z",
+      created_by: { name: "Updated reporter" }
+    )
+
+    assert_no_difference -> { Card.count } do
+      assert_no_difference -> { first_result.card.comments.count } do
+        second_result = importer.import(updated_task)
+
+        assert_not second_result.created
+        assert_equal first_result.card, second_result.card
+      end
+    end
+
+    first_result.card.reload
+    first_result.resolution_record.reload
+
+    assert_equal "Updated legacy glass issue", first_result.card.title
+    assert_equal "Manually structured problem", first_result.resolution_record.problem_description
+    assert_equal "manual-domain", first_result.resolution_record.domain
+    assert_equal "Updated legacy glass issue", first_result.resolution_record.legacy_metadata["name"]
+    assert_equal "Updated Asana notes", first_result.resolution_record.legacy_metadata["notes"]
+    assert_equal "Updated reporter", first_result.resolution_record.legacy_metadata.dig("created_by", "name")
+    assert_equal "Looks fixed", first_result.resolution_record.legacy_metadata.dig("stories", 0, "text")
+    assert_equal "imported", first_result.resolution_record.legacy_metadata.dig("stories", 0, "cactus_comment_import_status")
+    assert_equal "screenshot.png", first_result.resolution_record.legacy_metadata.dig("attachments", 0, "name")
+  end
+
   test "imports GitHub links from Asana notes and comments as code evidence" do
     task = asana_task.deep_merge(
       notes: "Fixed by https://github.com/cactuscorp/assemblies/commit/abc1234def5678",

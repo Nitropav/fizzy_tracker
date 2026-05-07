@@ -138,6 +138,7 @@ Rails.application.routes.draw do
 
   resource :search
   resource :cactus_home, only: :show
+  resources :cactus_audit_events, only: :index
   resources :cactus_issues, only: %i[ new create ]
   resource :cactus_work, only: :show
   resource :cactus_dashboard, only: :show
@@ -170,7 +171,9 @@ Rails.application.routes.draw do
 
   namespace :legacy_imports do
     get "asana", to: "asanas#new"
-    resources :asana_imports, only: :show
+    resources :asana_imports, only: :show do
+      resource :retry, only: :create, controller: :asana_import_retries
+    end
 
     resource :asana, only: %i[ new create ] do
       resources :issues, only: :index, controller: :asana_issues do

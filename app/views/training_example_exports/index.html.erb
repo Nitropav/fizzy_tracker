@@ -17,49 +17,60 @@
   </header>
 
   <% if @training_example_exports.any? %>
-    <div class="overflow-auto">
-      <table class="full-width">
-        <thead>
-          <tr>
-            <th class="txt-align-start">File</th>
-            <th class="txt-align-start">Examples</th>
-            <th class="txt-align-start">Exported by</th>
-            <th class="txt-align-start">Status</th>
-            <th class="txt-align-start">Completed</th>
-            <th class="txt-align-start">Download</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @training_example_exports.each do |training_example_export| %>
+    <%= with_manual_pagination :training_example_exports, @page do %>
+      <div class="overflow-auto">
+        <table class="full-width">
+          <thead>
             <tr>
-              <td><code><%= training_example_export.filename %></code></td>
-              <td><%= training_example_export.example_count %></td>
-              <td><%= training_example_export.user.name %></td>
-              <td>
-                <%= training_example_export.status.humanize %>
-                <% if training_example_export.error_message.present? %>
-                  <div class="txt-small txt-subtle"><%= training_example_export.error_message %></div>
-                <% end %>
-              </td>
-              <td>
-                <% if training_example_export.completed_at.present? %>
-                  <%= local_datetime_tag training_example_export.completed_at, style: :shortdate %>
-                <% else %>
-                  Pending
-                <% end %>
-              </td>
-              <td>
-                <% if training_example_export.downloadable? %>
-                  <%= link_to "Download", training_example_export_path(training_example_export), class: "btn txt-small" %>
-                <% else %>
-                  <span class="btn txt-small" aria-disabled="true">Not ready</span>
-                <% end %>
-              </td>
+              <th class="txt-align-start">File</th>
+              <th class="txt-align-start">Examples</th>
+              <th class="txt-align-start">Exported by</th>
+              <th class="txt-align-start">Status</th>
+              <th class="txt-align-start">Finished</th>
+              <th class="txt-align-start">Download</th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            <% @training_example_exports.each do |training_example_export| %>
+              <tr>
+                <td><code><%= training_example_export.filename %></code></td>
+                <td><%= training_example_export.example_count %></td>
+                <td><%= training_example_export.user.name %></td>
+                <td>
+                  <span class="badge"><%= training_example_export.status.humanize %></span>
+                  <% if training_example_export.error_message.present? %>
+                    <div class="txt-small txt-subtle"><%= training_example_export.error_message %></div>
+                  <% end %>
+                  <% if training_example_export.failed? %>
+                    <div class="txt-small txt-subtle">
+                      Approved examples were released and can be exported again after the cause is fixed.
+                    </div>
+                  <% end %>
+                </td>
+                <td>
+                  <% if training_example_export.completed_at.present? %>
+                    <%= local_datetime_tag training_example_export.completed_at, style: :shortdate %>
+                  <% elsif training_example_export.started_at.present? %>
+                    Started <%= local_datetime_tag training_example_export.started_at, style: :shortdate %>
+                  <% else %>
+                    Queued
+                  <% end %>
+                </td>
+                <td>
+                  <% if training_example_export.downloadable? %>
+                    <%= link_to "Download", training_example_export_path(training_example_export), class: "btn txt-small" %>
+                  <% elsif training_example_export.failed? %>
+                    <%= link_to "Back to approved examples", training_examples_path(status: "approved"), class: "btn txt-small" %>
+                  <% else %>
+                    <span class="btn txt-small" aria-disabled="true">Not ready</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
   <% else %>
     <section class="panel border flex flex-column gap-half">
       <h2 class="txt-large margin-none">No export batches yet</h2>

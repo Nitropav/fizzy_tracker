@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_06_123000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_07_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -177,6 +177,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_123000) do
     t.index ["account_id"], name: "index_assignments_on_account_id"
     t.index ["assignee_id", "card_id"], name: "index_assignments_on_assignee_id_and_card_id", unique: true
     t.index ["card_id"], name: "index_assignments_on_card_id"
+  end
+
+  create_table "audit_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.string "action", limit: 255, null: false
+    t.uuid "auditable_id"
+    t.string "auditable_type", limit: 255
+    t.datetime "created_at", null: false
+    t.string "ip_address", limit: 255
+    t.json "metadata", default: {}, null: false
+    t.string "request_id", limit: 255
+    t.datetime "updated_at", null: false
+    t.string "user_agent", limit: 255
+    t.uuid "user_id"
+    t.index ["account_id", "action"], name: "index_audit_events_on_account_id_and_action"
+    t.index ["account_id", "created_at"], name: "index_audit_events_on_account_id_and_created_at"
+    t.index ["account_id"], name: "index_audit_events_on_account_id"
+    t.index ["auditable_type", "auditable_id"], name: "index_audit_events_on_auditable"
+    t.index ["user_id"], name: "index_audit_events_on_user_id"
   end
 
   create_table "board_publications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1013,4 +1032,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_123000) do
     t.index ["account_id"], name: "index_webhooks_on_account_id"
     t.index ["board_id", "subscribed_actions"], name: "index_webhooks_on_board_id_and_subscribed_actions"
   end
+
+  add_foreign_key "audit_events", "accounts"
+  add_foreign_key "audit_events", "users"
 end

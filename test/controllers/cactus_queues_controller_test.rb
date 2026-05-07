@@ -67,6 +67,7 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Priority: Urgent", response.body
     assert_select "##{ActionView::RecordIdentifier.dom_id(cards(:buy_domain), :cactus_queue)}"
+    assert_select "a[href=?][data-turbo-frame=?]", card_path(cards(:buy_domain)), "_top"
     assert_select "form[action=?][method=?]", card_triage_path(cards(:buy_domain)), "post"
     assert_select "input[name='return_to'][value='cactus_queue']", visible: false
     assert_select "input[name='queue_state'][value='open']", visible: false
@@ -108,7 +109,7 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "No project columns configured.", response.body
-    assert_select "a[href=?]", new_board_column_path(boards(:writebook)), text: "Create project column"
+    assert_select "a[href=?][data-turbo-frame=?]", new_board_column_path(boards(:writebook)), "_top", text: "Create project column"
     assert_select "form[action=?][method=?]", card_triage_path(cards(:buy_domain)), "post", count: 0
   end
 
@@ -135,7 +136,7 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
       assert_select "input[name='return_to'][value='cactus_queue']", visible: false
       assert_select "input[name='queue_state'][value='in_progress']", visible: false
     end
-    assert_select "a[href=?]", edit_card_resolution_record_path(card), text: "Fill resolution"
+    assert_select "a[href=?][data-turbo-frame=?]", edit_card_resolution_record_path(card), "_top", text: "Fill resolution"
     assert_select "form[action=?][method=?]", card_assignments_path(card), "post" do
       assert_select "select[name='assignee_id']"
       assert_select "option", text: "David"
@@ -159,7 +160,7 @@ class CactusQueuesControllerTest < ActionDispatch::IntegrationTest
     get cactus_queues_path(state: "needs_review")
 
     assert_response :success
-    assert_select "a[href=?]", edit_card_resolution_record_path(card), text: "Review resolution"
+    assert_select "a[href=?][data-turbo-frame=?]", edit_card_resolution_record_path(card), "_top", text: "Review resolution"
     assert_select "form[action=?][method=?]", card_resolution_path(card), "post" do
       assert_select "button", text: "Mark resolved"
     end

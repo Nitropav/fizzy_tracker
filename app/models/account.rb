@@ -3,6 +3,7 @@ class Account < ApplicationRecord
 
   has_one :join_code, dependent: :destroy
   has_many :ai_runs, dependent: :destroy
+  has_many :audit_events, dependent: :destroy
   has_many :users, dependent: :destroy
   has_many :boards, dependent: :destroy
   has_many :cards, dependent: :destroy

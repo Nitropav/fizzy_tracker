@@ -32,6 +32,15 @@ module LegacyImports
       external_id = external_id.to_s
 
       if (existing_record = find_existing_record(source, external_id))
+        update_existing_record!(
+          existing_record,
+          title: title,
+          fields: fields,
+          metadata: metadata,
+          resolved: resolved,
+          updated_at: updated_at
+        )
+
         return Result.new(existing_record.card, existing_record, false)
       end
 
@@ -69,6 +78,60 @@ module LegacyImports
           legacy_source: source,
           legacy_external_id: external_id
         )
+      end
+
+      def update_existing_record!(record, title:, fields:, metadata:, resolved:, updated_at:)
+        validate_scope!
+
+        Current.with(account: account, user: creator, identity: creator.identity) do
+          Card.transaction do
+            update_existing_card!(record.card, title: title, updated_at: updated_at)
+            update_existing_resolution_record!(
+              record,
+              fields: fields,
+              metadata: metadata,
+              resolved: resolved
+            )
+          end
+        end
+      end
+
+      def update_existing_card!(card, title:, updated_at:)
+        attrs = {}
+        incoming_title = title.to_s.presence || card.title
+        incoming_last_active_at = updated_at || card.last_active_at
+
+        attrs[:title] = incoming_title if incoming_title != card.title
+        attrs[:last_active_at] = incoming_last_active_at if incoming_last_active_at != card.last_active_at
+        return if attrs.empty?
+
+        card.update_columns(attrs.merge(updated_at: Time.current))
+        card.reload
+      end
+
+      def update_existing_resolution_record!(record, fields:, metadata:, resolved:)
+        incoming_fields = normalize_fields(fields)
+        record.assign_attributes(fill_blank_fields(record, incoming_fields))
+        record.legacy_metadata = merged_existing_metadata(
+          existing_metadata: record.legacy_metadata,
+          incoming_metadata: metadata,
+          resolved: resolved
+        )
+        record.save! if record.changed?
+      end
+
+      def fill_blank_fields(record, incoming_fields)
+        incoming_fields.each_with_object({}) do |(field, value), attrs|
+          attrs[field] = value if value.present? && record.public_send(field).blank?
+        end
+      end
+
+      def merged_existing_metadata(existing_metadata:, incoming_metadata:, resolved:)
+        existing_metadata = existing_metadata.to_h.deep_stringify_keys
+        incoming_metadata = incoming_metadata.to_h.deep_stringify_keys
+        mergeable_metadata = incoming_metadata.except("stories", "attachments")
+
+        existing_metadata.merge(mergeable_metadata).merge("completed" => resolved)
       end
 
       def validate_scope!

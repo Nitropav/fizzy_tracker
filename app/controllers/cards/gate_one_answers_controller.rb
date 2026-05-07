@@ -5,6 +5,16 @@ class Cards::GateOneAnswersController < ApplicationController
   def update
     record = @card.ensure_resolution_record
     record.update!(field_name => answer_value)
+    AuditEvent.record(
+      action: "card.gate_one_updated",
+      auditable: @card,
+      metadata: {
+        card_id: @card.id,
+        field: field_name,
+        gate_one_complete: record.gate_one_complete?,
+        workflow_state: @card.reload.cactus_workflow_state
+      }
+    )
 
     respond_to do |format|
       format.turbo_stream { render_card_replacement }

@@ -6,15 +6,15 @@
   </div>
 <% end %>
 
-<section class="panel panel--wide center flex flex-column gap">
-  <header class="flex align-center justify-between gap">
+<section class="cactus-shell panel panel--wide center flex flex-column gap">
+  <header class="cactus-page-header">
     <div>
       <h1 class="txt-x-large font-weight-black margin-none">Cactus Queue</h1>
       <p class="txt-small txt-subtle margin-none">Workflow queues derived from Gate 1, Gate 2, triage, close, and training review state.</p>
     </div>
   </header>
 
-  <nav class="flex gap-half txt-small flex-wrap" aria-label="Cactus workflow filters">
+  <nav class="cactus-actions txt-small" aria-label="Cactus workflow filters">
     <%= link_to "All", cactus_queues_path, class: "btn" %>
     <% Cards::CactusWorkflowQuery::STATES.each do |state| %>
       <%= link_to state.humanize, cactus_queues_path(state: state), class: "btn" %>
@@ -27,10 +27,10 @@
         <% @cards.each do |card| %>
           <% resolution_record = card.resolution_record || card.build_resolution_record %>
 
-          <article id="<%= dom_id(card, :cactus_queue) %>" class="panel border flex flex-column gap">
+          <article id="<%= dom_id(card, :cactus_queue) %>" class="cactus-card panel border flex flex-column gap">
             <header class="flex flex-wrap align-start justify-between gap">
               <div class="flex flex-column gap-half">
-                <%= link_to "##{card.number} #{card.title}", card, class: "txt-link txt-large" %>
+                <%= link_to "##{card.number} #{card.title}", card, class: "cactus-card__title txt-link txt-large", data: { turbo_frame: "_top" } %>
 
                 <% if resolution_record.legacy_import? %>
                   <span class="txt-small txt-subtle">
@@ -53,7 +53,7 @@
               </div>
             </header>
 
-            <dl class="grid gap-half txt-small margin-none" style="grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));">
+            <dl class="cactus-meta-grid txt-small margin-none">
               <div>
                 <dt class="txt-subtle">Project</dt>
                 <dd class="margin-none"><%= card.board.name %></dd>
@@ -72,8 +72,8 @@
               </div>
             </dl>
 
-            <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));">
-              <section class="flex flex-column gap-half">
+            <div class="cactus-action-grid">
+              <section class="cactus-muted-panel panel flex flex-column gap-half">
                 <h2 class="txt-small txt-bold margin-none">Classification</h2>
 
                 <%= form_with model: resolution_record, scope: :card_resolution_record, url: card_resolution_record_path(card), method: :put,
@@ -91,7 +91,7 @@
                 <% end %>
               </section>
 
-              <section class="flex flex-column gap-half">
+              <section class="cactus-muted-panel panel flex flex-column gap-half">
                 <h2 class="txt-small txt-bold margin-none">Next action</h2>
 
                 <% case card.cactus_workflow_state %>
@@ -100,16 +100,16 @@
                     <div class="flex flex-column gap-half txt-small">
                       <span><strong>Structure legacy import</strong></span>
                       <span class="txt-subtle">Review imported data and complete missing Gate 1 fields.</span>
-                      <%= link_to "Open card", card, class: "btn txt-small" %>
+                      <%= link_to "Open card", card, class: "btn txt-small", data: { turbo_frame: "_top" } %>
                     </div>
                   <% elsif (next_item = CardResolutionRecords::GateOneGuidance.new(card).next_item) %>
                     <div class="flex flex-column gap-half txt-small">
                       <span><strong>Ask:</strong> <%= next_item.label %></span>
                       <span class="txt-subtle"><%= next_item.prompt %></span>
-                      <%= link_to "Open card", card, class: "btn txt-small" %>
+                      <%= link_to "Open card", card, class: "btn txt-small", data: { turbo_frame: "_top" } %>
                     </div>
                   <% else %>
-                    <%= link_to "Review card", card, class: "btn txt-small" %>
+                    <%= link_to "Review card", card, class: "btn txt-small", data: { turbo_frame: "_top" } %>
                   <% end %>
                 <% when "open" %>
                   <% columns = card.board.columns.sorted %>
@@ -124,7 +124,7 @@
                     <div class="flex flex-column gap-half txt-small">
                       <span class="txt-subtle">No project columns configured.</span>
                       <% if Current.user.can_manage_cactus_project?(card.board) %>
-                        <%= link_to "Create project column", new_board_column_path(card.board), class: "btn txt-small" %>
+                        <%= link_to "Create project column", new_board_column_path(card.board), class: "btn txt-small", data: { turbo_frame: "_top" } %>
                       <% else %>
                         <span class="txt-subtle">Ask an admin to create project columns before triage.</span>
                       <% end %>
@@ -149,7 +149,7 @@
                               params: { return_to: "cactus_queue", queue_state: @state },
                               class: "btn btn--reversed txt-small" %>
                       <% end %>
-                      <%= link_to "Fill resolution", edit_card_resolution_record_path(card), class: "btn txt-small" %>
+                      <%= link_to "Fill resolution", edit_card_resolution_record_path(card), class: "btn txt-small", data: { turbo_frame: "_top" } %>
                     </div>
 
                     <% if assignable_users.any? %>
@@ -161,13 +161,13 @@
                   </div>
                 <% when "needs_review" %>
                   <div class="flex flex-wrap align-center gap-half">
-                    <%= link_to "Review resolution", edit_card_resolution_record_path(card), class: "btn txt-small" %>
+                    <%= link_to "Review resolution", edit_card_resolution_record_path(card), class: "btn txt-small", data: { turbo_frame: "_top" } %>
                     <% if Current.user.can_resolve_cactus_issues? %>
                       <%= button_to "Mark resolved", card_resolution_path(card), class: "btn btn--reversed txt-small" %>
                     <% end %>
                   </div>
                 <% else %>
-                  <%= link_to "Open card", card, class: "btn txt-small" %>
+                  <%= link_to "Open card", card, class: "btn txt-small", data: { turbo_frame: "_top" } %>
                 <% end %>
               </section>
             </div>

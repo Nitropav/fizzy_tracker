@@ -19,11 +19,62 @@
       <% unless @asana_import.finished? %>
         <%= link_to "Refresh status", legacy_imports_asana_import_path(@asana_import), class: "btn" %>
       <% end %>
+      <% if @asana_import.retryable? %>
+        <%= button_to "Retry import",
+              legacy_imports_asana_import_retry_path(@asana_import),
+              method: :post,
+              class: "btn",
+              data: { turbo_confirm: "Retry this Asana import using the same uploaded JSON file?" } %>
+      <% end %>
       <%= link_to "Review legacy issues", legacy_imports_asana_issues_path, class: "btn btn--reversed" %>
     </div>
   </header>
 
   <section class="panel border flex flex-column gap">
+    <% if @asana_import.failed? %>
+      <section class="panel border flex flex-column gap-half">
+        <strong>Import failed before the file could be processed.</strong>
+        <p class="txt-small txt-subtle margin-none">
+          Retry this same JSON file if the failure was transient. If the JSON file is invalid or incomplete, upload a corrected export instead.
+        </p>
+        <div class="flex flex-wrap gap-half txt-small">
+          <% if @asana_import.retryable? %>
+            <%= button_to "Retry this file",
+                  legacy_imports_asana_import_retry_path(@asana_import),
+                  method: :post,
+                  class: "btn",
+                  data: { turbo_confirm: "Retry this Asana import using the same uploaded JSON file?" } %>
+          <% end %>
+          <%= link_to "Upload corrected JSON", new_legacy_imports_asana_path, class: "btn btn--reversed" %>
+        </div>
+      </section>
+    <% elsif @asana_import.completed_with_errors? %>
+      <section class="panel border flex flex-column gap-half">
+        <strong>Import completed with task-level errors.</strong>
+        <p class="txt-small txt-subtle margin-none">
+          Successfully imported and skipped tasks are preserved. Fix the failed tasks in the source JSON and import again; duplicates are skipped automatically.
+        </p>
+        <div class="flex flex-wrap gap-half txt-small">
+          <%= link_to "Review imported issues", legacy_imports_asana_issues_path, class: "btn" %>
+          <%= link_to "Upload corrected JSON", new_legacy_imports_asana_path, class: "btn btn--reversed" %>
+        </div>
+      </section>
+    <% elsif @asana_import.processing? || @asana_import.pending? %>
+      <section class="panel border flex flex-column gap-half">
+        <strong>Import is running.</strong>
+        <p class="txt-small txt-subtle margin-none">
+          Keep this page open or refresh it later. Large Asana exports continue processing in the background.
+        </p>
+      </section>
+    <% elsif @asana_import.completed? %>
+      <section class="panel border flex flex-column gap-half">
+        <strong>Import completed.</strong>
+        <p class="txt-small txt-subtle margin-none">
+          Review legacy issues and complete the structured Gate fields before creating training examples.
+        </p>
+      </section>
+    <% end %>
+
     <div class="flex flex-wrap gap-half txt-small">
       <span class="badge">Status: <%= @asana_import.status.humanize %></span>
       <span class="badge">Project: <%= @asana_import.board.name %></span>

@@ -3,7 +3,8 @@ class TrainingExampleExportsController < ApplicationController
   before_action :set_training_example_export, only: :show
 
   def index
-    @training_example_exports = Current.account.training_example_exports.includes(:user, file_attachment: :blob).latest_first
+    set_page_and_extract_portion_from Current.account.training_example_exports.includes(:user, file_attachment: :blob).latest_first
+    @training_example_exports = @page.records
     @exported_without_batch_count = Current.account.training_examples.exported.where(training_example_export_id: nil).count
   end
 

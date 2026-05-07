@@ -1,0 +1,2068 @@
+{
+  "project_gid": "1207248643059756",
+  "tasks": [
+    {
+      "gid": "1213558681196879",
+      "assignee": {
+        "gid": "1211902479222042",
+        "email": "ilya.troshko.23@gmail.com",
+        "name": "Ilya Troshko"
+      },
+      "completed": false,
+      "completed_at": null,
+      "created_at": "2026-03-05T16:41:12.158Z",
+      "created_by": {
+        "gid": "1033723548473",
+        "email": "daniel@cactus.fm",
+        "name": "Daniel Ceballos"
+      },
+      "custom_fields": [
+        {
+          "gid": "1208701352674273",
+          "name": "Estimated time",
+          "display_value": null,
+          "type": "number"
+        },
+        {
+          "gid": "1208636965005473",
+          "name": "Branch name",
+          "display_value": null,
+          "type": "text"
+        },
+        {
+          "gid": "1208637102380062",
+          "enum_value": null,
+          "name": "Status",
+          "display_value": null,
+          "type": "enum"
+        }
+      ],
+      "due_at": null,
+      "due_on": null,
+      "followers": [
+        {
+          "gid": "1033723548473",
+          "email": "daniel@cactus.fm",
+          "name": "Daniel Ceballos"
+        },
+        {
+          "gid": "1205491505248788",
+          "email": "ekovalev@cactus.fm",
+          "name": "Eugene Kovalev"
+        },
+        {
+          "gid": "1210906081083311",
+          "email": null,
+          "name": "Private User"
+        },
+        {
+          "gid": "1213246745047682",
+          "email": "kalmentero@energiasolarsa.com",
+          "name": "Kevin Almentero Baron"
+        },
+        {
+          "gid": "1211009102284123",
+          "email": "rafaeld.acuna@energiasolarsa.com",
+          "name": "Rafael Acuña"
+        },
+        {
+          "gid": "1211902479222042",
+          "email": "ilya.troshko.23@gmail.com",
+          "name": "Ilya Troshko"
+        },
+        {
+          "gid": "1213359353168715",
+          "email": null,
+          "name": "Private User"
+        },
+        {
+          "gid": "1213969592927057",
+          "email": null,
+          "name": "Private User"
+        },
+        {
+          "gid": "1213969592927059",
+          "email": null,
+          "name": "Private User"
+        }
+      ],
+      "memberships": [
+        {
+          "project": {
+            "gid": "1207248643059756",
+            "name": "Support V3"
+          },
+          "section": {
+            "gid": "1207248643059757",
+            "name": "Untitled section"
+          }
+        }
+      ],
+      "modified_at": "2026-05-05T13:40:04.203Z",
+      "name": "RESTRICCIONES DE ANCLAJE EN CERTIFICADO ES-P300 - ESOFT V3",
+      "notes": "Buen día Dani,\n\nTenemos un caso que nos gustaría revisar con ustedes en el sistema ES-P300, específicamente en las configuraciones CASEMENT LMI y CASEMENT SMI.\n\nEstas configuraciones cuentan con restricciones por el certificado, para las opciones disponibles en los parámetros ANCHORING TYPE y ANCHORING SURFACE, y que a su vez dependen del tipo de cristal LAMINADO o INSULAMINADO.\n\nEstos se describen de la siguiente manera:\n\nEl problema consiste en que los valores por defecto de estos 2 parámetros son los siguientes:\n\nANCHORING TYPE: FLANGE\nANCHORING SURFACE: A\nPor lo que, al intentar cotizar, solo aparecerán disponibles los cristales INSULAMINADOS.\n\nSi el cliente desea utilizar un cristal LAMINADO, debe de hacer los siguiente:\n\n(1) - Primero debe terminar de crear la marca con INSULAMINADO.\n\n(2) - Luego debe ir a DETAILS y cambiar los parámetros a los acordes con los cristales LAMINADOS.\n\n(3) - Para finalmente ir a la sección de GLASS y asignar el cristal laminado.\n\nEsto es bastante engorroso para el cliente y requeriría que conozca a detalle las restricciones del sistema. Adicionalmente, también es riesgoso para nosotros ya que, al hacer el cambio de parámetros del paso (2) la información del cristal INSULAMINADO ya escogido se elimina.\n\nY si no se vuelve a digitar la información del vidrio, el programa no genera ninguna alerta, por lo que la marca continuará su flujo de manera normal. En este caso de no digitar nuevamente el vidrio, al descargar el assy de ESOFT, vemos que la marca conserva la información del cristal seleccionado antes de hacer la modificación de los parámetros.\n\nAsí que estaríamos teniendo marcas con cristales y combinaciones de parámetros no certificables.\n\nTuvimos un caso igual a este en las primeras versiones de este sistema en V3 con el parámetro GLAZING TYPE reportado en el correo \"OPCIONES DE GLAZING TYPE - ESOFT V3\", donde el programa entraba en conflicto con las opciones LMI, SMI y NI. Esto era porque el vidrio inicial de alguna de las opciones no es compatible con ninguna de las otras, lo cual invalidaba la selección de vidrio de la interfaz.\n\nLa solución que se llegó en su momento fue de separar los assemblies, lo que dio como resultado que hoy día tengamos las configuraciones del sistema ES-P300 divididas por LMI, SMI y NI.\n\nEsta misma solución podría realizarse para este caso, y podríamos dividir la CASEMENT de acuerdo al tipo de cristal, considerando las opciones de anclaje que requiere cada uno, quedaría de la siguiente manera:\n\nCASEMENT LMI LAM\nCASEMENT LMI INSULAM\nCASEMENT SMI LAM\nCASEMENT SMI INSULAM\nSin embargo, hay que tener en cuenta que esto aumentaría el número de configuraciones a revisar en caso de una actualización o modificación.\n\nPor favor su ayuda revisando si es posible proponer otra solución para este caso.\n\nMuchas gracias, saludos cordiales.\n\nRAFAEL ACUÑA VASQUEZ\n\nPROFESIONAL DE DESARROLLO\n\n+57 (605) 3664600 Ext. 529\n\nrafaeld.acuna@energiasolarsa.com  <mailto:gabriel.rios@energiasolarsa.com>\n\nAv. Circunvalar a 100 mts de la Vía 40\nBarranquilla, Colombia\n<https://www.facebook.com/ESWindows/>  <https://twitter.com/ESWindows>  <https://www.instagram.com/eswindows_/>  <https://www.youtube.com/channel/UCuIMIgRMkdMVw2U3HmD2b7A>  <https://www.linkedin.com/company/eswindows/>\n\nLEGAL DISCLAIMER: This communication contains legally privileged or confidential information. Please note that any dissemination, distribution or copying is strictly prohibited. If you are not the intended recipient, are not authorized to review or use this e-mail or have received this communication by mistake, please notify the sender and destroy it. This communication only reflects the opinion of its sender and does not necessarily represent the official opinion of Tecnoglass/ESWindows, its affiliates or its executives.\nThis email may have been sent outside of the recipient's working hours. We invite you to respond to it during your workday, in order to promote a work-life balance.\n\nAVISO LEGAL: Esta comunicación contiene información legalmente privilegiada o confidencial. Tenga en cuenta que toda difusión, distribución o copia está estrictamente prohibida. Si usted no es el destinatario, no está autorizado a revisar o utilizar este correo electrónico o ha recibido esta comunicación por error, por favor notifique al remitente y destrúyalo. Esta comunicación sólo refleja la opinión de su remitente y no necesariamente representa la opinión oficial de Tecnoglass/ESWindows, sus afiliadas o directivos.\nEste correo pudo ser enviado fuera del horario laboral de quién lo recibe. Te invitamos a responderlo durante tu jornada de trabajo, de esta manera fomentaremos un equilibrio entre la vida personal y laboral.",
+      "num_subtasks": 0,
+      "parent": null,
+      "permalink_url": "https://app.asana.com/1/1033723548478/project/1207248643059756/task/1213558681196879",
+      "projects": [
+        {
+          "gid": "1207248643059756",
+          "name": "Support V3"
+        }
+      ],
+      "tags": [],
+      "resource_subtype": "default_task",
+      "stories": [
+        {
+          "gid": "1213558681196882",
+          "created_at": "2026-03-05T16:41:12.271Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> added this task to <a href=\"https://app.asana.com/1/1033723548478/project/1206803582627430\">ESW Support</a>",
+          "text": "Daniel Ceballos added this task to ESW Support",
+          "type": "system",
+          "resource_subtype": "added_to_project"
+        },
+        {
+          "gid": "1213558686463204",
+          "created_at": "2026-03-05T16:41:13.347Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686463203\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1213558686463209",
+          "created_at": "2026-03-05T16:41:13.704Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686463208\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1213558686463214",
+          "created_at": "2026-03-05T16:41:13.970Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686463213\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1213558686463219",
+          "created_at": "2026-03-05T16:41:14.290Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686463218\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1213558686669239",
+          "created_at": "2026-03-05T16:41:14.576Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686463223\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1213558686669244",
+          "created_at": "2026-03-05T16:41:14.866Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686669243\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1213558686669249",
+          "created_at": "2026-03-05T16:41:15.155Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686669248\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1213552382295524",
+          "created_at": "2026-03-05T16:41:46.730Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> removed from <a href=\"https://app.asana.com/1/1033723548478/project/1206803582627430\">ESW Support</a>",
+          "text": "Rafael Acuña removed from ESW Support",
+          "type": "system",
+          "resource_subtype": "removed_from_project"
+        },
+        {
+          "gid": "1213549103977581",
+          "created_at": "2026-03-05T16:41:53.821Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> added this task to <a href=\"https://app.asana.com/1/1033723548478/project/1207248643059756\">Support V3</a>",
+          "text": "Rafael Acuña added this task to Support V3",
+          "type": "system",
+          "resource_subtype": "added_to_project"
+        },
+        {
+          "gid": "1213628402472577",
+          "created_at": "2026-03-11T08:58:59.752Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211902793311781\">Ilya Troshko</a></b> assigned to you",
+          "text": "Ilya Troshko assigned to you",
+          "type": "system",
+          "resource_subtype": "assigned"
+        },
+        {
+          "gid": "1213656180555367",
+          "created_at": "2026-03-13T12:17:43.064Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Buenas tardes, Rafael.\n\nHe revisado este caso y puedo proponer la siguiente opción, que se muestra en la imagen.\nLa idea consiste en que, cuando ocurre el caso descrito en la solicitud, el line item se deshabilita. Además, aparecerá un mensaje indicando que es necesario especificar el vidrio, así como la posibilidad de modificarlo. En general, todo está representado en la imagen.\n¿Podría decirme si esta opción es adecuada y si sería necesario cambiar algo?\n\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213656180555365/bb08fe6142333c879eee6250db8393b9?e=1777997489&amp;v=0&amp;t=219HAnJZ9hOAGhVqu_rkji3Pkd0MPxGvWevxCDiDJmY\" data-asana-gid=\"1213656180555366\" data-asana-type=\"attachment\" data-src-height=\"91\" data-src-width=\"1272\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213656180555365/1213656180555366.V0Fv4VRVaGsTsxpZUUKv_height640.png?e=1777997489&amp;v=0&amp;t=eLc6ZwfD-OevfyWNoxUtFunQFtUyl2yWBw1tDw0IN-g\" data-thumbnail-height=\"46\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" />\nSaludos cordiales.</body>",
+          "text": "Buenas tardes, Rafael.\n\nHe revisado este caso y puedo proponer la siguiente opción, que se muestra en la imagen.\nLa idea consiste en que, cuando ocurre el caso descrito en la solicitud, el line item se deshabilita. Además, aparecerá un mensaje indicando que es necesario especificar el vidrio, así como la posibilidad de modificarlo. En general, todo está representado en la imagen.\n¿Podría decirme si esta opción es adecuada y si sería necesario cambiar algo?\n\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213656180555366\n\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213641833995654",
+          "created_at": "2026-03-13T13:36:37.935Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Hola Ilya,\n\nMe parece una buena opción, nos podría ayudar a resolver una parte del problema. Entiendo que, con el item deshabilitado, el programa no permitiría firmar la orden ni dejar que continue con su flujo, ¿no?\n\nOtro problema que tenemos es que, dados los parámetros por defecto, el cliente no tiene todas las opciones de cristal desde que crea la marca. Así que tiene que crear la marca, modificar los parámetros, y finalmente modificar el cristal. Nos comentan que esto es un proceso poco práctico para la experiencia del cliente, pero no sabemos cómo se podría mejorar este proceso. ¿Hay alguna opción para resover esto?\n\nQuedamos atentos, muchas gracias.\n\nSaludos</body>",
+          "text": "Hola Ilya,\n\nMe parece una buena opción, nos podría ayudar a resolver una parte del problema. Entiendo que, con el item deshabilitado, el programa no permitiría firmar la orden ni dejar que continue con su flujo, ¿no?\n\nOtro problema que tenemos es que, dados los parámetros por defecto, el cliente no tiene todas las opciones de cristal desde que crea la marca. Así que tiene que crear la marca, modificar los parámetros, y finalmente modificar el cristal. Nos comentan que esto es un proceso poco práctico para la experiencia del cliente, pero no sabemos cómo se podría mejorar este proceso. ¿Hay alguna opción para resover esto?\n\nQuedamos atentos, muchas gracias.\n\nSaludos",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213656180555369",
+          "created_at": "2026-03-13T13:49:20.590Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Hola Rafael,\n\nSobre la primera pregunta: &quot;Entiendo que, con el item deshabilitado, el programa no permitiría firmar la orden ni dejar que continue con su flujo, ¿no?&quot; — sí, todo es correcto.\n\nEn cuanto a la segunda pregunta: — intentaré pensar en alguna solución.\n\nSaludos cordiales.</body>",
+          "text": "Hola Rafael,\n\nSobre la primera pregunta: \"Entiendo que, con el item deshabilitado, el programa no permitiría firmar la orden ni dejar que continue con su flujo, ¿no?\" — sí, todo es correcto.\n\nEn cuanto a la segunda pregunta: — intentaré pensar en alguna solución.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213641833995656",
+          "created_at": "2026-03-13T13:50:50.400Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Hola Ilya,\n\nMuchas gracias, quedamos atentos.\n\nSaludos cordiales.</body>",
+          "text": "Hola Ilya,\n\nMuchas gracias, quedamos atentos.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213711602840866",
+          "created_at": "2026-03-17T13:05:34.279Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Hola Rafael,\n\nInicialmente puedo proponer esta opción para tu segunda pregunta, ¿qué opinas?\n\nPara el cliente, el proceso de creación de la marca será más sencillo: después de seleccionar el sistema/configuración, el sistema propondrá de inmediato una opción de compatibilidad de vidrio (por ejemplo, <em>Insulated Laminated</em> o <em>Laminated</em>), aplicará automáticamente los parámetros correspondientes y mostrará únicamente las opciones de vidrio compatibles. El cliente podrá seleccionar el vidrio correcto en ese mismo proceso, sin pasos adicionales ni acciones repetidas.\n\nSi posteriormente en <em>Details</em> se modifican parámetros de modo que el vidrio actual deje de ser válido, la línea se marcará automáticamente como que requiere actualización de vidrio (<em>outdated</em>): quedará parcialmente bloqueada y la edición estará disponible solo en la sección de <em>Glass</em>. Una vez seleccionado un nuevo vidrio válido, la línea volverá a estar completamente editable.\n\nPara el administrador habrá una gestión independiente de las reglas: en el panel de administración se podrá definir para qué sistemas/configuraciones aplica la regla, qué opciones de compatibilidad están disponibles y qué valores de parámetros deben aplicarse automáticamente para cada opción.\n\nSi para un <em>assembly</em> específico la regla no está configurada, el campo <em>Glass Compatibility</em> no se mostrará y el sistema funcionará según el escenario estándar actual.\n\nSaludos cordiales.</body>",
+          "text": "Hola Rafael,\n\nInicialmente puedo proponer esta opción para tu segunda pregunta, ¿qué opinas?\n\nPara el cliente, el proceso de creación de la marca será más sencillo: después de seleccionar el sistema/configuración, el sistema propondrá de inmediato una opción de compatibilidad de vidrio (por ejemplo, Insulated Laminated o Laminated), aplicará automáticamente los parámetros correspondientes y mostrará únicamente las opciones de vidrio compatibles. El cliente podrá seleccionar el vidrio correcto en ese mismo proceso, sin pasos adicionales ni acciones repetidas.\n\nSi posteriormente en Details se modifican parámetros de modo que el vidrio actual deje de ser válido, la línea se marcará automáticamente como que requiere actualización de vidrio (outdated): quedará parcialmente bloqueada y la edición estará disponible solo en la sección de Glass. Una vez seleccionado un nuevo vidrio válido, la línea volverá a estar completamente editable.\n\nPara el administrador habrá una gestión independiente de las reglas: en el panel de administración se podrá definir para qué sistemas/configuraciones aplica la regla, qué opciones de compatibilidad están disponibles y qué valores de parámetros deben aplicarse automáticamente para cada opción.\n\nSi para un assembly específico la regla no está configurada, el campo Glass Compatibility no se mostrará y el sistema funcionará según el escenario estándar actual.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213722433475680",
+          "created_at": "2026-03-17T13:12:46.030Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Hola Ilya,\n\nMe parece una excelente idea. Entiendo que, básicamente, el programa modificará los parámetros por defecto acorde a lo seleccionado en la opción de compatibilidad de vidrio (laminado o insulaminado) y en consecuencia mostrará las opciones de vidrio compatibles ¿es correcto?\n\nQuedo atentos, muchas gracias. Saludos cordiales.</body>",
+          "text": "Hola Ilya,\n\nMe parece una excelente idea. Entiendo que, básicamente, el programa modificará los parámetros por defecto acorde a lo seleccionado en la opción de compatibilidad de vidrio (laminado o insulaminado) y en consecuencia mostrará las opciones de vidrio compatibles ¿es correcto?\n\nQuedo atentos, muchas gracias. Saludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213711602840868",
+          "created_at": "2026-03-17T14:07:51.816Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Hola Rafael,\n\nSí, lo ha entendido correctamente.\n\nEl matiz es que no modificamos los parámetros globales por defecto en el sistema, sino que aplicamos un conjunto de parámetros preconfigurados para una línea/marca específica según la opción de compatibilidad seleccionada (<em>Laminated</em> o <em>Insulated Laminated</em>). Después de esto, se muestran únicamente las opciones de vidrio compatibles.\n\nSi posteriormente se modifican los parámetros y el vidrio actual deja de ser compatible, la línea se marca como <em>requiring glass update (outdated)</em>, y será necesario seleccionar un nuevo vidrio compatible.\n\nSi para un <em>assembly</em> la regla no está configurada, todo funciona según el escenario estándar actual.\n\nPara dar un ejemplo, tenemos el assembly <strong>ES-P300 CASEMENT LMI</strong>:\n<ol><li>El administrador configura una regla para ES-P300 + assembly CASEMENT LMI con 2 opciones:\n<em>Insulated Laminated</em> y <em>Laminated</em>.</li><li>El cliente crea un <em>line item</em> y selecciona ES-P300 CASEMENT LMI.</li><li>En el formulario aparece inmediatamente el campo <em>Glass Compatibility</em> con estas 2 opciones.</li><li>El cliente selecciona, por ejemplo, <em>Insulated Laminated</em>.</li><li>El sistema aplica automáticamente los parámetros asociados (por ejemplo, <em>anchoring type</em>, <em>anchoring surface</em>) y en el campo <em>Glass</em> muestra únicamente las opciones compatibles.</li><li>El cliente selecciona un vidrio de la lista filtrada y guarda.</li><li>Posteriormente, el cliente modifica un parámetro en <em>Details</em> (por ejemplo, <em>anchoring surface</em>) de tal manera que el vidrio actual deja de ser compatible.</li><li>Después de guardar, la línea se marca como <em>outdated</em> (ícono rojo, línea en gris), y la edición queda disponible únicamente a través de <em>Glass</em>.</li><li>El cliente abre <em>Glass</em>, selecciona un nuevo vidrio compatible y guarda.</li><li>El estado <em>outdated</em> se elimina y la línea vuelve a ser completamente editable.</li></ol>Si para el <em>assembly</em> no hay una regla configurada, el campo <em>Glass Compatibility</em> no se muestra y todo funciona según el escenario estándar actual.\n\nSi algo no está claro, no duden en preguntar, o si tienen alguna sugerencia.\n\nSaludos cordiales.</body>",
+          "text": "Hola Rafael,\n\nSí, lo ha entendido correctamente.\n\nEl matiz es que no modificamos los parámetros globales por defecto en el sistema, sino que aplicamos un conjunto de parámetros preconfigurados para una línea/marca específica según la opción de compatibilidad seleccionada (Laminated o Insulated Laminated). Después de esto, se muestran únicamente las opciones de vidrio compatibles.\n\nSi posteriormente se modifican los parámetros y el vidrio actual deja de ser compatible, la línea se marca como requiring glass update (outdated), y será necesario seleccionar un nuevo vidrio compatible.\n\nSi para un assembly la regla no está configurada, todo funciona según el escenario estándar actual.\n\nPara dar un ejemplo, tenemos el assembly ES-P300 CASEMENT LMI:\n    El administrador configura una regla para ES-P300 + assembly CASEMENT LMI con 2 opciones:\n    Insulated Laminated y Laminated.\n    El cliente crea un line item y selecciona ES-P300 CASEMENT LMI.\n    En el formulario aparece inmediatamente el campo Glass Compatibility con estas 2 opciones.\n    El cliente selecciona, por ejemplo, Insulated Laminated.\n    El sistema aplica automáticamente los parámetros asociados (por ejemplo, anchoring type, anchoring surface) y en el campo Glass muestra únicamente las opciones compatibles.\n    El cliente selecciona un vidrio de la lista filtrada y guarda.\n    Posteriormente, el cliente modifica un parámetro en Details (por ejemplo, anchoring surface) de tal manera que el vidrio actual deja de ser compatible.\n    Después de guardar, la línea se marca como outdated (ícono rojo, línea en gris), y la edición queda disponible únicamente a través de Glass.\n    El cliente abre Glass, selecciona un nuevo vidrio compatible y guarda.\n    El estado outdated se elimina y la línea vuelve a ser completamente editable.\nSi para el assembly no hay una regla configurada, el campo Glass Compatibility no se muestra y todo funciona según el escenario estándar actual.\n\nSi algo no está claro, no duden en preguntar, o si tienen alguna sugerencia.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213721837347311",
+          "created_at": "2026-03-17T14:19:22.617Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Hola Ilya,\n\nMuchas gracias por la explicación, todo ha quedado claro. Nos parece una excelente idea.\n\nQuedamos atentos entonces para cuando este desarrollo quede realizado y podamos probar en STAGING.\n\nSaludos cordiales.</body>",
+          "text": "Hola Ilya,\n\nMuchas gracias por la explicación, todo ha quedado claro. Nos parece una excelente idea.\n\nQuedamos atentos entonces para cuando este desarrollo quede realizado y podamos probar en STAGING.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213721838876489",
+          "created_at": "2026-03-17T14:25:42.959Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "type": "system",
+          "resource_subtype": "story_reaction_added"
+        },
+        {
+          "gid": "1213712407092030",
+          "created_at": "2026-03-17T15:37:58.548Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<body>Rafa, esta solucion ya se hablo con Kevin y Daniel Daes.  Nevesitamos quitar esos parametros de LMI/SMI y dejar de segregar los assemblies.  Solo 1 assembly para todo\n\nLa interfaz nueva ya va a tener un fjujo de filtros para esto. Sin embargo es importante que dejen el parametro en la tabla para poder mostrar el valor. \n\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213712407092028/a12951cf253a57135dd10d4a5f0e2ec2?e=1777997489&amp;v=0&amp;t=j6cgMbYfVBHWn3wODPK1a0Ux6oQ_lMQmqyLJHXApvlk\" data-asana-gid=\"1213712407092029\" data-asana-type=\"attachment\" data-src-height=\"3424\" data-src-width=\"4070\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213712407092028/1213712407092029.JjxHQDXTdGaJhmnbWFS7_height640.png?e=1777997489&amp;v=0&amp;t=7owfkd1OLjTG0BY9sJCA1RXms7YC4LUZ_-MtHepEGUA\" data-thumbnail-height=\"480\" data-thumbnail-width=\"571\" alt=\"Screenshot 2026-03-17 at 8.37.11 AM.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" /></body>",
+          "text": "Rafa, esta solucion ya se hablo con Kevin y Daniel Daes.  Nevesitamos quitar esos parametros de LMI/SMI y dejar de segregar los assemblies.  Solo 1 assembly para todo\n\nLa interfaz nueva ya va a tener un fjujo de filtros para esto. Sin embargo es importante que dejen el parametro en la tabla para poder mostrar el valor. \n\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213712407092029\n",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213722487777686",
+          "created_at": "2026-03-17T15:54:28.138Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<body>hola rafa, las ordenes existentes no se deben dañar pero de igual manera debemos probar y revisar el flujo. la forma correcta seria crear una &quot;migracion&quot; de marcas para que todo lo que era LMI/SMI salga como desactualizado y le de al cliente la opcion de actualizarla por medio de las migraciones de marcas que ya tenemos.  este flujo lo debemos probar tan pronto posible. Ilya nos ayuda con esto.  esto es una solucion mucho mas practica para largo plazo.\n\nno tengo claro si tenemos que actualizar un poco el migrador para que ayude a migrar de v3-v3. de igual manera esa herramienta es bastante util y el cambio no debe ser grande,</body>",
+          "text": "hola rafa, las ordenes existentes no se deben dañar pero de igual manera debemos probar y revisar el flujo. la forma correcta seria crear una \"migracion\" de marcas para que todo lo que era LMI/SMI salga como desactualizado y le de al cliente la opcion de actualizarla por medio de las migraciones de marcas que ya tenemos.  este flujo lo debemos probar tan pronto posible. Ilya nos ayuda con esto.  esto es una solucion mucho mas practica para largo plazo.\n\nno tengo claro si tenemos que actualizar un poco el migrador para que ayude a migrar de v3-v3. de igual manera esa herramienta es bastante util y el cambio no debe ser grande,",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213969593110659",
+          "created_at": "2026-04-07T15:42:10.744Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> added Private User as a collaborator",
+          "text": "Rafael Acuña added Private User as a collaborator",
+          "type": "system",
+          "resource_subtype": "follower_added"
+        },
+        {
+          "gid": "1213969794817790",
+          "created_at": "2026-04-07T15:42:21.184Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> added Private User as a collaborator",
+          "text": "Rafael Acuña added Private User as a collaborator",
+          "type": "system",
+          "resource_subtype": "follower_added"
+        },
+        {
+          "gid": "1213969852681045",
+          "created_at": "2026-04-07T15:42:32.112Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> added Private User as a collaborator",
+          "text": "Rafael Acuña added Private User as a collaborator",
+          "type": "system",
+          "resource_subtype": "follower_added"
+        },
+        {
+          "gid": "1213969795877413",
+          "created_at": "2026-04-07T15:48:50.237Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> added Private User as a collaborator",
+          "text": "Rafael Acuña added Private User as a collaborator",
+          "type": "system",
+          "resource_subtype": "follower_added"
+        },
+        {
+          "gid": "1214529692796635",
+          "created_at": "2026-05-05T11:09:15.874Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body><a href=\"https://github.com/cactuscorp/assemblies/pull/902\">https://github.com/cactuscorp/assemblies/pull/902</a></body>",
+          "text": "https://github.com/cactuscorp/assemblies/pull/902",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1214535963001236",
+          "created_at": "2026-05-05T13:40:04.149Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Buen día Ilya, seguimos atentos para cuando podamos realizar pruebas.\n\nSaludos.</body>",
+          "text": "Buen día Ilya, seguimos atentos para cuando podamos realizar pruebas.\n\nSaludos.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        }
+      ],
+      "attachments": [
+        {
+          "gid": "1213558686463203",
+          "created_at": "2026-03-05T16:41:13.313Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686463202/613a71293793410da86f4acac6c35d7f?e=1777997490&v=0&t=C_7M-Lo9UhWvOXvdBHkur9JQpe2cGa4XuBKzaHbg1vg",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686463203",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686463202/613a71293793410da86f4acac6c35d7f?e=1777997490&v=0&t=C_7M-Lo9UhWvOXvdBHkur9JQpe2cGa4XuBKzaHbg1vg"
+        },
+        {
+          "gid": "1213558686463208",
+          "created_at": "2026-03-05T16:41:13.659Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686463207/c641156d65aa891558c039655b0bc25d?e=1777997490&v=0&t=LxzA79KHAL_Yy40OzjO5ndd9_uKBXA-U3aHnw4RRMUk",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686463208",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686463207/c641156d65aa891558c039655b0bc25d?e=1777997490&v=0&t=LxzA79KHAL_Yy40OzjO5ndd9_uKBXA-U3aHnw4RRMUk"
+        },
+        {
+          "gid": "1213558686463213",
+          "created_at": "2026-03-05T16:41:13.934Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686463212/31130ae0fde8c426685eac9b3fecb444?e=1777997490&v=0&t=8ak-u7BbJVnh3YQG036_3eusmE8Jjz79sAkipvMVOtI",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686463213",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686463212/31130ae0fde8c426685eac9b3fecb444?e=1777997490&v=0&t=8ak-u7BbJVnh3YQG036_3eusmE8Jjz79sAkipvMVOtI"
+        },
+        {
+          "gid": "1213558686463218",
+          "created_at": "2026-03-05T16:41:14.256Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686463217/07ac746dd92c135360d8895ffc9c1018?e=1777997490&v=0&t=468YQSGuzuW5YEGTG1QL5MLihEIY0yOUmniqlcF9bN8",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686463218",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686463217/07ac746dd92c135360d8895ffc9c1018?e=1777997490&v=0&t=468YQSGuzuW5YEGTG1QL5MLihEIY0yOUmniqlcF9bN8"
+        },
+        {
+          "gid": "1213558686463223",
+          "created_at": "2026-03-05T16:41:14.542Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686463222/40e46a02850bf9e715da9e1d80dfc697?e=1777997490&v=0&t=1jQdu7o-pPHwiOUox5JWEH2EAUWvNxNZ21O2HHHKgIA",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686463223",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686463222/40e46a02850bf9e715da9e1d80dfc697?e=1777997490&v=0&t=1jQdu7o-pPHwiOUox5JWEH2EAUWvNxNZ21O2HHHKgIA"
+        },
+        {
+          "gid": "1213558686669243",
+          "created_at": "2026-03-05T16:41:14.830Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686669242/19ea3bd6221ee95fb2de0724df68183e?e=1777997490&v=0&t=9-Dzjqaues4aPvIpGSlRO9-mAuDmv8wlUoTvJ7rdIao",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686669243",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686669242/19ea3bd6221ee95fb2de0724df68183e?e=1777997490&v=0&t=9-Dzjqaues4aPvIpGSlRO9-mAuDmv8wlUoTvJ7rdIao"
+        },
+        {
+          "gid": "1213558686669248",
+          "created_at": "2026-03-05T16:41:15.117Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686669247/049a6781e7b2607e091958ea58bd6aa5?e=1777997490&v=0&t=SQrnyaoKrdnv-I0ZYcVZ7OAQag-XOfbWv-EhMSPSJkE",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213558686669248",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213558686669247/049a6781e7b2607e091958ea58bd6aa5?e=1777997490&v=0&t=SQrnyaoKrdnv-I0ZYcVZ7OAQag-XOfbWv-EhMSPSJkE"
+        },
+        {
+          "gid": "1213656180555366",
+          "created_at": "2026-03-13T12:07:28.742Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213656180555365/bb08fe6142333c879eee6250db8393b9?e=1777997490&v=0&t=5NTAEPDrK3L-d-iDiw0BpxqE7qEMrvuWEPUHZHb8x-A",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213656180555366",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213656180555365/bb08fe6142333c879eee6250db8393b9?e=1777997490&v=0&t=5NTAEPDrK3L-d-iDiw0BpxqE7qEMrvuWEPUHZHb8x-A"
+        },
+        {
+          "gid": "1213712407092029",
+          "created_at": "2026-03-17T15:37:34.490Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213712407092028/a12951cf253a57135dd10d4a5f0e2ec2?e=1777997490&v=0&t=NTf4esmT5jOwTzGQ5QBrIZtp8tcLW3R5_a2jXXzo1fc",
+          "host": "asana",
+          "name": "Screenshot 2026-03-17 at 8.37.11 AM.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213712407092029",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213712407092028/a12951cf253a57135dd10d4a5f0e2ec2?e=1777997490&v=0&t=NTf4esmT5jOwTzGQ5QBrIZtp8tcLW3R5_a2jXXzo1fc"
+        }
+      ]
+    },
+    {
+      "gid": "1212938726568447",
+      "assignee": null,
+      "completed": false,
+      "completed_at": null,
+      "created_at": "2026-01-27T17:22:04.871Z",
+      "created_by": {
+        "gid": "1033723548473",
+        "email": "daniel@cactus.fm",
+        "name": "Daniel Ceballos"
+      },
+      "custom_fields": [
+        {
+          "gid": "1208701352674273",
+          "name": "Estimated time",
+          "display_value": null,
+          "type": "number"
+        },
+        {
+          "gid": "1208636965005473",
+          "name": "Branch name",
+          "display_value": null,
+          "type": "text"
+        },
+        {
+          "gid": "1208637102380062",
+          "enum_value": null,
+          "name": "Status",
+          "display_value": null,
+          "type": "enum"
+        }
+      ],
+      "due_at": null,
+      "due_on": null,
+      "followers": [
+        {
+          "gid": "1033723548473",
+          "email": "daniel@cactus.fm",
+          "name": "Daniel Ceballos"
+        },
+        {
+          "gid": "1205491505248788",
+          "email": "ekovalev@cactus.fm",
+          "name": "Eugene Kovalev"
+        },
+        {
+          "gid": "1210906081083311",
+          "email": null,
+          "name": "Private User"
+        },
+        {
+          "gid": "1206901807415907",
+          "email": null,
+          "name": "Private User"
+        },
+        {
+          "gid": "1211009102284123",
+          "email": "rafaeld.acuna@energiasolarsa.com",
+          "name": "Rafael Acuña"
+        }
+      ],
+      "memberships": [
+        {
+          "project": {
+            "gid": "1207248643059756",
+            "name": "Support V3"
+          },
+          "section": {
+            "gid": "1207248643059757",
+            "name": "Untitled section"
+          }
+        }
+      ],
+      "modified_at": "2026-01-27T17:40:34.463Z",
+      "name": "ESQUEMAS MUNTINS DECORATIVOS - ES-EL300",
+      "notes": "Buen día Daniel,\n\nTenemos una situación que nos gustaría revisar contigo sobre el sistema ES-EL300.\n\nEste sistema tiene opción de tener muntins decorativos, los cuales tienen una variedad de opciones diferentes que permiten escoger la distribución de los muntins en la puerta. De forma muy similar como el sistema ES-PSD5030T.\n\nSin embargo, a diferencia de la ES-PSD5030T, los muntins en la ES-EL300 no son definidos como perfiles de aluminio en el assy del servidor. En su lugar, se han definido como accesorios con unidades UN y sin longitud definida.\n\nEn la siguiente tabla se observan las opciones de muntin decorativo y el accesorio que se utiliza.\n\nImagen 1. Opciones de muntins decorativos.\n\nQueremos saber cómo podemos hacer la construcción del esquema en ESOFT, para que el cliente pueda visualizar el diseño seleccionado, ya que estos muntins, al ser accesorios, no contamos con referencias o perfiles de aluminio ni información de THICKNESS, por lo cual no podemos hacer la configuración tradicional por medio de las fórmulas de PLACEMENT CONFIGURATION, así como se hizo en la ES-PSD5030T.\n\nUna forma en que se nos ocurre que quizás se pueda resolver esto, es cargar los esquemas como unos PRODUCTION LABELS, para que se reflejen al momento que se digite la opción de muntin decorativo que se desee.\n\nEl inconveniente de realizar esto de esta forma es que el esquema se estaría generando en el assy descargado de ESFOT, y el cliente no tendrá forma de verlo. Lo ideal sería que el esquema se refleje en el PREVIEW o en el PDF de ESOFT.\n\nPor favor tu ayuda revisando este caso y ver que solución le podemos dar, muchas gracias.\n\nCopio a @Jose Miguel Yepes Gual <mailto:jose.yepes@energiasolarsa.com>\n\nSaludos cordiales.\n\nRAFAEL ACUÑA VASQUEZ\n\nPROFESIONAL DE DESARROLLO\n\n+57 (605) 3664600 Ext. 529\n\nrafaeld.acuna@energiasolarsa.com  <mailto:gabriel.rios@energiasolarsa.com>\n\nAv. Circunvalar a 100 mts de la Vía 40\nBarranquilla, Colombia\n<https://www.facebook.com/ESWindows/>  <https://twitter.com/ESWindows>  <https://www.instagram.com/eswindows_/>  <https://www.youtube.com/channel/UCuIMIgRMkdMVw2U3HmD2b7A>  <https://www.linkedin.com/company/eswindows/>\n\nLEGAL DISCLAIMER: This communication contains legally privileged or confidential information. Please note that any dissemination, distribution or copying is strictly prohibited. If you are not the intended recipient, are not authorized to review or use this e-mail or have received this communication by mistake, please notify the sender and destroy it. This communication only reflects the opinion of its sender and does not necessarily represent the official opinion of Tecnoglass/ESWindows, its affiliates or its executives.\nThis email may have been sent outside of the recipient's working hours. We invite you to respond to it during your workday, in order to promote a work-life balance.\n\nAVISO LEGAL: Esta comunicación contiene información legalmente privilegiada o confidencial. Tenga en cuenta que toda difusión, distribución o copia está estrictamente prohibida. Si usted no es el destinatario, no está autorizado a revisar o utilizar este correo electrónico o ha recibido esta comunicación por error, por favor notifique al remitente y destrúyalo. Esta comunicación sólo refleja la opinión de su remitente y no necesariamente representa la opinión oficial de Tecnoglass/ESWindows, sus afiliadas o directivos.\nEste correo pudo ser enviado fuera del horario laboral de quién lo recibe. Te invitamos a responderlo durante tu jornada de trabajo, de esta manera fomentaremos un equilibrio entre la vida personal y laboral.",
+      "num_subtasks": 0,
+      "parent": null,
+      "permalink_url": "https://app.asana.com/1/1033723548478/project/1207248643059756/task/1212938726568447",
+      "projects": [
+        {
+          "gid": "1207248643059756",
+          "name": "Support V3"
+        }
+      ],
+      "tags": [],
+      "resource_subtype": "default_task",
+      "stories": [
+        {
+          "gid": "1212938726568450",
+          "created_at": "2026-01-27T17:22:04.967Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> added this task to <a href=\"https://app.asana.com/1/1033723548478/project/1206803582627430\">ESW Support</a>",
+          "text": "Daniel Ceballos added this task to ESW Support",
+          "type": "system",
+          "resource_subtype": "added_to_project"
+        },
+        {
+          "gid": "1212938726568467",
+          "created_at": "2026-01-27T17:22:06.122Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212938726568466\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212938726568472",
+          "created_at": "2026-01-27T17:22:06.503Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212938726568471\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212938726568477",
+          "created_at": "2026-01-27T17:22:06.829Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212938726568476\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1213003306703045",
+          "created_at": "2026-01-27T17:26:18.267Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> removed from <a href=\"https://app.asana.com/1/1033723548478/project/1206803582627430\">ESW Support</a>",
+          "text": "Rafael Acuña removed from ESW Support",
+          "type": "system",
+          "resource_subtype": "removed_from_project"
+        },
+        {
+          "gid": "1213003303908155",
+          "created_at": "2026-01-27T17:26:22.108Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> added this task to <a href=\"https://app.asana.com/1/1033723548478/project/1207248643059756\">Support V3</a>",
+          "text": "Rafael Acuña added this task to Support V3",
+          "type": "system",
+          "resource_subtype": "added_to_project"
+        },
+        {
+          "gid": "1212983417365480",
+          "created_at": "2026-01-27T17:40:34.439Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<body>Ahora mismo eso no se puede hacer.  Es el mismo problema con no poder mostrar solo GBG.  Hay que redefinir la forma como se generan los muntins.  Esto esta en el plan de trabajo pero aun falta.\n\nUna pregunta:  Estos miscelaneos con los que definieron los muntins decorativos de la ES-EL300 son perfiles de aluminio? o son otro material?\n\nHay alguna razon por la cual esto es distinto a la forma normal de hacer muntins?  Necesitamos entender por que tanta variedad en la defincion de muntins.  Deberiamos tener 1 sola manera de definirlos.\n\nGracias,\nD</body>",
+          "text": "Ahora mismo eso no se puede hacer.  Es el mismo problema con no poder mostrar solo GBG.  Hay que redefinir la forma como se generan los muntins.  Esto esta en el plan de trabajo pero aun falta.\n\nUna pregunta:  Estos miscelaneos con los que definieron los muntins decorativos de la ES-EL300 son perfiles de aluminio? o son otro material?\n\nHay alguna razon por la cual esto es distinto a la forma normal de hacer muntins?  Necesitamos entender por que tanta variedad en la defincion de muntins.  Deberiamos tener 1 sola manera de definirlos.\n\nGracias,\nD",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        }
+      ],
+      "attachments": [
+        {
+          "gid": "1212938726568466",
+          "created_at": "2026-01-27T17:22:06.093Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212938726568465/336740639ef3c12a0b400b4a2571accd?e=1777997490&v=0&t=XCNaXQiyJkqAh0gr6l-HIWMASUKS06gbRe8QeGoGN4g",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212938726568466",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212938726568465/336740639ef3c12a0b400b4a2571accd?e=1777997490&v=0&t=XCNaXQiyJkqAh0gr6l-HIWMASUKS06gbRe8QeGoGN4g"
+        },
+        {
+          "gid": "1212938726568471",
+          "created_at": "2026-01-27T17:22:06.463Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212938726568470/1c2229346ff0479154d70e879eab56f3?e=1777997490&v=0&t=g5HWwF73tOxrWiMGMSCp4o70GL7fpLbhtRdfBUbB5s8",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212938726568471",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212938726568470/1c2229346ff0479154d70e879eab56f3?e=1777997490&v=0&t=g5HWwF73tOxrWiMGMSCp4o70GL7fpLbhtRdfBUbB5s8"
+        },
+        {
+          "gid": "1212938726568476",
+          "created_at": "2026-01-27T17:22:06.792Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212938726568475/b6b657d905c1675a5ed4c5d4829bf6fe?e=1777997490&v=0&t=yK1qOpZnHYu8tYvfeM6waUr1Y1O2GzOJ1ISHHsBiV7Q",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212938726568476",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212938726568475/b6b657d905c1675a5ed4c5d4829bf6fe?e=1777997490&v=0&t=yK1qOpZnHYu8tYvfeM6waUr1Y1O2GzOJ1ISHHsBiV7Q"
+        }
+      ]
+    },
+    {
+      "gid": "1212871486543508",
+      "assignee": {
+        "gid": "1211902479222042",
+        "email": "ilya.troshko.23@gmail.com",
+        "name": "Ilya Troshko"
+      },
+      "completed": false,
+      "completed_at": null,
+      "created_at": "2026-01-19T22:21:05.363Z",
+      "created_by": {
+        "gid": "1033723548473",
+        "email": "daniel@cactus.fm",
+        "name": "Daniel Ceballos"
+      },
+      "custom_fields": [
+        {
+          "gid": "1208701352674273",
+          "name": "Estimated time",
+          "display_value": null,
+          "type": "number"
+        },
+        {
+          "gid": "1208636965005473",
+          "name": "Branch name",
+          "display_value": null,
+          "type": "text"
+        },
+        {
+          "gid": "1208637102380062",
+          "enum_value": null,
+          "name": "Status",
+          "display_value": null,
+          "type": "enum"
+        }
+      ],
+      "due_at": null,
+      "due_on": null,
+      "followers": [
+        {
+          "gid": "1033723548473",
+          "email": "daniel@cactus.fm",
+          "name": "Daniel Ceballos"
+        },
+        {
+          "gid": "1205491505248788",
+          "email": "ekovalev@cactus.fm",
+          "name": "Eugene Kovalev"
+        },
+        {
+          "gid": "1210906081083311",
+          "email": null,
+          "name": "Private User"
+        },
+        {
+          "gid": "1211009102284123",
+          "email": "rafaeld.acuna@energiasolarsa.com",
+          "name": "Rafael Acuña"
+        },
+        {
+          "gid": "1211902479222042",
+          "email": "ilya.troshko.23@gmail.com",
+          "name": "Ilya Troshko"
+        },
+        {
+          "gid": "1213246745047682",
+          "email": "kalmentero@energiasolarsa.com",
+          "name": "Kevin Almentero Baron"
+        }
+      ],
+      "memberships": [
+        {
+          "project": {
+            "gid": "1207248643059756",
+            "name": "Support V3"
+          },
+          "section": {
+            "gid": "1207248643059757",
+            "name": "Untitled section"
+          }
+        }
+      ],
+      "modified_at": "2026-05-05T13:40:12.444Z",
+      "name": "GENERACIÓN ASSY CON SUBUNTIS - ESOFT V3",
+      "notes": "Buen día Equipo,\n\nTenemos un caso que nos gustaría revisar con ustedes.\n\nDesde el departamento de sistemas nos realizan una consulta acerca de la generación del assembly de ESOFT ya que, en sistemas como la ES-V76 PLUS,  ESOFT genera varias hojas para una misma marca en el assembly.\n\nPor ejemplo, para una configuración X ESOFT estaría generando una hoja principal con la información del FRAME y una hoja secundaria con la información del PANEL.\n\nImagen 1. Hoja principal con información de FRAME.\n\nImagen 2. Hoja secundaria con la información del PANEL.\n\nPara una configuración (O-O)|(X-O) el assy de ESOFT estaría generando muchas más hojas:\n\nImagen 3. Hojas generadas para una configuración (O-O)|(X-O)\n\nDebido a esto, están teniendo problemas al importar órdenes de clientes en NOVA, ya que el programa no identifica la información del cristal en cada marca, ya que esta información se encuentra en las hojas secundarias.\n\nImagen 4. Importación de orden a NOVA.\n\nEntendemos que ESOFT genera los assemblies de esta forma debido a que el sistema se encuentra construido con SUBUNITS, de forma similar a lo que ocurre con los sistemas que cuentan con opción de SCREEN.\n\nDado esto, queremos ver si es posible que podamos definir a la subunidad agregada, por medio de un botón o alguna opción, que su información en el assy de ESOFT se genere en la misma hoja principal, para no afectar los procesos de otras áreas.\n\nQuedamos atentos, muchas gracias.\n\nSaludos cordiales.\n\nRAFAEL ACUÑA VASQUEZ\n\nPROFESIONAL DE DESARROLLO\n\n+57 (605) 3664600 Ext. 529\n\nrafaeld.acuna@energiasolarsa.com  <mailto:gabriel.rios@energiasolarsa.com>\n\nAv. Circunvalar a 100 mts de la Vía 40\nBarranquilla, Colombia\n<https://www.facebook.com/ESWindows/>  <https://twitter.com/ESWindows>  <https://www.instagram.com/eswindows_/>  <https://www.youtube.com/channel/UCuIMIgRMkdMVw2U3HmD2b7A>  <https://www.linkedin.com/company/eswindows/>\n\nLEGAL DISCLAIMER: This communication contains legally privileged or confidential information. Please note that any dissemination, distribution or copying is strictly prohibited. If you are not the intended recipient, are not authorized to review or use this e-mail or have received this communication by mistake, please notify the sender and destroy it. This communication only reflects the opinion of its sender and does not necessarily represent the official opinion of Tecnoglass/ESWindows, its affiliates or its executives.\nThis email may have been sent outside of the recipient's working hours. We invite you to respond to it during your workday, in order to promote a work-life balance.\n\nAVISO LEGAL: Esta comunicación contiene información legalmente privilegiada o confidencial. Tenga en cuenta que toda difusión, distribución o copia está estrictamente prohibida. Si usted no es el destinatario, no está autorizado a revisar o utilizar este correo electrónico o ha recibido esta comunicación por error, por favor notifique al remitente y destrúyalo. Esta comunicación sólo refleja la opinión de su remitente y no necesariamente representa la opinión oficial de Tecnoglass/ESWindows, sus afiliadas o directivos.\nEste correo pudo ser enviado fuera del horario laboral de quién lo recibe. Te invitamos a responderlo durante tu jornada de trabajo, de esta manera fomentaremos un equilibrio entre la vida personal y laboral.",
+      "num_subtasks": 0,
+      "parent": null,
+      "permalink_url": "https://app.asana.com/1/1033723548478/project/1207248643059756/task/1212871486543508",
+      "projects": [
+        {
+          "gid": "1207248643059756",
+          "name": "Support V3"
+        }
+      ],
+      "tags": [],
+      "resource_subtype": "default_task",
+      "stories": [
+        {
+          "gid": "1212871486543511",
+          "created_at": "2026-01-19T22:21:05.472Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> added this task to <a href=\"https://app.asana.com/1/1033723548478/project/1206803582627430\">ESW Support</a>",
+          "text": "Daniel Ceballos added this task to ESW Support",
+          "type": "system",
+          "resource_subtype": "added_to_project"
+        },
+        {
+          "gid": "1212871489501203",
+          "created_at": "2026-01-19T22:21:06.559Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212871489501202\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212871489501208",
+          "created_at": "2026-01-19T22:21:06.971Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212871489501207\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212871489501213",
+          "created_at": "2026-01-19T22:21:07.220Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212871489501212\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212871489501218",
+          "created_at": "2026-01-19T22:21:07.473Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212871489501217\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212871489501223",
+          "created_at": "2026-01-19T22:21:07.729Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212871489501222\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212871529650297",
+          "created_at": "2026-01-19T22:30:41.569Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> removed from <a href=\"https://app.asana.com/1/1033723548478/project/1206803582627430\">ESW Support</a>",
+          "text": "Rafael Acuña removed from ESW Support",
+          "type": "system",
+          "resource_subtype": "removed_from_project"
+        },
+        {
+          "gid": "1212871533445777",
+          "created_at": "2026-01-19T22:30:43.833Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> added this task to <a href=\"https://app.asana.com/1/1033723548478/project/1207248643059756\">Support V3</a>",
+          "text": "Rafael Acuña added this task to Support V3",
+          "type": "system",
+          "resource_subtype": "added_to_project"
+        },
+        {
+          "gid": "1213556025726886",
+          "created_at": "2026-03-05T13:09:50.450Z",
+          "created_by": {
+            "gid": "1205491505248788",
+            "email": "ekovalev@cactus.fm",
+            "name": "Eugene Kovalev"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1205491505248794\">Eugene Kovalev</a></b> assigned to you",
+          "text": "Eugene Kovalev assigned to you",
+          "type": "system",
+          "resource_subtype": "assigned"
+        },
+        {
+          "gid": "1213595026605441",
+          "created_at": "2026-03-09T15:17:39.580Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Buen día, Rafael.\n\nPor favor, revisa la imagen. Aquí se muestra un ejemplo del <strong>assembly ES-V76 (O-O)|(X-O)</strong>.\n¿Esto se ve correcto?\n\nSaludos cordiales.</body>",
+          "text": "Buen día, Rafael.\n\nPor favor, revisa la imagen. Aquí se muestra un ejemplo del assembly ES-V76 (O-O)|(X-O).\n¿Esto se ve correcto?\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213595026605445",
+          "created_at": "2026-03-09T15:22:02.613Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body></body>",
+          "text": "",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213570553996473",
+          "created_at": "2026-03-09T15:26:01.784Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> added Kevin Almentero Baron as a collaborator",
+          "text": "Rafael Acuña added Kevin Almentero Baron as a collaborator",
+          "type": "system",
+          "resource_subtype": "follower_added"
+        },
+        {
+          "gid": "1213570523316857",
+          "created_at": "2026-03-09T15:29:13.434Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Buen día Ilya,\n\nPor lo que entiendo, el sistema seguirá generando una hoja general y una hoja por cada panel (SUBUNIT) de la configuración, pero ahora la hoja general tendrá también la información de las hojas de los paneles, ¿es correcto?\n\nAdemás, ¿habrá alguna forma de cambiar cuando necesitemos que la información esté combinada o separada? esto es porque el SCREEN se comporta como una SUBUNIT, y en ese caso la información del SCREEN no debe estar combinada con la información de la configuración.\n\nQuedamos atentos, muchas gracias.\n\nSaludos cordiales.</body>",
+          "text": "Buen día Ilya,\n\nPor lo que entiendo, el sistema seguirá generando una hoja general y una hoja por cada panel (SUBUNIT) de la configuración, pero ahora la hoja general tendrá también la información de las hojas de los paneles, ¿es correcto?\n\nAdemás, ¿habrá alguna forma de cambiar cuando necesitemos que la información esté combinada o separada? esto es porque el SCREEN se comporta como una SUBUNIT, y en ese caso la información del SCREEN no debe estar combinada con la información de la configuración.\n\nQuedamos atentos, muchas gracias.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213570663965353",
+          "created_at": "2026-03-09T15:31:48.623Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Hola Ilya,\n\nPor favor ignora mi segundo comentario, no había visto tu segunda respuesta.\n\nSolo sería el primer comentario &quot;por lo que entiendo, el sistema seguirá generando una hoja general y una hoja por cada panel (SUBUNIT) de la configuración, pero ahora la hoja general tendrá también la información de las hojas de los paneles, ¿es correcto?&quot;\n\nQuedo atento, saludos.</body>",
+          "text": "Hola Ilya,\n\nPor favor ignora mi segundo comentario, no había visto tu segunda respuesta.\n\nSolo sería el primer comentario \"por lo que entiendo, el sistema seguirá generando una hoja general y una hoja por cada panel (SUBUNIT) de la configuración, pero ahora la hoja general tendrá también la información de las hojas de los paneles, ¿es correcto?\"\n\nQuedo atento, saludos.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213559800017604",
+          "created_at": "2026-03-09T15:40:42.498Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Hola Rafael.\n\nSí, correcto, con una precisión: el sistema mantiene la hoja general, pero para cada SUBUNIT ahora depende de la opción “Main sheet?”. Si está desactivada, se sigue generando su hoja separada; si está activada, su información se integra en la hoja general y ya no se genera una hoja aparte para ese SUBUNIT.\n\nSaludos cordiales.</body>",
+          "text": "Hola Rafael.\n\nSí, correcto, con una precisión: el sistema mantiene la hoja general, pero para cada SUBUNIT ahora depende de la opción “Main sheet?”. Si está desactivada, se sigue generando su hoja separada; si está activada, su información se integra en la hoja general y ya no se genera una hoja aparte para ese SUBUNIT.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213571337369935",
+          "created_at": "2026-03-09T16:04:40.235Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Hola Ilya,\n\nEntiendo, así nos funcionaría perfecto. Muchas gracias.\n\nPor favor nos avisas cuando podamos realizar pruebas en staging\n\nSaludos cordiales.</body>",
+          "text": "Hola Ilya,\n\nEntiendo, así nos funcionaría perfecto. Muchas gracias.\n\nPor favor nos avisas cuando podamos realizar pruebas en staging\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1211949930363717",
+          "created_at": "2026-03-09T16:09:36.194Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Hola Rafael,\n\nEn este momento el entorno de staging tiene algunos problemas. Los solucionaremos y luego desplegaremos las demás tareas. Escribiré un mensaje en cada tarea en Asana para avisarles cuando esté listo en staging, para que puedan probar todo.\n\nSaludos cordiales.</body>",
+          "text": "Hola Rafael,\n\nEn este momento el entorno de staging tiene algunos problemas. Los solucionaremos y luego desplegaremos las demás tareas. Escribiré un mensaje en cada tarea en Asana para avisarles cuando esté listo en staging, para que puedan probar todo.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1214526090079108",
+          "created_at": "2026-05-05T11:05:40.394Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body><a href=\"https://github.com/cactuscorp/assemblies/pull/1009\">https://github.com/cactuscorp/assemblies/pull/1009</a></body>",
+          "text": "https://github.com/cactuscorp/assemblies/pull/1009",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1214536220527334",
+          "created_at": "2026-05-05T13:40:12.396Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Buen día Ilya, seguimos atentos para cuando podamos realizar pruebas.\n\nSaludos.</body>",
+          "text": "Buen día Ilya, seguimos atentos para cuando podamos realizar pruebas.\n\nSaludos.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        }
+      ],
+      "attachments": [
+        {
+          "gid": "1212871489501202",
+          "created_at": "2026-01-19T22:21:06.529Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212871489501201/ecb48b8ab3dfa8421924e9a07fb0f06c?e=1777997492&v=0&t=AFjzXOmWP5jRVqz_VoCzmhMM3m-NUE_mSMBspGL-fp0",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212871489501202",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212871489501201/ecb48b8ab3dfa8421924e9a07fb0f06c?e=1777997492&v=0&t=AFjzXOmWP5jRVqz_VoCzmhMM3m-NUE_mSMBspGL-fp0"
+        },
+        {
+          "gid": "1212871489501207",
+          "created_at": "2026-01-19T22:21:06.941Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212871489501206/38614ade866cfce803ea444f1a3e40de?e=1777997492&v=0&t=Xaq5V4L44HKQcD2XmfXQLH9LzdNEp55pLTOUklJuDQU",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212871489501207",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212871489501206/38614ade866cfce803ea444f1a3e40de?e=1777997492&v=0&t=Xaq5V4L44HKQcD2XmfXQLH9LzdNEp55pLTOUklJuDQU"
+        },
+        {
+          "gid": "1212871489501212",
+          "created_at": "2026-01-19T22:21:07.191Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212871489501211/55b101ab130a4be1080b697c343d1f99?e=1777997492&v=0&t=V8nidDrGl4WwI4bsAmt459UW61HjS9_3o_Um2XYDW5k",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212871489501212",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212871489501211/55b101ab130a4be1080b697c343d1f99?e=1777997492&v=0&t=V8nidDrGl4WwI4bsAmt459UW61HjS9_3o_Um2XYDW5k"
+        },
+        {
+          "gid": "1212871489501217",
+          "created_at": "2026-01-19T22:21:07.447Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212871489501216/329bff183a0ced58763dc52640ae8d6f?e=1777997492&v=0&t=PWRP8A0nOkjm_P2Z-9UH9AGyofhhG1JjHAaNiVZV9Mw",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212871489501217",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212871489501216/329bff183a0ced58763dc52640ae8d6f?e=1777997492&v=0&t=PWRP8A0nOkjm_P2Z-9UH9AGyofhhG1JjHAaNiVZV9Mw"
+        },
+        {
+          "gid": "1212871489501222",
+          "created_at": "2026-01-19T22:21:07.702Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212871489501221/bda724ef1bbafdb44056035965e3e46f?e=1777997492&v=0&t=solik5zP54J-HJvZg2rTjMZWVUpcZazv-4otUhXpHcE",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212871489501222",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212871489501221/bda724ef1bbafdb44056035965e3e46f?e=1777997492&v=0&t=solik5zP54J-HJvZg2rTjMZWVUpcZazv-4otUhXpHcE"
+        },
+        {
+          "gid": "1213595026605438",
+          "created_at": "2026-03-09T15:17:24.631Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213595026605437/f35bd1984185ae63238e22df12e5ef69?e=1777997492&v=0&t=PYYuSUKzCiA28ixss2r3subhy2bKrZVYsFpLj12NFj4",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213595026605438",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213595026605437/f35bd1984185ae63238e22df12e5ef69?e=1777997492&v=0&t=PYYuSUKzCiA28ixss2r3subhy2bKrZVYsFpLj12NFj4"
+        },
+        {
+          "gid": "1213595026605444",
+          "created_at": "2026-03-09T15:21:57.261Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213595026605443/8a029790c15315eda64fee92ec719c00?e=1777997492&v=0&t=aHrqOS_3hmSaUjD0V0JfeqJnrtB7L_1oZC_vMG1N-C4",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213595026605444",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213595026605443/8a029790c15315eda64fee92ec719c00?e=1777997492&v=0&t=aHrqOS_3hmSaUjD0V0JfeqJnrtB7L_1oZC_vMG1N-C4"
+        }
+      ]
+    },
+    {
+      "gid": "1212819518376529",
+      "assignee": null,
+      "completed": true,
+      "completed_at": "2026-01-28T20:53:00.171Z",
+      "created_at": "2026-01-14T21:43:32.499Z",
+      "created_by": {
+        "gid": "1033723548473",
+        "email": "daniel@cactus.fm",
+        "name": "Daniel Ceballos"
+      },
+      "custom_fields": [
+        {
+          "gid": "1208701352674273",
+          "name": "Estimated time",
+          "display_value": null,
+          "type": "number"
+        },
+        {
+          "gid": "1208636965005473",
+          "name": "Branch name",
+          "display_value": null,
+          "type": "text"
+        },
+        {
+          "gid": "1208637102380062",
+          "enum_value": null,
+          "name": "Status",
+          "display_value": null,
+          "type": "enum"
+        }
+      ],
+      "due_at": null,
+      "due_on": null,
+      "followers": [
+        {
+          "gid": "1033723548473",
+          "email": "daniel@cactus.fm",
+          "name": "Daniel Ceballos"
+        },
+        {
+          "gid": "1205491505248788",
+          "email": "ekovalev@cactus.fm",
+          "name": "Eugene Kovalev"
+        },
+        {
+          "gid": "1210906081083311",
+          "email": null,
+          "name": "Private User"
+        },
+        {
+          "gid": "1206901807415907",
+          "email": null,
+          "name": "Private User"
+        },
+        {
+          "gid": "1211009102284123",
+          "email": "rafaeld.acuna@energiasolarsa.com",
+          "name": "Rafael Acuña"
+        },
+        {
+          "gid": "1211902479222042",
+          "email": "ilya.troshko.23@gmail.com",
+          "name": "Ilya Troshko"
+        }
+      ],
+      "memberships": [
+        {
+          "project": {
+            "gid": "1207248643059756",
+            "name": "Support V3"
+          },
+          "section": {
+            "gid": "1207248643059757",
+            "name": "Untitled section"
+          }
+        }
+      ],
+      "modified_at": "2026-01-28T20:53:00.277Z",
+      "name": "ORDEN DE PRUEBA ES-V150 SHAPE - ESOFT V3",
+      "notes": "Buen día Equipo,\n\nTenemos un caso con el sistema ES-V150 SHAPE que nos gustaría reportar.\n\nHemos realizado una orden de prueba con varias configuraciones del sistema ES-V150 SHAPE activas como TEST, con el objetivo de probar su funcionamiento y las restricciones antes de proceder a activar.\n\nTodo ha funcionado bien, sin embargo, tenemos 2 puntos que creemos que se deben revisar.\n\n1. Vista de la orden.\n\nAl revisar la orden desde la vista de ADMIN, notamos que no aparece la información correspondiente al sistema y configuraciones, y todas las líneas aparecen vacías.\n\n2. Esquemas generados en el PDF.\n\nAdicionalmente, hemos notado que los esquemas generados en el PDF de la orden aparecen todos con forma cuadrada, y no refleja correctamente la forma de la configuración SHAPE.\n\nCabe aclarar que en el PREVIEW de las marcas el esquema se genera correctamente.\n\nTe adjunto el número y link de la orden: 991136 - Admin <https://admin.eswindows.co/admin/customers/114/customer_sales_documents/991136>\n\nLas configuraciones que ya tenemos listas para activar son las siguientes:\n\nQUARTER CIRCLE LEFT\nQUARTER CIRCLE RIGHT\nHALF CIRCLE\nTOMBSTONE\nFULL CIRCLE\nOCTAGON\nPor favor tu ayuda revisando este caso, muchas gracias.\n\nSaludos cordiales.\n\nRAFAEL ACUÑA VASQUEZ\n\nPROFESIONAL DE DESARROLLO\n\n+57 (605) 3664600 Ext. 529\n\nrafaeld.acuna@energiasolarsa.com  <mailto:gabriel.rios@energiasolarsa.com>\n\nAv. Circunvalar a 100 mts de la Vía 40\nBarranquilla, Colombia\n<https://www.facebook.com/ESWindows/>  <https://twitter.com/ESWindows>  <https://www.instagram.com/eswindows_/>  <https://www.youtube.com/channel/UCuIMIgRMkdMVw2U3HmD2b7A>  <https://www.linkedin.com/company/eswindows/>\n\nLEGAL DISCLAIMER: This communication contains legally privileged or confidential information. Please note that any dissemination, distribution or copying is strictly prohibited. If you are not the intended recipient, are not authorized to review or use this e-mail or have received this communication by mistake, please notify the sender and destroy it. This communication only reflects the opinion of its sender and does not necessarily represent the official opinion of Tecnoglass/ESWindows, its affiliates or its executives.\nThis email may have been sent outside of the recipient's working hours. We invite you to respond to it during your workday, in order to promote a work-life balance.\n\nAVISO LEGAL: Esta comunicación contiene información legalmente privilegiada o confidencial. Tenga en cuenta que toda difusión, distribución o copia está estrictamente prohibida. Si usted no es el destinatario, no está autorizado a revisar o utilizar este correo electrónico o ha recibido esta comunicación por error, por favor notifique al remitente y destrúyalo. Esta comunicación sólo refleja la opinión de su remitente y no necesariamente representa la opinión oficial de Tecnoglass/ESWindows, sus afiliadas o directivos.\nEste correo pudo ser enviado fuera del horario laboral de quién lo recibe. Te invitamos a responderlo durante tu jornada de trabajo, de esta manera fomentaremos un equilibrio entre la vida personal y laboral.",
+      "num_subtasks": 0,
+      "parent": null,
+      "permalink_url": "https://app.asana.com/1/1033723548478/project/1207248643059756/task/1212819518376529",
+      "projects": [
+        {
+          "gid": "1207248643059756",
+          "name": "Support V3"
+        }
+      ],
+      "tags": [],
+      "resource_subtype": "default_task",
+      "stories": [
+        {
+          "gid": "1212819518376532",
+          "created_at": "2026-01-14T21:43:32.621Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> added this task to <a href=\"https://app.asana.com/1/1033723548478/project/1206803582627430\">ESW Support</a>",
+          "text": "Daniel Ceballos added this task to ESW Support",
+          "type": "system",
+          "resource_subtype": "added_to_project"
+        },
+        {
+          "gid": "1212819518376549",
+          "created_at": "2026-01-14T21:43:34.164Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212819518376548\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212819565907770",
+          "created_at": "2026-01-14T21:43:34.629Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212819518376553\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212819565907775",
+          "created_at": "2026-01-14T21:43:34.990Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212819565907774\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212819565933673",
+          "created_at": "2026-01-14T21:49:24.430Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> removed from <a href=\"https://app.asana.com/1/1033723548478/project/1206803582627430\">ESW Support</a>",
+          "text": "Rafael Acuña removed from ESW Support",
+          "type": "system",
+          "resource_subtype": "removed_from_project"
+        },
+        {
+          "gid": "1212819604178423",
+          "created_at": "2026-01-14T21:49:26.674Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> added this task to <a href=\"https://app.asana.com/1/1033723548478/project/1207248643059756\">Support V3</a>",
+          "text": "Rafael Acuña added this task to Support V3",
+          "type": "system",
+          "resource_subtype": "added_to_project"
+        },
+        {
+          "gid": "1212995629301466",
+          "created_at": "2026-01-27T16:12:49.312Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Buenas tardes. \n\nEste problema ha sido corregido, por favor pruébelo.</body>",
+          "text": "Buenas tardes. \n\nEste problema ha sido corregido, por favor pruébelo.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213004603382531",
+          "created_at": "2026-01-27T19:34:46.877Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Hola Ilya, buenas tardes,\n\nHemos probado y ya aparecen las descripciones en la vista de ADMIN.\n\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213004603382527/72eb98fc0569af9839ea5d62d64625ea?e=1777997493&amp;v=0&amp;t=XLzdcf5cTvtG7ms-AX3W__0qX5XQdHeSts2ikRWqy-Q\" data-asana-gid=\"1213004603382528\" data-asana-type=\"attachment\" data-src-height=\"623\" data-src-width=\"1359\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213004603382527/1213004603382528.TFEGGSlgVJOkTSYt40eO_height640.png?e=1777997493&amp;v=0&amp;t=hDRqOwrV2aos9cjKz363lprJed5uoDiF2KP7iy_THbA\" data-thumbnail-height=\"293\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" />\nPero los esquemas en el PDF generado por ESOFT siguen saliendo incorrectamente, por favor tu ayuda revisando.\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213004603382529/25dd6b8f594f54df3dcad1e92db5ffcd?e=1777997493&amp;v=0&amp;t=8CqKADOgAyXUFGj99HZpIFXmaREiN9rKEK14mIQyTq0\" data-asana-gid=\"1213004603382530\" data-asana-type=\"attachment\" data-src-height=\"491\" data-src-width=\"581\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213004603382529/1213004603382530.DYXSbh2s737O0vHcclXH_height640.png?e=1777997493&amp;v=0&amp;t=JurCOWEvXzG7kjgIyWR40v8_W0UKvAVPTo0fcpDj0dk\" data-thumbnail-height=\"480\" data-thumbnail-width=\"568\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" />\nMuchas gracias, saludos cordiales.</body>",
+          "text": "Hola Ilya, buenas tardes,\n\nHemos probado y ya aparecen las descripciones en la vista de ADMIN.\n\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213004603382528\n\n\nPero los esquemas en el PDF generado por ESOFT siguen saliendo incorrectamente, por favor tu ayuda revisando.\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213004603382530\n\n\nMuchas gracias, saludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1211949930363710",
+          "created_at": "2026-01-28T20:31:57.948Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Buenas tardes. Creo que he solucionado el problema. Puedes probarlo. y antes de la prueba, borra el caché de tu navegador.</body>",
+          "text": "Buenas tardes. Creo que he solucionado el problema. Puedes probarlo. y antes de la prueba, borra el caché de tu navegador.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213019572810011",
+          "created_at": "2026-01-28T20:31:59.225Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211902793311781\">Ilya Troshko</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1211949930363711\">image.png</a>",
+          "text": "Ilya Troshko attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1213019621356628",
+          "created_at": "2026-01-28T20:52:55.022Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Buenas tardes Ilya,\n\nConfirmo que ya se encuentra solucionado. Muchas gracias, saludos.\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213019621356626/cc1025c6560b49925054d501d0dedaab?e=1777997493&amp;v=0&amp;t=Y3QTjP6Sc8epXzB6i5YAMJRt00qZOQSXtuF3TL2gsss\" data-asana-gid=\"1213019621356627\" data-asana-type=\"attachment\" data-src-height=\"484\" data-src-width=\"606\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213019621356626/1213019621356627.TPEVAo6HlCOqqF6S3Zlk_height640.png?e=1777997493&amp;v=0&amp;t=kPUo4LVSpVmyoy24VosdaE_3-zCbPVH6CQuI_zDQK-M\" data-thumbnail-height=\"480\" data-thumbnail-width=\"601\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" /></body>",
+          "text": "Buenas tardes Ilya,\n\nConfirmo que ya se encuentra solucionado. Muchas gracias, saludos.\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213019621356627\n",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213019792344067",
+          "created_at": "2026-01-28T20:53:00.187Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> marked this task complete",
+          "text": "Rafael Acuña marked this task complete",
+          "type": "system",
+          "resource_subtype": "marked_complete"
+        }
+      ],
+      "attachments": [
+        {
+          "gid": "1212819518376548",
+          "created_at": "2026-01-14T21:43:34.120Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819518376547/63b052e799b684c1d657aa4a5333b0ef?e=1777997493&v=0&t=7uOB7qozbPBTIF-7szjNNqov3Phf8TG0nfYlhu72k04",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212819518376548",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819518376547/63b052e799b684c1d657aa4a5333b0ef?e=1777997493&v=0&t=7uOB7qozbPBTIF-7szjNNqov3Phf8TG0nfYlhu72k04"
+        },
+        {
+          "gid": "1212819518376553",
+          "created_at": "2026-01-14T21:43:34.583Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819518376552/de225937eb854e01260d2811d0782fbb?e=1777997493&v=0&t=I9DQF16A1u3UBsJTPI76pulN1ziSlkY9YI9PumNkv-g",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212819518376553",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819518376552/de225937eb854e01260d2811d0782fbb?e=1777997493&v=0&t=I9DQF16A1u3UBsJTPI76pulN1ziSlkY9YI9PumNkv-g"
+        },
+        {
+          "gid": "1212819565907774",
+          "created_at": "2026-01-14T21:43:34.950Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819565907773/f63a41032d6c45497cc6c2db9264a109?e=1777997493&v=0&t=ChpG6qzVJHt5LdWk5dUqFZosalKAESarj_Oo9m_mtkA",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212819565907774",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819565907773/f63a41032d6c45497cc6c2db9264a109?e=1777997493&v=0&t=ChpG6qzVJHt5LdWk5dUqFZosalKAESarj_Oo9m_mtkA"
+        },
+        {
+          "gid": "1213004603382528",
+          "created_at": "2026-01-27T19:24:36.050Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213004603382527/72eb98fc0569af9839ea5d62d64625ea?e=1777997493&v=0&t=XLzdcf5cTvtG7ms-AX3W__0qX5XQdHeSts2ikRWqy-Q",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213004603382528",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213004603382527/72eb98fc0569af9839ea5d62d64625ea?e=1777997493&v=0&t=XLzdcf5cTvtG7ms-AX3W__0qX5XQdHeSts2ikRWqy-Q"
+        },
+        {
+          "gid": "1213004603382530",
+          "created_at": "2026-01-27T19:34:31.093Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213004603382529/25dd6b8f594f54df3dcad1e92db5ffcd?e=1777997493&v=0&t=8CqKADOgAyXUFGj99HZpIFXmaREiN9rKEK14mIQyTq0",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213004603382530",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213004603382529/25dd6b8f594f54df3dcad1e92db5ffcd?e=1777997493&v=0&t=8CqKADOgAyXUFGj99HZpIFXmaREiN9rKEK14mIQyTq0"
+        },
+        {
+          "gid": "1211949930363711",
+          "created_at": "2026-01-28T20:31:59.154Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213019571195273/7b9880a64ebdcb16b930adbcefdd81fc?e=1777997493&v=0&t=uQqiZK9QYRzpTqRKdh4J-HYneqS1821eSO2LNTZCNiI",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1211949930363711",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213019571195273/7b9880a64ebdcb16b930adbcefdd81fc?e=1777997493&v=0&t=uQqiZK9QYRzpTqRKdh4J-HYneqS1821eSO2LNTZCNiI"
+        },
+        {
+          "gid": "1213019621356627",
+          "created_at": "2026-01-28T20:52:34.805Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213019621356626/cc1025c6560b49925054d501d0dedaab?e=1777997493&v=0&t=Y3QTjP6Sc8epXzB6i5YAMJRt00qZOQSXtuF3TL2gsss",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213019621356627",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213019621356626/cc1025c6560b49925054d501d0dedaab?e=1777997493&v=0&t=Y3QTjP6Sc8epXzB6i5YAMJRt00qZOQSXtuF3TL2gsss"
+        }
+      ]
+    },
+    {
+      "gid": "1212819522149423",
+      "assignee": {
+        "gid": "1211902479222042",
+        "email": "ilya.troshko.23@gmail.com",
+        "name": "Ilya Troshko"
+      },
+      "completed": true,
+      "completed_at": "2026-02-10T10:17:26.251Z",
+      "created_at": "2026-01-14T21:43:42.229Z",
+      "created_by": {
+        "gid": "1033723548473",
+        "email": "daniel@cactus.fm",
+        "name": "Daniel Ceballos"
+      },
+      "custom_fields": [
+        {
+          "gid": "1208701352674273",
+          "name": "Estimated time",
+          "display_value": null,
+          "type": "number"
+        },
+        {
+          "gid": "1208636965005473",
+          "name": "Branch name",
+          "display_value": null,
+          "type": "text"
+        },
+        {
+          "gid": "1208637102380062",
+          "enum_value": null,
+          "name": "Status",
+          "display_value": null,
+          "type": "enum"
+        }
+      ],
+      "due_at": null,
+      "due_on": null,
+      "followers": [
+        {
+          "gid": "1033723548473",
+          "email": "daniel@cactus.fm",
+          "name": "Daniel Ceballos"
+        },
+        {
+          "gid": "1205491505248788",
+          "email": "ekovalev@cactus.fm",
+          "name": "Eugene Kovalev"
+        },
+        {
+          "gid": "1210906081083311",
+          "email": null,
+          "name": "Private User"
+        },
+        {
+          "gid": "1206901807415907",
+          "email": null,
+          "name": "Private User"
+        },
+        {
+          "gid": "1211009102284123",
+          "email": "rafaeld.acuna@energiasolarsa.com",
+          "name": "Rafael Acuña"
+        },
+        {
+          "gid": "1211902479222042",
+          "email": "ilya.troshko.23@gmail.com",
+          "name": "Ilya Troshko"
+        }
+      ],
+      "memberships": [
+        {
+          "project": {
+            "gid": "1207248643059756",
+            "name": "Support V3"
+          },
+          "section": {
+            "gid": "1207248643059757",
+            "name": "Untitled section"
+          }
+        }
+      ],
+      "modified_at": "2026-02-10T10:17:26.344Z",
+      "name": "PARÁMETROS DIGITADOS - ESOFT V3",
+      "notes": "Buen día Equipo,\n\nTenemos una consulta con respecto a los parámetros digitados en ESOFT,\n\nActualmente estamos utilizando un parámetro de este tipo para poder definir la altura del TRANSOM en los sistemas batientes como la ES-9000 o la ES-LG525. Este funciona bien y hemos podido configurar el transom de forma correcta en ambos sistemas.\n\nSin embargo, tenemos 2 puntos que nos gustaría revisar con ustedes:\n\n1. Valores asignados.\n\nLos valores mínimos, máximos y por default asignados al parámetro dentro de los ASSEMBLIES no se están guardando. El parámetro conserva los valores que se le asignaron en la sección de PARAMETERS.\n\nPor ejemplo, el parámetro PANEL TRANSOM HEIGHT (IN) tiene los siguientes valores asignados.\n\nAl momento de agregar el parámetro a un assembly, este conserva estos valores por defecto.\nSin embargo, al querer modificarlos para asignar unos valores específicos para el sistema , el programa no está guardando la información.\nYa que, al ocultar y desocultar la sección de NUMERICAL CONFIGURATIONS, se vuelven a asignar los valores por defecto.\n\n2. Valores mínimos y máximos variables.\n\nOtro tema con respecto a estos parámetros es que necesitamos definir los valores máximos y mínimos de acuerdo a condiciones específicas del sistema.\n\nPor ejemplo, el tamaño del transom para el sistema ES-9000 es variable dependiendo del tipo de FRAME. Tiene una medida máxima para FRAME ES9000, y otra medida máxima para FRAME ES8000 y ES8000T.\n\nSin embargo, actualmente solo podemos definir un valor máximo para el parámetro. ¿Hay alguna forma de poder definir esto?\n\nSe podría utilizar lo desarrollado en el correo \"Min/Max Display Rule Formulas\" para definir los valores máximos y mínimos de los parámetros digitados por medio de fórmulas (lo cual nos ayudaría también para los sistemas SHAPES).\n\nPor favor su ayuda revisando estos 2 puntos, muchas gracias.\n\nSaludos cordiales.\n\nRAFAEL ACUÑA VASQUEZ\n\nPROFESIONAL DE DESARROLLO\n\n+57 (605) 3664600 Ext. 529\n\nrafaeld.acuna@energiasolarsa.com  <mailto:gabriel.rios@energiasolarsa.com>\n\nAv. Circunvalar a 100 mts de la Vía 40\nBarranquilla, Colombia\n<https://www.facebook.com/ESWindows/>  <https://twitter.com/ESWindows>  <https://www.instagram.com/eswindows_/>  <https://www.youtube.com/channel/UCuIMIgRMkdMVw2U3HmD2b7A>  <https://www.linkedin.com/company/eswindows/>\n\nLEGAL DISCLAIMER: This communication contains legally privileged or confidential information. Please note that any dissemination, distribution or copying is strictly prohibited. If you are not the intended recipient, are not authorized to review or use this e-mail or have received this communication by mistake, please notify the sender and destroy it. This communication only reflects the opinion of its sender and does not necessarily represent the official opinion of Tecnoglass/ESWindows, its affiliates or its executives.\nThis email may have been sent outside of the recipient's working hours. We invite you to respond to it during your workday, in order to promote a work-life balance.\n\nAVISO LEGAL: Esta comunicación contiene información legalmente privilegiada o confidencial. Tenga en cuenta que toda difusión, distribución o copia está estrictamente prohibida. Si usted no es el destinatario, no está autorizado a revisar o utilizar este correo electrónico o ha recibido esta comunicación por error, por favor notifique al remitente y destrúyalo. Esta comunicación sólo refleja la opinión de su remitente y no necesariamente representa la opinión oficial de Tecnoglass/ESWindows, sus afiliadas o directivos.\nEste correo pudo ser enviado fuera del horario laboral de quién lo recibe. Te invitamos a responderlo durante tu jornada de trabajo, de esta manera fomentaremos un equilibrio entre la vida personal y laboral.",
+      "num_subtasks": 0,
+      "parent": null,
+      "permalink_url": "https://app.asana.com/1/1033723548478/project/1207248643059756/task/1212819522149423",
+      "projects": [
+        {
+          "gid": "1207248643059756",
+          "name": "Support V3"
+        }
+      ],
+      "tags": [],
+      "resource_subtype": "default_task",
+      "stories": [
+        {
+          "gid": "1212819522149426",
+          "created_at": "2026-01-14T21:43:42.307Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> added this task to <a href=\"https://app.asana.com/1/1033723548478/project/1206803582627430\">ESW Support</a>",
+          "text": "Daniel Ceballos added this task to ESW Support",
+          "type": "system",
+          "resource_subtype": "added_to_project"
+        },
+        {
+          "gid": "1212819522153379",
+          "created_at": "2026-01-14T21:43:43.263Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212819522153378\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212819522153384",
+          "created_at": "2026-01-14T21:43:43.574Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212819522153383\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212819522153389",
+          "created_at": "2026-01-14T21:43:43.852Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212819522153388\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212819522153394",
+          "created_at": "2026-01-14T21:43:44.147Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212819522153393\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212819550460759",
+          "created_at": "2026-01-14T21:43:44.427Z",
+          "created_by": {
+            "gid": "1033723548473",
+            "email": "daniel@cactus.fm",
+            "name": "Daniel Ceballos"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1033723548479\">Daniel Ceballos</a></b> attached <a href=\"https://app.asana.com/app/asana/-/get_asset?asset_id=1212819550460758\">image.png</a>",
+          "text": "Daniel Ceballos attached image.png",
+          "type": "system",
+          "resource_subtype": "attachment_added"
+        },
+        {
+          "gid": "1212819550465760",
+          "created_at": "2026-01-14T21:45:16.366Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> removed from <a href=\"https://app.asana.com/1/1033723548478/project/1206803582627430\">ESW Support</a>",
+          "text": "Rafael Acuña removed from ESW Support",
+          "type": "system",
+          "resource_subtype": "removed_from_project"
+        },
+        {
+          "gid": "1212819577572433",
+          "created_at": "2026-01-14T21:45:19.075Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211009102284121\">Rafael Acuña</a></b> added this task to <a href=\"https://app.asana.com/1/1033723548478/project/1207248643059756\">Support V3</a>",
+          "text": "Rafael Acuña added this task to Support V3",
+          "type": "system",
+          "resource_subtype": "added_to_project"
+        },
+        {
+          "gid": "1212918909557728",
+          "created_at": "2026-01-26T13:36:17.272Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211902793311781\">Ilya Troshko</a></b> changed the description",
+          "text": "Ilya Troshko changed the description",
+          "type": "system",
+          "resource_subtype": "notes_changed"
+        },
+        {
+          "gid": "1213079539338895",
+          "created_at": "2026-02-02T14:58:46.546Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Buenas tardes. \nHe corregido el primer punto. Ya he corregido el segundo, y me gustaría saber si queda como esperaba. Si es así, procederé con la implementación de SHAPES.\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213079539338893/4184640efb90930bb3ffc50ded62cae4?e=1777997494&amp;v=0&amp;t=YcaC8YqiIVIga_DnkX5gCIXRB9LI8nFln-neaGY_XY4\" data-asana-gid=\"1213079539338894\" data-asana-type=\"attachment\" data-src-height=\"267\" data-src-width=\"1586\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213079539338893/1213079539338894.7mhta3P7RXdWBy8LXELF_height640.png?e=1777997494&amp;v=0&amp;t=8YiMcZFmCkQaeBu_ByTRIYSLI3RK9VyWw5NqKuzf8rs\" data-thumbnail-height=\"108\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" /><img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213079539338891/b8702d29bd661bb9865ffa9da26ee837?e=1777997494&amp;v=0&amp;t=K5tTYna3vx7rvyjHaii_z0CL6hx-7VjfhT8mDNqu12w\" data-asana-gid=\"1213079539338892\" data-asana-type=\"attachment\" data-src-height=\"455\" data-src-width=\"958\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213079539338891/1213079539338892.wj6Due0YpqCtsJ56qVxu_height640.png?e=1777997494&amp;v=0&amp;t=hygS81Usd4I_zTzqj39yIaFCBilYejgrbAM0rk2CvK0\" data-thumbnail-height=\"304\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" /><img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213079539338889/4e4eb4ba9f840f98e12ec5637aa8c3d6?e=1777997494&amp;v=0&amp;t=E3hXAjlBZH7Tv3HJvVNhG_9MKfYCeEy_q55ir2CJgBw\" data-asana-gid=\"1213079539338890\" data-asana-type=\"attachment\" data-src-height=\"470\" data-src-width=\"957\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213079539338889/1213079539338890.POuOpX2E3Hr7meiXhUv7_height640.png?e=1777997494&amp;v=0&amp;t=WHJ0eqafu6DZ2FSXnnbQk1qy8o940-Z161b6UnXcRMM\" data-thumbnail-height=\"314\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" /><img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213079539338887/506ed5936eb380ccea72f3277a60b240?e=1777997494&amp;v=0&amp;t=7e01FCPJT0Bra7uDLNpQGOCqEbua6vsPtGzJ9AJLXvo\" data-asana-gid=\"1213079539338888\" data-asana-type=\"attachment\" data-src-height=\"456\" data-src-width=\"946\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213079539338887/1213079539338888.3BWWFXXFS749sA9PcUoO_height640.png?e=1777997494&amp;v=0&amp;t=5PuQXQcAS_9FKAHAogxBsQP39WbH_gD9NvjSJE9xBxY\" data-thumbnail-height=\"308\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" /></body>",
+          "text": "Buenas tardes. \nHe corregido el primer punto. Ya he corregido el segundo, y me gustaría saber si queda como esperaba. Si es así, procederé con la implementación de SHAPES.\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213079539338894\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213079539338892\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213079539338890\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213079539338888\n",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213123729419092",
+          "created_at": "2026-02-04T13:37:54.580Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Buenos días Ilya, perdona la demora.\n\nJusto así es como queremos el primer punto, muchas gracias.\n\nQuedamos atentos para cuando quede implementado y poder revisar,\n\nSaludos.</body>",
+          "text": "Buenos días Ilya, perdona la demora.\n\nJusto así es como queremos el primer punto, muchas gracias.\n\nQuedamos atentos para cuando quede implementado y poder revisar,\n\nSaludos.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213135446740869",
+          "created_at": "2026-02-05T15:16:52.023Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Buenos días.\n\n¿Podrían probar esta funcionalidad en el servidor de staging y decirnos si todo está correcto para que podamos llevarlo a producción?\n\nSaludos cordiales.</body>",
+          "text": "Buenos días.\n\n¿Podrían probar esta funcionalidad en el servidor de staging y decirnos si todo está correcto para que podamos llevarlo a producción?\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213096728277097",
+          "created_at": "2026-02-05T16:59:52.662Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Hola Ilya,\n\nHemos probado en Staging con la configuración ES-9000 DOUBLE LEAF versión 8, con las siguientes opciones y valores.\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277079/b682ed421b2dea76cd7ea3f1e8917052?e=1777997494&amp;v=0&amp;t=4hBBMbw4eXpbV0tpK6ORkx7YEqmdn65_SboRobpVvLE\" data-asana-gid=\"1213096728277080\" data-asana-type=\"attachment\" data-src-height=\"255\" data-src-width=\"1101\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277079/1213096728277080.ZRdZ9piJTonO3orYOz6T_height640.png?e=1777997494&amp;v=0&amp;t=lqpjUbt1NcFc1eZuLp0CajY_tD21eiRBMOy6ntZl2pg\" data-thumbnail-height=\"148\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" />Vemos que, si se reflejan correctamente los rangos de acuerdo al parámetro seleccionado, y van cambiando a medida que se modifica el parámetro de TRANSOM.\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277081/9f26979cb07079763e846d76e6fc349d?e=1777997494&amp;v=0&amp;t=tiZNcoBFgCvfMU4Gxl3KU_zT7U59-E5-Bp1i-qYD1bE\" data-asana-gid=\"1213096728277082\" data-asana-type=\"attachment\" data-src-height=\"615\" data-src-width=\"1225\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277081/1213096728277082.DMQMBDXjEAti6lNcqON3_height640.png?e=1777997494&amp;v=0&amp;t=fvl7cZu0-74sniVOb07suF0HUuDblp5Y-gcm317Ltsk\" data-thumbnail-height=\"321\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" /><img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277083/e25e3aa4c63ac37e0a2c72cc07a31b80?e=1777997494&amp;v=0&amp;t=cmKtDp9H_Cg8JuPJPpIy-RWwDwqzYWDZcb8YL_Z3RB0\" data-asana-gid=\"1213096728277084\" data-asana-type=\"attachment\" data-src-height=\"602\" data-src-width=\"1195\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277083/1213096728277084.GpS5YQxrbZDwQQjEHGYU_height640.png?e=1777997494&amp;v=0&amp;t=u49f4SJfqjk9kCJ6fghFw4l-yz1JQkwkVGbe2D2WkFA\" data-thumbnail-height=\"322\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" /><img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277085/90e449391ad188b01f14edf1657e758f?e=1777997494&amp;v=0&amp;t=iS_qDMNdYw2shvJRCXp3iZUy1EFSIS90vRPcXSaium4\" data-asana-gid=\"1213096728277086\" data-asana-type=\"attachment\" data-src-height=\"593\" data-src-width=\"1205\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277085/1213096728277086.AJ7L0sDo3c7YQShnBhNv_height640.png?e=1777997494&amp;v=0&amp;t=NMzCglk1FB4FxNq6p6p5c11RHNx59z03jHPGG_akeeU\" data-thumbnail-height=\"315\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" />Sin embargo, detectamos 2 puntos que creo que se debe corregir.\n1. El valor por defecto asignado no se está reflejando, el valor por defecto que el programa utiliza es el general digitado en la sección de PARAMETERS.\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277089/1e80e6eadb6699529b7dc08dab52a308?e=1777997494&amp;v=0&amp;t=Q6lBbaqEKEzbN2TqwRHmpg326IAM1Wk4DGgddSWQKfQ\" data-asana-gid=\"1213096728277090\" data-asana-type=\"attachment\" data-src-height=\"271\" data-src-width=\"637\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277089/1213096728277090.LtJTyydj678QhxElFss7_height640.png?e=1777997494&amp;v=0&amp;t=-fupWfAVe-wiTtTydhf_pQy9Y90YtVfgQzK-Zxz0oxM\" data-thumbnail-height=\"271\" data-thumbnail-width=\"637\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" />\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277087/3e4b791e490886d6e2dd4b29a5429313?e=1777997494&amp;v=0&amp;t=vt1gXxPIE7ir2kzcagLTYGmSFXGSm6gQgFy4JCTZI4U\" data-asana-gid=\"1213096728277088\" data-asana-type=\"attachment\" data-src-height=\"602\" data-src-width=\"1212\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277087/1213096728277088.yTLMs0Aux5HZxkXYKqj8_height640.png?e=1777997494&amp;v=0&amp;t=6G9OlevTE-IWT5eGkZpIo7fsftVxYhTcD9_I5QCTVxQ\" data-thumbnail-height=\"318\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" /><img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277091/af3c730ee43d408e43f336178d076af3?e=1777997494&amp;v=0&amp;t=3M7LLpy1Q6OQ6TnwLuIrT7p2ci2WpI8AIxh54_ut8pI\" data-asana-gid=\"1213096728277092\" data-asana-type=\"attachment\" data-src-height=\"251\" data-src-width=\"1059\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277091/1213096728277092.izdJ3nqbfCXQe3cRTEQF_height640.png?e=1777997494&amp;v=0&amp;t=6mmVPGWO4eCyYZDhjfpSUXJtHqfXWYuc6XORGqfX2r8\" data-thumbnail-height=\"152\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" />2. Hace falta el botón seleccionable que nos permita borrar líneas ingresadas en la sección de NUMERICAL CONFIGURATION. Esto es porque una vez creada una línea en esta sección no podemos eliminarla, y al intentar borrar el parámetro completo se genera un error si aún tiene información en esta sección.\n<img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277093/7fab7f647f1b45ab88543fe95217abbe?e=1777997494&amp;v=0&amp;t=sy-HqSk1Xh8PbyaccLOkYoztqnJ4DdO2SIdBe8Dr76s\" data-asana-gid=\"1213096728277094\" data-asana-type=\"attachment\" data-src-height=\"332\" data-src-width=\"1296\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277093/1213096728277094.jloFhHyFJkywLFTZGyvJ_height640.png?e=1777997494&amp;v=0&amp;t=0HbjAVGjR7GXOnd3ON6qDA0pqQVDq9j8ulcmAGamDuE\" data-thumbnail-height=\"164\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" /><img src=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277095/47e86e3e2c66efe0852916f3c6132589?e=1777997494&amp;v=0&amp;t=Mc-8nRuBB6iNi8NnLHGtJEJw5iA1sEXE6yGaTder_2Y\" data-asana-gid=\"1213096728277096\" data-asana-type=\"attachment\" data-src-height=\"668\" data-src-width=\"1316\" data-thumbnail-url=\"https://asanausercontent.com/us1/assets/1033723548478/1213096728277095/1213096728277096.G3k8KQjtX2xDcmItpSYg_height640.png?e=1777997494&amp;v=0&amp;t=gy6F345b-FOZKi1JvfOzg8P5wEyw_panJ9kCYnMkDoU\" data-thumbnail-height=\"325\" data-thumbnail-width=\"640\" alt=\"image.png\" style=\"display:block;max-width:100%;margin-left:auto;margin-right:auto\" />Quedamos atentos, muchas gracias.\n\nSaludos cordiales.</body>",
+          "text": "Hola Ilya,\n\nHemos probado en Staging con la configuración ES-9000 DOUBLE LEAF versión 8, con las siguientes opciones y valores.\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277080\n\nVemos que, si se reflejan correctamente los rangos de acuerdo al parámetro seleccionado, y van cambiando a medida que se modifica el parámetro de TRANSOM.\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277082\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277084\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277086\n\nSin embargo, detectamos 2 puntos que creo que se debe corregir.\n1. El valor por defecto asignado no se está reflejando, el valor por defecto que el programa utiliza es el general digitado en la sección de PARAMETERS.\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277090\n\n\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277088\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277092\n\n2. Hace falta el botón seleccionable que nos permita borrar líneas ingresadas en la sección de NUMERICAL CONFIGURATION. Esto es porque una vez creada una línea en esta sección no podemos eliminarla, y al intentar borrar el parámetro completo se genera un error si aún tiene información en esta sección.\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277094\n\nhttps://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277096\n\nQuedamos atentos, muchas gracias.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1211949930363715",
+          "created_at": "2026-02-06T15:07:33.666Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Buenas tardes.\n\nHe corregido los dos puntos que mencionó, ya puede revisarlos en el entorno de staging.\n\nSaludos cordiales.</body>",
+          "text": "Buenas tardes.\n\nHe corregido los dos puntos que mencionó, ya puede revisarlos en el entorno de staging.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213156418193298",
+          "created_at": "2026-02-06T19:36:46.936Z",
+          "created_by": {
+            "gid": "1211009102284123",
+            "email": "rafaeld.acuna@energiasolarsa.com",
+            "name": "Rafael Acuña"
+          },
+          "html_text": "<body>Hola Ilya,\n\nConfirmo que ambos puntos ya fueron solucionados, muchas gracias.\n\nQuedamos atentos para cuando podamos hacer pruebas en ambiente productivo.\n\nSaludos cordiales.</body>",
+          "text": "Hola Ilya,\n\nConfirmo que ambos puntos ya fueron solucionados, muchas gracias.\n\nQuedamos atentos para cuando podamos hacer pruebas en ambiente productivo.\n\nSaludos cordiales.",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213212999890906",
+          "created_at": "2026-02-10T10:14:40.743Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211902793311781\">Ilya Troshko</a></b> assigned to you",
+          "text": "Ilya Troshko assigned to you",
+          "type": "system",
+          "resource_subtype": "assigned"
+        },
+        {
+          "gid": "1213212650237392",
+          "created_at": "2026-02-10T10:17:12.226Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<body>Buenas tardes.\nPronto estará en producción.\n¡Les deseo lo mejor!\n<a href=\"https://github.com/cactuscorp/assemblies/pull/851\">https://github.com/cactuscorp/assemblies/pull/851</a></body>",
+          "text": "Buenas tardes.\nPronto estará en producción.\n¡Les deseo lo mejor!\nhttps://github.com/cactuscorp/assemblies/pull/851",
+          "type": "comment",
+          "resource_subtype": "comment_added"
+        },
+        {
+          "gid": "1213213018761214",
+          "created_at": "2026-02-10T10:17:24.361Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211902793311781\">Ilya Troshko</a></b> completed this task",
+          "text": "Ilya Troshko completed this task",
+          "type": "system",
+          "resource_subtype": "marked_complete"
+        },
+        {
+          "gid": "1213213021099153",
+          "created_at": "2026-02-10T10:17:25.055Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211902793311781\">Ilya Troshko</a></b> marked incomplete",
+          "text": "Ilya Troshko marked incomplete",
+          "type": "system",
+          "resource_subtype": "marked_incomplete"
+        },
+        {
+          "gid": "1213213021096586",
+          "created_at": "2026-02-10T10:17:26.275Z",
+          "created_by": {
+            "gid": "1211902479222042",
+            "email": "ilya.troshko.23@gmail.com",
+            "name": "Ilya Troshko"
+          },
+          "html_text": "<b><a href=\"https://app.asana.com/0/profile/1211902793311781\">Ilya Troshko</a></b> completed this task",
+          "text": "Ilya Troshko completed this task",
+          "type": "system",
+          "resource_subtype": "marked_complete"
+        }
+      ],
+      "attachments": [
+        {
+          "gid": "1212819522153378",
+          "created_at": "2026-01-14T21:43:43.232Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819522153377/0d57756907f44df6b50d4f1aa8d84507?e=1777997494&v=0&t=6liAZTJFggs7D93iMhP_85rwRRGYEcZdXnndJ4sLe5k",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212819522153378",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819522153377/0d57756907f44df6b50d4f1aa8d84507?e=1777997494&v=0&t=6liAZTJFggs7D93iMhP_85rwRRGYEcZdXnndJ4sLe5k"
+        },
+        {
+          "gid": "1212819522153383",
+          "created_at": "2026-01-14T21:43:43.544Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819522153382/f77fc82f138162f12b5d09058a4640f5?e=1777997494&v=0&t=39VXMiwzfpIa0cmUe6-IutvcY8UsO0jAh3elMQfdfvk",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212819522153383",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819522153382/f77fc82f138162f12b5d09058a4640f5?e=1777997494&v=0&t=39VXMiwzfpIa0cmUe6-IutvcY8UsO0jAh3elMQfdfvk"
+        },
+        {
+          "gid": "1212819522153388",
+          "created_at": "2026-01-14T21:43:43.822Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819522153387/c4b0d1501a80e5e0a4b532aceeabd0d7?e=1777997494&v=0&t=iyqpuyHya6uU5WbE73EKZ_ojUVhn9-x2waeriSnAjfM",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212819522153388",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819522153387/c4b0d1501a80e5e0a4b532aceeabd0d7?e=1777997494&v=0&t=iyqpuyHya6uU5WbE73EKZ_ojUVhn9-x2waeriSnAjfM"
+        },
+        {
+          "gid": "1212819522153393",
+          "created_at": "2026-01-14T21:43:44.115Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819522153392/f1e95731eb3ba3bf7b6d0024af77ab37?e=1777997494&v=0&t=vwW6GnSlymtuM2jLwzyvllpriewSO8yokUNw2M_AByU",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212819522153393",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819522153392/f1e95731eb3ba3bf7b6d0024af77ab37?e=1777997494&v=0&t=vwW6GnSlymtuM2jLwzyvllpriewSO8yokUNw2M_AByU"
+        },
+        {
+          "gid": "1212819550460758",
+          "created_at": "2026-01-14T21:43:44.396Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819522153397/03166d3462f9b6953bd1cbf5536eb194?e=1777997494&v=0&t=XCC-MhWOkG-xQF5vZHM2bcvPpS94Yap4KT8R1K3fBjs",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1212819550460758",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1212819522153397/03166d3462f9b6953bd1cbf5536eb194?e=1777997494&v=0&t=XCC-MhWOkG-xQF5vZHM2bcvPpS94Yap4KT8R1K3fBjs"
+        },
+        {
+          "gid": "1213079539338888",
+          "created_at": "2026-02-02T14:56:05.591Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213079539338887/506ed5936eb380ccea72f3277a60b240?e=1777997494&v=0&t=7e01FCPJT0Bra7uDLNpQGOCqEbua6vsPtGzJ9AJLXvo",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213079539338888",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213079539338887/506ed5936eb380ccea72f3277a60b240?e=1777997494&v=0&t=7e01FCPJT0Bra7uDLNpQGOCqEbua6vsPtGzJ9AJLXvo"
+        },
+        {
+          "gid": "1213079539338890",
+          "created_at": "2026-02-02T14:56:39.182Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213079539338889/4e4eb4ba9f840f98e12ec5637aa8c3d6?e=1777997494&v=0&t=E3hXAjlBZH7Tv3HJvVNhG_9MKfYCeEy_q55ir2CJgBw",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213079539338890",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213079539338889/4e4eb4ba9f840f98e12ec5637aa8c3d6?e=1777997494&v=0&t=E3hXAjlBZH7Tv3HJvVNhG_9MKfYCeEy_q55ir2CJgBw"
+        },
+        {
+          "gid": "1213079539338892",
+          "created_at": "2026-02-02T14:56:50.227Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213079539338891/b8702d29bd661bb9865ffa9da26ee837?e=1777997494&v=0&t=K5tTYna3vx7rvyjHaii_z0CL6hx-7VjfhT8mDNqu12w",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213079539338892",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213079539338891/b8702d29bd661bb9865ffa9da26ee837?e=1777997494&v=0&t=K5tTYna3vx7rvyjHaii_z0CL6hx-7VjfhT8mDNqu12w"
+        },
+        {
+          "gid": "1213079539338894",
+          "created_at": "2026-02-02T14:57:01.903Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213079539338893/4184640efb90930bb3ffc50ded62cae4?e=1777997494&v=0&t=YcaC8YqiIVIga_DnkX5gCIXRB9LI8nFln-neaGY_XY4",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213079539338894",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213079539338893/4184640efb90930bb3ffc50ded62cae4?e=1777997494&v=0&t=YcaC8YqiIVIga_DnkX5gCIXRB9LI8nFln-neaGY_XY4"
+        },
+        {
+          "gid": "1213096728277080",
+          "created_at": "2026-02-05T16:38:56.065Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277079/b682ed421b2dea76cd7ea3f1e8917052?e=1777997494&v=0&t=4hBBMbw4eXpbV0tpK6ORkx7YEqmdn65_SboRobpVvLE",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277080",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277079/b682ed421b2dea76cd7ea3f1e8917052?e=1777997494&v=0&t=4hBBMbw4eXpbV0tpK6ORkx7YEqmdn65_SboRobpVvLE"
+        },
+        {
+          "gid": "1213096728277082",
+          "created_at": "2026-02-05T16:41:43.897Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277081/9f26979cb07079763e846d76e6fc349d?e=1777997494&v=0&t=tiZNcoBFgCvfMU4Gxl3KU_zT7U59-E5-Bp1i-qYD1bE",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277082",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277081/9f26979cb07079763e846d76e6fc349d?e=1777997494&v=0&t=tiZNcoBFgCvfMU4Gxl3KU_zT7U59-E5-Bp1i-qYD1bE"
+        },
+        {
+          "gid": "1213096728277084",
+          "created_at": "2026-02-05T16:42:14.733Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277083/e25e3aa4c63ac37e0a2c72cc07a31b80?e=1777997494&v=0&t=cmKtDp9H_Cg8JuPJPpIy-RWwDwqzYWDZcb8YL_Z3RB0",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277084",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277083/e25e3aa4c63ac37e0a2c72cc07a31b80?e=1777997494&v=0&t=cmKtDp9H_Cg8JuPJPpIy-RWwDwqzYWDZcb8YL_Z3RB0"
+        },
+        {
+          "gid": "1213096728277086",
+          "created_at": "2026-02-05T16:42:42.995Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277085/90e449391ad188b01f14edf1657e758f?e=1777997494&v=0&t=iS_qDMNdYw2shvJRCXp3iZUy1EFSIS90vRPcXSaium4",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277086",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277085/90e449391ad188b01f14edf1657e758f?e=1777997494&v=0&t=iS_qDMNdYw2shvJRCXp3iZUy1EFSIS90vRPcXSaium4"
+        },
+        {
+          "gid": "1213096728277088",
+          "created_at": "2026-02-05T16:47:47.677Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277087/3e4b791e490886d6e2dd4b29a5429313?e=1777997494&v=0&t=vt1gXxPIE7ir2kzcagLTYGmSFXGSm6gQgFy4JCTZI4U",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277088",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277087/3e4b791e490886d6e2dd4b29a5429313?e=1777997494&v=0&t=vt1gXxPIE7ir2kzcagLTYGmSFXGSm6gQgFy4JCTZI4U"
+        },
+        {
+          "gid": "1213096728277090",
+          "created_at": "2026-02-05T16:48:12.621Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277089/1e80e6eadb6699529b7dc08dab52a308?e=1777997494&v=0&t=Q6lBbaqEKEzbN2TqwRHmpg326IAM1Wk4DGgddSWQKfQ",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277090",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277089/1e80e6eadb6699529b7dc08dab52a308?e=1777997494&v=0&t=Q6lBbaqEKEzbN2TqwRHmpg326IAM1Wk4DGgddSWQKfQ"
+        },
+        {
+          "gid": "1213096728277092",
+          "created_at": "2026-02-05T16:49:24.328Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277091/af3c730ee43d408e43f336178d076af3?e=1777997494&v=0&t=3M7LLpy1Q6OQ6TnwLuIrT7p2ci2WpI8AIxh54_ut8pI",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277092",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277091/af3c730ee43d408e43f336178d076af3?e=1777997494&v=0&t=3M7LLpy1Q6OQ6TnwLuIrT7p2ci2WpI8AIxh54_ut8pI"
+        },
+        {
+          "gid": "1213096728277094",
+          "created_at": "2026-02-05T16:53:58.808Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277093/7fab7f647f1b45ab88543fe95217abbe?e=1777997494&v=0&t=sy-HqSk1Xh8PbyaccLOkYoztqnJ4DdO2SIdBe8Dr76s",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277094",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277093/7fab7f647f1b45ab88543fe95217abbe?e=1777997494&v=0&t=sy-HqSk1Xh8PbyaccLOkYoztqnJ4DdO2SIdBe8Dr76s"
+        },
+        {
+          "gid": "1213096728277096",
+          "created_at": "2026-02-05T16:58:44.919Z",
+          "download_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277095/47e86e3e2c66efe0852916f3c6132589?e=1777997494&v=0&t=Mc-8nRuBB6iNi8NnLHGtJEJw5iA1sEXE6yGaTder_2Y",
+          "host": "asana",
+          "name": "image.png",
+          "permanent_url": "https://app.asana.com/app/asana/-/get_asset?asset_id=1213096728277096",
+          "resource_subtype": "asana",
+          "view_url": "https://asanausercontent.com/us1/assets/1033723548478/1213096728277095/47e86e3e2c66efe0852916f3c6132589?e=1777997494&v=0&t=Mc-8nRuBB6iNi8NnLHGtJEJw5iA1sEXE6yGaTder_2Y"
+        }
+      ]
+    }
+  ]
+}

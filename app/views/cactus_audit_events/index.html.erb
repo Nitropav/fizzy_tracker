@@ -1,0 +1,84 @@
+<% @page_title = "Cactus Audit Log" %>
+
+<% content_for :header do %>
+  <div class="header__actions header__actions--start">
+    <%= back_link_to "Cactus Home", cactus_home_path, "keydown.left@document->hotkey#click keydown.esc@document->hotkey#click" %>
+  </div>
+<% end %>
+
+<section class="panel panel--wide center flex flex-column gap">
+  <header class="flex flex-wrap align-center justify-between gap">
+    <div>
+      <h1 class="txt-x-large font-weight-black margin-none">Cactus Audit Log</h1>
+      <p class="txt-small txt-subtle margin-none">
+        Account-scoped record of high-value admin, workflow, import, export, and integration actions.
+      </p>
+    </div>
+
+    <%= form_with url: cactus_audit_events_path, method: :get, class: "flex flex-wrap align-center gap-half txt-small" do |form| %>
+      <%= form.select :event_action,
+            options_for_select(@actions.map { [ it.humanize, it ] }, @event_action),
+            { include_blank: "All actions" },
+            class: "input" %>
+      <%= form.submit "Filter", class: "btn" %>
+      <%= link_to "Clear", cactus_audit_events_path, class: "btn" if @event_action.present? %>
+    <% end %>
+  </header>
+
+  <% if @audit_events.any? %>
+    <%= with_manual_pagination :audit_events, @page do %>
+      <div class="overflow-auto">
+        <table class="full-width">
+          <thead>
+            <tr>
+              <th class="txt-align-start">Time</th>
+              <th class="txt-align-start">Action</th>
+              <th class="txt-align-start">User</th>
+              <th class="txt-align-start">Record</th>
+              <th class="txt-align-start">Request</th>
+              <th class="txt-align-start">Metadata</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @audit_events.each do |audit_event| %>
+              <tr>
+                <td><%= local_datetime_tag audit_event.created_at, style: :shortdate %></td>
+                <td><span class="badge"><%= audit_event.action.humanize %></span></td>
+                <td><%= audit_event.user&.name || "System" %></td>
+                <td>
+                  <% if audit_event.auditable_type.present? %>
+                    <%= audit_event.auditable_type.demodulize %>
+                    <span class="txt-subtle">#<%= audit_event.auditable_id %></span>
+                  <% else %>
+                    <span class="txt-subtle">N/A</span>
+                  <% end %>
+                </td>
+                <td class="txt-small">
+                  <div><%= audit_event.ip_address.presence || "N/A" %></div>
+                  <% if audit_event.request_id.present? %>
+                    <code><%= audit_event.request_id %></code>
+                  <% end %>
+                </td>
+                <td>
+                  <% if audit_event.metadata.present? %>
+                    <details class="txt-small">
+                      <summary>View</summary>
+                      <pre><%= JSON.pretty_generate(audit_event.metadata) %></pre>
+                    </details>
+                  <% else %>
+                    <span class="txt-subtle">None</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  <% else %>
+    <section class="panel border flex flex-column gap-half">
+      <h2 class="txt-large margin-none">No audit events yet</h2>
+      <p class="txt-small txt-subtle margin-none">Critical Cactus workflow actions will appear here as users work.</p>
+    </section>
+  <% end %>
+</section>

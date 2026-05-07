@@ -16,6 +16,17 @@ class Boards::BugReportsController < ApplicationController
       return
     end
 
+    AuditEvent.record(
+      action: "issue.created",
+      auditable: @card,
+      metadata: {
+        card_id: @card.id,
+        project_id: @board.id,
+        gate_one_complete: @resolution_record.gate_one_complete?,
+        workflow_state: @card.cactus_workflow_state
+      }
+    )
+
     redirect_to @card, notice: issue_creator.creation_notice
   end
 

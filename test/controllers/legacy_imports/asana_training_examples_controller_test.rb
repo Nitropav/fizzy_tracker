@@ -66,7 +66,7 @@ class LegacyImports::AsanaTrainingExamplesControllerTest < ActionDispatch::Integ
 
   test "non import users cannot generate legacy training examples" do
     @record.update!(gate_one_attrs.merge(gate_two_attrs))
-    logout_and_sign_in_as :david
+    users(:kevin).update!(role: :member, cactus_role: :developer)
 
     assert_no_difference -> { TrainingExample.count } do
       post legacy_imports_asana_issue_training_example_path(@record)
@@ -77,12 +77,16 @@ class LegacyImports::AsanaTrainingExamplesControllerTest < ActionDispatch::Integ
 
   private
     def import_asana_tasks
-      post legacy_imports_asana_path, params: {
-        board_id: @board.id,
-        file: fixture_file_upload("asana_tasks.json", "application/json")
-      }
+      perform_enqueued_jobs do
+        post legacy_imports_asana_path, params: {
+          board_id: @board.id,
+          file: fixture_file_upload("asana_tasks.json", "application/json")
+        }
+      end
 
-      assert_response :created
+      asana_import = LegacyImports::AsanaImport.latest_first.first
+      assert_redirected_to legacy_imports_asana_import_path(asana_import)
+      assert_predicate asana_import.reload, :completed?
     end
 
     def gate_one_attrs

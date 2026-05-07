@@ -171,6 +171,8 @@ module LegacyImports
       def metadata_from(task)
         task.slice(
           "gid",
+          "name",
+          "notes",
           "permalink_url",
           "completed",
           "completed_at",

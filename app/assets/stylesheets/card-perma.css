@@ -457,12 +457,18 @@
   .card__legacy-attachments {
     display: grid;
     gap: var(--block-space-half);
-    list-style-position: inside;
+    grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+    list-style: none;
     padding-inline-start: 0;
   }
 
   .card__legacy-attachment {
     min-inline-size: 0;
+  }
+
+  .card__legacy-attachment-preview-link {
+    display: block;
+    max-inline-size: 100%;
   }
 
   .card__legacy-attachment-preview {

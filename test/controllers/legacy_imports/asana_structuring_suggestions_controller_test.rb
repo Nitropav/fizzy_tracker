@@ -53,7 +53,7 @@ class LegacyImports::AsanaStructuringSuggestionsControllerTest < ActionDispatch:
 
   test "non import users cannot create or apply suggestions" do
     ai_run = Ai::LegacyIssueStructuringService.new(@record.card, user: users(:kevin)).suggest
-    logout_and_sign_in_as :david
+    users(:kevin).update!(role: :member, cactus_role: :developer)
 
     assert_no_difference -> { AiRun.count } do
       post legacy_imports_asana_issue_structuring_suggestion_path(@record)
@@ -68,11 +68,15 @@ class LegacyImports::AsanaStructuringSuggestionsControllerTest < ActionDispatch:
 
   private
     def import_asana_tasks
-      post legacy_imports_asana_path, params: {
-        board_id: @board.id,
-        file: fixture_file_upload("asana_tasks.json", "application/json")
-      }
+      perform_enqueued_jobs do
+        post legacy_imports_asana_path, params: {
+          board_id: @board.id,
+          file: fixture_file_upload("asana_tasks.json", "application/json")
+        }
+      end
 
-      assert_response :created
+      asana_import = LegacyImports::AsanaImport.latest_first.first
+      assert_redirected_to legacy_imports_asana_import_path(asana_import)
+      assert_predicate asana_import.reload, :completed?
     end
 end

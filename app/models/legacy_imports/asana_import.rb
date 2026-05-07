@@ -23,6 +23,17 @@ module LegacyImports
       LegacyImports::AsanaImportJob.perform_later(self)
     end
 
+    def retryable?
+      failed? && file.attached?
+    end
+
+    def retry_later!
+      raise "Only failed Asana imports with an uploaded file can be retried." unless retryable?
+
+      reset_for_retry!
+      process_later
+    end
+
     def process!
       return self if completed? || completed_with_errors?
 
@@ -67,6 +78,20 @@ module LegacyImports
     end
 
     private
+      def reset_for_retry!
+        update!(
+          status: :pending,
+          started_at: nil,
+          completed_at: nil,
+          error_message: nil,
+          total_count: 0,
+          created_count: 0,
+          skipped_count: 0,
+          needs_structuring_count: 0,
+          failed_count: 0
+        )
+      end
+
       def parse_tasks
         payload = JSON.parse(file.download)
         tasks = tasks_from(payload)

@@ -12,8 +12,17 @@ class LegacyImports::AsanasController < ApplicationController
     @asana_import = build_import
     @asana_import.save!
     @asana_import.process_later
+    AuditEvent.record(
+      action: "legacy_asana_import.queued",
+      auditable: @asana_import,
+      metadata: {
+        asana_import_id: @asana_import.id,
+        project_id: @board.id,
+        filename: @asana_import.file.attached? ? @asana_import.file.filename.to_s : nil
+      }
+    )
 
-    redirect_to legacy_imports_asana_import_path(@asana_import), notice: "Asana import queued."
+    redirect_to legacy_imports_asana_import_path(@asana_import, script_name: request.script_name), notice: "Asana import queued."
   rescue ActionController::ParameterMissing, ActiveRecord::RecordInvalid => error
     @recent_imports = recent_imports
     flash.now[:alert] = "Asana import failed: #{failure_message(error)}"

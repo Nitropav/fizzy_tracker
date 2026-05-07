@@ -13,6 +13,7 @@ class User < ApplicationRecord
   has_many :filters, foreign_key: :creator_id, inverse_of: :creator, dependent: :destroy
   has_many :closures, dependent: :nullify
   has_many :ai_runs, dependent: :nullify
+  has_many :audit_events, dependent: :nullify
   has_many :reviewed_training_examples, class_name: "TrainingExample", foreign_key: :reviewed_by_id, dependent: :nullify
   has_many :training_example_exports, dependent: :nullify
   has_many :pins, dependent: :destroy

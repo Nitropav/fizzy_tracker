@@ -49,6 +49,8 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_select "form[action=?] button[hidden]", card_self_assignment_path(card), text: "Assign to me"
+    assert_no_match "Moves to", response.body
+    assert_no_match "Not Now", response.body
   end
 
   test "show renders inline code in title" do
@@ -126,6 +128,7 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
         "attachments" => [
           {
             "name" => "image.png",
+            "view_url" => "https://asanausercontent.example/image.png",
             "permanent_url" => "https://app.asana.com/app/asana/-/get_asset?asset_id=asset-1"
           }
         ]
@@ -144,7 +147,8 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Developer User", response.body
     assert_match "Reporter added screenshot context", response.body
     assert_select "a[href=?]", "https://app.asana.com/0/1/1200", text: "Open original task"
-    assert_select "a[href=?]", "https://app.asana.com/app/asana/-/get_asset?asset_id=asset-1", text: "image.png"
+    assert_select "img[src=?][alt=?]", "https://asanausercontent.example/image.png", "image.png"
+    assert_select "a[href=?]", "https://app.asana.com/app/asana/-/get_asset?asset_id=asset-1", text: "Open original"
   end
 
   test "show renders linked code evidence" do

@@ -19,6 +19,15 @@ class UsersController < ApplicationController
     @user_creation = Account::UserCreation.new(user_creation_params.with_defaults(account: Current.account))
 
     if @user_creation.save
+      AuditEvent.record(
+        action: "user.created",
+        auditable: @user_creation.user,
+        metadata: {
+          target_user_id: @user_creation.user.id,
+          role: @user_creation.role,
+          cactus_role: @user_creation.cactus_role
+        }
+      )
       redirect_to account_settings_path, notice: "User created. Share the email and password with them securely."
     else
       @account = Current.account
@@ -43,6 +52,15 @@ class UsersController < ApplicationController
 
   def destroy
     @user.deactivate
+    AuditEvent.record(
+      action: "user.deactivated",
+      auditable: @user,
+      metadata: {
+        target_user_id: @user.id,
+        previous_role: @user.role,
+        previous_cactus_role: @user.cactus_role
+      }
+    )
 
     respond_to do |format|
       format.html { redirect_to account_settings_path }

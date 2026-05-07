@@ -1,16 +1,18 @@
 <% @page_title = "Cactus Home" %>
 
-<section class="panel panel--wide center flex flex-column gap">
-  <header class="flex flex-column gap-half">
-    <h1 class="txt-x-large font-weight-black margin-none">Cactus Bug Tracker</h1>
-    <p class="txt-small txt-subtle margin-none">
-      Focused issue workflow for intake, triage, developer resolution, and training data review.
-    </p>
+<section class="cactus-shell panel panel--wide center flex flex-column gap">
+  <header class="cactus-page-header">
+    <div>
+      <h1 class="txt-x-large font-weight-black margin-none">Cactus Bug Tracker</h1>
+      <p class="txt-small txt-subtle margin-none">
+        Focused issue workflow for intake, triage, developer resolution, and training data review.
+      </p>
+    </div>
   </header>
 
-  <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));">
+  <div class="cactus-card-grid">
     <% if Current.user.can_create_cactus_issue? %>
-      <article class="panel border flex flex-column gap-half">
+      <article class="cactus-card panel border flex flex-column gap-half">
         <h2 class="txt-large margin-none">Create issue</h2>
         <p class="txt-small txt-subtle margin-none">Report a bug or task with structured Gate 1 context.</p>
         <%= link_to "New issue", new_cactus_issue_path, class: "btn btn--reversed txt-small" %>
@@ -18,7 +20,7 @@
     <% end %>
 
     <% if Current.user.can_view_cactus_queue? %>
-      <article class="panel border flex flex-column gap-half">
+      <article class="cactus-card panel border flex flex-column gap-half">
         <h2 class="txt-large margin-none">Cactus Queue</h2>
         <p class="txt-small txt-subtle margin-none">Triage incoming issues and move ready work to developers.</p>
         <%= link_to "Open queue", cactus_queues_path, class: "btn txt-small" %>
@@ -26,7 +28,7 @@
     <% end %>
 
     <% if Current.user.can_work_cactus_issues? %>
-      <article class="panel border flex flex-column gap-half">
+      <article class="cactus-card panel border flex flex-column gap-half">
         <h2 class="txt-large margin-none">My work</h2>
         <p class="txt-small txt-subtle margin-none"><%= pluralize(@assigned_count, "active issue") %> assigned to you.</p>
         <%= link_to "View my work", cactus_work_path, class: "btn txt-small" %>
@@ -34,7 +36,7 @@
     <% end %>
 
     <% if Current.user.can_create_cactus_project? %>
-      <article class="panel border flex flex-column gap-half">
+      <article class="cactus-card panel border flex flex-column gap-half">
         <h2 class="txt-large margin-none">Projects</h2>
         <p class="txt-small txt-subtle margin-none">Use projects to organize product areas and bug queues.</p>
         <%= link_to "View projects", boards_path, class: "btn txt-small" %>
@@ -43,11 +45,13 @@
   </div>
 
   <% if Current.user.can_view_cactus_queue? %>
-    <section class="flex flex-column gap-half">
-      <h2 class="txt-large margin-none">Workflow health</h2>
-      <div class="grid gap-half" style="grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));">
+    <section class="cactus-section">
+      <div class="cactus-section__header">
+        <h2 class="txt-large margin-none">Workflow health</h2>
+      </div>
+      <div class="cactus-stat-grid">
         <% Cards::CactusWorkflowQuery::STATES.each do |state| %>
-          <%= link_to cactus_queues_path(state: state), class: "panel border flex flex-column gap-half txt-no-underline" do %>
+          <%= link_to cactus_queues_path(state: state), class: "cactus-card panel border flex flex-column gap-half txt-no-underline" do %>
             <span class="txt-small txt-subtle"><%= state.humanize %></span>
             <strong class="txt-large"><%= @workflow_counts[state] %></strong>
           <% end %>
@@ -57,11 +61,13 @@
   <% end %>
 
   <% if Current.user.can_review_training_examples? || Current.user.can_view_cactus_dashboard? || Current.user.can_import_cactus_issues? %>
-    <section class="flex flex-column gap-half">
-      <h2 class="txt-large margin-none">Admin pipeline</h2>
-      <div class="grid gap" style="grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));">
+    <section class="cactus-section">
+      <div class="cactus-section__header">
+        <h2 class="txt-large margin-none">Admin pipeline</h2>
+      </div>
+      <div class="cactus-card-grid">
         <% if Current.user.can_review_training_examples? %>
-          <article class="panel border flex flex-column gap-half">
+          <article class="cactus-card panel border flex flex-column gap-half">
             <h3 class="margin-none">Training examples</h3>
             <p class="txt-small txt-subtle margin-none"><%= pluralize(@training_review_count, "example") %> pending review.</p>
             <%= link_to "Review examples", training_examples_path, class: "btn txt-small" %>
@@ -69,7 +75,7 @@
         <% end %>
 
         <% if Current.user.can_view_cactus_dashboard? %>
-          <article class="panel border flex flex-column gap-half">
+          <article class="cactus-card panel border flex flex-column gap-half">
             <h3 class="margin-none">Pipeline dashboard</h3>
             <p class="txt-small txt-subtle margin-none">Gate coverage, GitHub links, AI runs, and legacy import health.</p>
             <%= link_to "Open dashboard", cactus_dashboard_path, class: "btn txt-small" %>
@@ -77,7 +83,7 @@
         <% end %>
 
         <% if Current.user.can_import_cactus_issues? %>
-          <article class="panel border flex flex-column gap-half">
+          <article class="cactus-card panel border flex flex-column gap-half">
             <h3 class="margin-none">Asana import</h3>
             <p class="txt-small txt-subtle margin-none">
               Bring legacy Asana tasks into Cactus as structured candidates.
@@ -91,13 +97,19 @@
         <% end %>
 
         <% if Current.user.cactus_admin? %>
-          <article class="panel border flex flex-column gap-half">
+          <article class="cactus-card panel border flex flex-column gap-half">
             <h3 class="margin-none">Users and roles</h3>
             <p class="txt-small txt-subtle margin-none">Invite users and assign account or Cactus workflow roles.</p>
             <div class="flex flex-wrap gap-half">
               <%= link_to "Invite people", account_join_code_path, class: "btn txt-small" %>
               <%= link_to "Manage users", account_settings_path, class: "btn txt-small" %>
             </div>
+          </article>
+
+          <article class="cactus-card panel border flex flex-column gap-half">
+            <h3 class="margin-none">Audit log</h3>
+            <p class="txt-small txt-subtle margin-none">Review critical workflow, import, export, and admin actions.</p>
+            <%= link_to "Open audit log", cactus_audit_events_path, class: "btn txt-small" %>
           </article>
         <% end %>
       </div>

@@ -15,7 +15,18 @@ class Account::SettingsController < ApplicationController
   end
 
   def update
-    @account.update!(account_params)
+    previous_name = @account.name
+    attributes = account_params
+    @account.update!(attributes)
+    AuditEvent.record(
+      action: "account.updated",
+      auditable: @account,
+      metadata: {
+        changed_fields: attributes.keys,
+        previous_name: previous_name,
+        name: @account.name
+      }
+    )
 
     respond_to do |format|
       format.html { redirect_to account_settings_path }

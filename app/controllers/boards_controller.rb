@@ -27,6 +27,14 @@ class BoardsController < ApplicationController
 
   def create
     @board = Board.create! board_params.with_defaults(all_access: true)
+    AuditEvent.record(
+      action: "project.created",
+      auditable: @board,
+      metadata: {
+        project_id: @board.id,
+        name: @board.name
+      }
+    )
 
     respond_to do |format|
       format.html { redirect_to board_path(@board) }
@@ -41,8 +49,21 @@ class BoardsController < ApplicationController
   end
 
   def update
-    @board.update! board_params
+    previous_name = @board.name
+    attributes = board_params
+    @board.update! attributes
     @board.accesses.revise granted: grantees, revoked: revokees if grantees_changed?
+    AuditEvent.record(
+      action: "project.updated",
+      auditable: @board,
+      metadata: {
+        project_id: @board.id,
+        changed_fields: attributes.keys,
+        access_grants_changed: grantees_changed?,
+        previous_name: previous_name,
+        name: @board.name
+      }
+    )
 
     respond_to do |format|
       format.html do
@@ -57,7 +78,16 @@ class BoardsController < ApplicationController
   end
 
   def destroy
+    audit_metadata = {
+      project_id: @board.id,
+      name: @board.name
+    }
     @board.destroy
+    AuditEvent.record(
+      action: "project.deleted",
+      auditable: nil,
+      metadata: audit_metadata
+    )
 
     respond_to do |format|
       format.html { redirect_to root_path }

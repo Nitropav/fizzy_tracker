@@ -41,11 +41,16 @@
         <ul class="card__legacy-attachments margin-none">
           <% visible_attachments.each do |attachment| %>
             <% attachment_url = record.legacy_attachment_url(attachment) %>
+            <% attachment_preview_url = record.legacy_attachment_preview_url(attachment) %>
             <% attachment_blob = record.legacy_attachment_blob(attachment) %>
             <li class="card__legacy-attachment">
               <div class="flex flex-column gap-quarter">
                 <% if attachment_blob&.image? %>
                   <%= image_tag rails_blob_path(attachment_blob), class: "card__legacy-attachment-preview", loading: "lazy", alt: attachment_blob.filename.to_s %>
+                <% elsif attachment_preview_url.present? %>
+                  <%= link_to attachment_url.presence || attachment_preview_url, target: "_blank", rel: "noopener noreferrer", class: "card__legacy-attachment-preview-link" do %>
+                    <%= image_tag attachment_preview_url, class: "card__legacy-attachment-preview", loading: "lazy", alt: attachment["name"].presence || "Asana attachment" %>
+                  <% end %>
                 <% elsif attachment_blob.present? %>
                   <%= link_to attachment_blob.filename.to_s, rails_blob_path(attachment_blob, disposition: :attachment), class: "txt-link", download: attachment_blob.filename %>
                 <% elsif attachment_url.present? %>
@@ -55,7 +60,12 @@
                 <% end %>
 
                 <span>
-                  <% if attachment_url.present? && attachment_blob.present? %>
+                  <% if attachment_blob&.image? %>
+                    <%= attachment_blob.filename.to_s %>
+                  <% elsif attachment_preview_url.present? %>
+                    <%= attachment["name"].presence || "Asana attachment" %>
+                  <% end %>
+                  <% if attachment_url.present? && (attachment_blob.present? || attachment_preview_url.present?) %>
                     <%= link_to "Open original", attachment_url, class: "txt-link", target: "_blank", rel: "noopener noreferrer" %>
                   <% end %>
                   <% if attachment["created_at"].present? %>

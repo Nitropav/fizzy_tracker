@@ -14,6 +14,7 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     assert_match "The logo", response.body
     assert_match "High", response.body
     assert_match "Export history", response.body
+    assert_select "a[href=?][data-turbo-frame=?]", training_example_path(@training_example), "_top"
   end
 
   test "index paginates large training example lists" do
@@ -50,6 +51,25 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "The logo", response.body
+  end
+
+  test "index confirms export and shows recent export status" do
+    @training_example.approve!(reviewer: users(:kevin))
+    training_example_export = accounts(:"37s").training_example_exports.create!(
+      user: users(:kevin),
+      status: :pending,
+      filename: "training-examples-pending.jsonl",
+      example_count: 1,
+      training_example_ids: [ @training_example.id ]
+    )
+
+    get training_examples_path
+
+    assert_response :success
+    assert_match "Queue a JSONL export", response.body
+    assert_match training_example_export.filename, response.body
+    assert_match "Pending", response.body
+    assert_select "a[href=?]", training_example_exports_path, text: "View history"
   end
 
   test "show is visible to admins" do
@@ -91,7 +111,9 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "approve" do
-    post approve_training_example_path(@training_example), params: { review_notes: "Good example" }
+    assert_difference -> { AuditEvent.where(action: "training_example.approved").count }, +1 do
+      post approve_training_example_path(@training_example), params: { review_notes: "Good example" }
+    end
 
     assert_redirected_to @training_example
     assert @training_example.reload.approved?
@@ -112,7 +134,9 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "reject" do
-    post reject_training_example_path(@training_example), params: { review_notes: "Too vague" }
+    assert_difference -> { AuditEvent.where(action: "training_example.rejected").count }, +1 do
+      post reject_training_example_path(@training_example), params: { review_notes: "Too vague" }
+    end
 
     assert_redirected_to @training_example
     assert @training_example.reload.rejected?
@@ -124,7 +148,9 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
 
     assert_enqueued_with(job: TrainingExamples::ExportJob) do
       assert_difference -> { TrainingExampleExport.count }, +1 do
-        post export_training_examples_path
+        assert_difference -> { AuditEvent.where(action: "training_export.queued").count }, +1 do
+          post export_training_examples_path
+        end
       end
     end
 

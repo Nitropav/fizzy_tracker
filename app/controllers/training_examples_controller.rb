@@ -30,18 +30,44 @@ class TrainingExamplesController < ApplicationController
     end
 
     training_example_export.process_later
+    AuditEvent.record(
+      action: "training_export.queued",
+      auditable: training_example_export,
+      metadata: {
+        training_example_export_id: training_example_export.id,
+        example_count: training_example_export.example_count
+      }
+    )
 
     redirect_to training_example_exports_path, notice: "JSONL export queued."
   end
 
   def approve
     @training_example.approve!(reviewer: Current.user, notes: params[:review_notes])
+    AuditEvent.record(
+      action: "training_example.approved",
+      auditable: @training_example,
+      metadata: {
+        training_example_id: @training_example.id,
+        card_id: @training_example.card_id,
+        review_notes_present: params[:review_notes].present?
+      }
+    )
 
     redirect_to @training_example, notice: "Training example approved."
   end
 
   def reject
     @training_example.reject!(reviewer: Current.user, notes: params[:review_notes])
+    AuditEvent.record(
+      action: "training_example.rejected",
+      auditable: @training_example,
+      metadata: {
+        training_example_id: @training_example.id,
+        card_id: @training_example.card_id,
+        review_notes_present: params[:review_notes].present?
+      }
+    )
 
     redirect_to @training_example, notice: "Training example rejected."
   end

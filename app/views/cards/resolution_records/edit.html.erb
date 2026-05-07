@@ -11,8 +11,8 @@
   </h1>
 <% end %>
 
-<section class="panel panel--wide center flex flex-column gap txt-align-start">
-  <header class="flex flex-wrap align-center justify-between gap">
+<section class="cactus-shell panel panel--wide center flex flex-column gap">
+  <header class="cactus-page-header">
     <div>
       <h1 class="txt-x-large font-weight-black margin-none">Gate 2 resolution</h1>
       <p class="txt-small txt-subtle margin-none">
@@ -20,7 +20,7 @@
       </p>
     </div>
 
-    <div class="flex flex-wrap align-center gap-half txt-small">
+    <div class="cactus-actions txt-small">
       <span class="badge">Issue #<%= @card.number %></span>
       <span class="badge">State: <%= @card.cactus_workflow_state_label %></span>
       <span class="badge">Gate 2: <%= @resolution_record.gate_two_complete? ? "Complete" : "Incomplete" %></span>
@@ -28,9 +28,9 @@
     </div>
   </header>
 
-  <section class="panel border flex flex-column gap-half">
+  <section class="cactus-card panel border flex flex-column gap-half">
     <h2 class="txt-large margin-none"><%= link_to @card.title, @card, class: "txt-link" %></h2>
-    <dl class="grid gap-half txt-small margin-none" style="grid-template-columns: max-content 1fr;">
+    <dl class="cactus-kv-grid txt-small margin-none">
       <dt class="txt-subtle">Project</dt>
       <dd class="margin-none"><%= @card.board.name %></dd>
 
@@ -50,14 +50,14 @@
   </section>
 
   <% if @resolution_record.missing_gate_two_fields.any? %>
-    <div class="panel txt-small">
+    <div class="cactus-gate-callout panel txt-small">
       <strong>Missing Gate 2:</strong>
       <%= @resolution_record.missing_gate_two_fields.map { it.to_s.humanize.downcase }.to_sentence %>.
     </div>
   <% end %>
 
   <% unless @card.cactus_code_evidence_present? %>
-    <div class="panel txt-small">
+    <div class="cactus-gate-callout panel txt-small">
       <strong>Missing code evidence:</strong>
       link a GitHub commit or PR with <code>CT-<%= @card.number %></code>, or enter a commit SHA / PR URL below before resolving.
     </div>
@@ -67,7 +67,7 @@
     <%= render "cards/resolution_records/resolution_draft_suggestion", card: @card, return_to: "gate_two" %>
   <% end %>
 
-  <section class="panel flex flex-column gap-half">
+  <section class="cactus-card panel flex flex-column gap-half">
     <header>
       <h2 class="txt-large margin-none">Linked code evidence</h2>
       <p class="txt-small txt-subtle margin-none">
@@ -84,20 +84,20 @@
           data: { controller: "form" } do |form| %>
       <%= hidden_field_tag :return_to, "gate_two" %>
 
-      <fieldset class="panel flex flex-column gap-half">
+      <fieldset class="cactus-card panel flex flex-column gap-half">
         <legend class="txt-small txt-bold">Developer resolution</legend>
 
         <%= form.label :root_cause, "Root cause", class: "txt-small txt-bold" %>
-        <%= form.text_area :root_cause, rows: 4, class: "input input--textarea full-width", placeholder: "Plain-language technical cause. Example: cached quote totals were reused after line item edits." %>
+        <%= form.text_area :root_cause, rows: 4, class: "input input--textarea cactus-input-tall full-width", placeholder: "Plain-language technical cause. Example: cached quote totals were reused after line item edits." %>
 
         <%= form.label :fix_summary, "Fix summary", class: "txt-small txt-bold" %>
-        <%= form.text_area :fix_summary, rows: 4, class: "input input--textarea full-width", placeholder: "What changed and why." %>
+        <%= form.text_area :fix_summary, rows: 4, class: "input input--textarea cactus-input-tall full-width", placeholder: "What changed and why." %>
 
         <%= form.label :verification_steps, "Verification steps", class: "txt-small txt-bold" %>
-        <%= form.text_area :verification_steps, rows: 4, class: "input input--textarea full-width", placeholder: "How the fix was checked. Include manual and automated verification." %>
+        <%= form.text_area :verification_steps, rows: 4, class: "input input--textarea cactus-input-tall full-width", placeholder: "How the fix was checked. Include manual and automated verification." %>
       </fieldset>
 
-      <fieldset class="panel flex flex-column gap-half">
+      <fieldset class="cactus-card panel flex flex-column gap-half">
         <legend class="txt-small txt-bold">Code evidence</legend>
 
         <p class="txt-small txt-subtle margin-none">
@@ -111,14 +111,14 @@
         <%= form.text_area :linked_pr_urls, value: @resolution_record.linked_pr_urls.join("\n"), name: "card_resolution_record[linked_pr_urls][]", rows: 3, class: "input input--textarea full-width", placeholder: "https://github.com/org/repo/pull/123" %>
       </fieldset>
 
-      <div class="flex flex-wrap align-center justify-between gap">
+      <div class="cactus-form-footer">
         <%= link_to "Open full issue", @card, class: "btn" %>
 
         <%= form.submit "Save Gate 2", class: "btn btn--reversed" %>
       </div>
     <% end %>
   <% else %>
-    <div class="panel flex flex-column gap-half">
+    <div class="cactus-card panel flex flex-column gap-half">
       <strong>Read-only resolution review</strong>
       <p class="txt-small txt-subtle margin-none">Developers fill Gate 2. Support/reviewer roles can inspect the resolution before handoff.</p>
       <%= link_to "Open full issue", @card, class: "btn txt-small" %>
@@ -126,12 +126,12 @@
   <% end %>
 
   <% if @card.closed? %>
-    <div class="panel flex flex-column gap-half">
+    <div class="cactus-card panel flex flex-column gap-half">
       <strong>Issue already resolved</strong>
       <p class="txt-small txt-subtle margin-none">This issue has already generated a training example candidate.</p>
     </div>
   <% elsif Current.user.can_resolve_cactus_issues? && @card.cactus_workflow_state == "needs_review" && @card.cactus_code_evidence_present? %>
-    <div class="panel flex flex-wrap align-center justify-between gap">
+    <div class="cactus-card panel flex flex-wrap align-center justify-between gap">
       <div>
         <strong>Ready to resolve</strong>
         <p class="txt-small txt-subtle margin-none">Gate 2 is complete. Resolving this issue will generate a training example candidate.</p>
@@ -140,12 +140,12 @@
       <%= button_to "Mark resolved", card_resolution_path(@card), class: "btn btn--reversed" %>
     </div>
   <% elsif @card.cactus_workflow_state == "needs_review" && @resolution_record.gate_two_complete? && !@card.cactus_code_evidence_present? %>
-    <div class="panel flex flex-column gap-half">
+    <div class="cactus-card panel flex flex-column gap-half">
       <strong>Code evidence required</strong>
       <p class="txt-small txt-subtle margin-none">Add a linked GitHub commit/PR or manual commit/PR evidence before resolving this issue.</p>
     </div>
   <% elsif @resolution_record.gate_two_complete? %>
-    <div class="panel flex flex-column gap-half">
+    <div class="cactus-card panel flex flex-column gap-half">
       <strong>Gate 2 complete</strong>
       <p class="txt-small txt-subtle margin-none">Move this issue into active work before resolving it.</p>
     </div>

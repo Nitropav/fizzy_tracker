@@ -2,7 +2,7 @@
 <% suggested_fields = latest_resolution_draft_run&.output&.fetch("suggested_fields", {}) || {} %>
 
 <section class="card__cactus-panel panel flex flex-column gap-half txt-small">
-  <div class="card__cactus-panel-header flex flex-wrap align-start justify-between gap">
+  <div class="card__cactus-panel-header cactus-page-header">
     <div>
       <strong>Gate 2 draft assistant</strong>
       <p class="txt-subtle margin-none">
@@ -10,7 +10,7 @@
       </p>
     </div>
 
-    <div class="flex flex-wrap align-center gap-half">
+    <div class="cactus-actions">
       <%= button_to "Draft resolution",
             card_resolution_draft_path(card),
             params: { return_to: local_assigns.fetch(:return_to, nil) },
@@ -52,7 +52,7 @@
       <% if suggested_fields.any? %>
         <details>
           <summary>Preview suggested Gate 2 fields</summary>
-          <dl class="grid gap-half margin-block-start" style="grid-template-columns: max-content 1fr;">
+          <dl class="cactus-kv-grid margin-block-start">
             <% suggested_fields.each do |field, value| %>
               <dt><%= field.humanize %></dt>
               <dd class="margin-none"><%= value %></dd>

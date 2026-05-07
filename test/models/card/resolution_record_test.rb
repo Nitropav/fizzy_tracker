@@ -91,6 +91,7 @@ class Card::ResolutionRecordTest < ActiveSupport::TestCase
 
     assert_not record.needs_structuring?
     assert record.legacy_structuring_complete?
+    assert_empty record.legacy_structuring_blockers
   end
 
   test "legacy resolved records need gate two before structuring is complete" do
@@ -107,11 +108,13 @@ class Card::ResolutionRecordTest < ActiveSupport::TestCase
 
     assert record.needs_structuring?
     assert_not record.legacy_structuring_complete?
+    assert_includes record.legacy_structuring_blockers, "Gate 2 root cause"
 
     record.update!(gate_two_attrs)
 
     assert_not record.needs_structuring?
     assert record.legacy_structuring_complete?
+    assert_empty record.legacy_structuring_blockers
   end
 
   test "legacy training candidate requires both gates" do

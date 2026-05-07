@@ -5,6 +5,15 @@ class Cards::ResolutionsController < ApplicationController
   def create
     capture_card_location
     training_example = @card.resolve
+    AuditEvent.record(
+      action: "card.resolved",
+      auditable: @card,
+      metadata: {
+        card_id: @card.id,
+        training_example_id: training_example&.id,
+        workflow_state: @card.reload.cactus_workflow_state
+      }
+    )
     refresh_stream_if_needed
 
     respond_to do |format|

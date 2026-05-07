@@ -14,7 +14,7 @@
     </p>
   </header>
 
-  <%= form_with url: legacy_imports_asana_path, method: :post, class: "flex flex-column gap", data: { controller: "form upload-preview" }, multipart: true do |form| %>
+  <%= form_with url: legacy_imports_asana_path(script_name: request.script_name), method: :post, class: "flex flex-column gap", data: { controller: "form upload-preview" }, multipart: true do |form| %>
     <label class="flex flex-column gap-half">
       <span class="txt-small font-weight-bold">Destination project</span>
       <%= form.select :board_id, options_from_collection_for_select(@boards, :id, :name, @board&.id), { prompt: "Choose a project..." }, required: true, class: "input" %>
@@ -38,12 +38,17 @@
       <ul class="list-unindented margin-none txt-small">
         <% @recent_imports.each do |asana_import| %>
           <li class="flex flex-wrap align-center justify-between gap-half">
-            <span>
+            <span class="flex flex-wrap align-center gap-half">
               <%= link_to asana_import.file.attached? ? asana_import.file.filename.to_s : "Asana import",
                     legacy_imports_asana_import_path(asana_import),
                     class: "txt-link" %>
-              &middot; <%= asana_import.status.humanize %>
-              &middot; <%= asana_import.board.name %>
+              <span class="badge"><%= asana_import.status.humanize %></span>
+              <span><%= asana_import.board.name %></span>
+              <% if asana_import.failed? %>
+                <span class="txt-subtle">Open status to retry or upload corrected JSON.</span>
+              <% elsif asana_import.completed_with_errors? %>
+                <span class="txt-subtle">Some tasks failed; duplicates are safe to re-import.</span>
+              <% end %>
             </span>
             <span class="txt-subtle">
               <%= local_datetime_tag asana_import.created_at, style: :shortdate %>

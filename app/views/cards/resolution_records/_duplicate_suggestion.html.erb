@@ -2,7 +2,7 @@
 <% candidates = Array(latest_duplicate_run&.output&.fetch("candidates", [])) %>
 
 <section class="card__cactus-panel panel flex flex-column gap-half txt-small">
-  <div class="card__cactus-panel-header flex flex-wrap align-start justify-between gap">
+  <div class="card__cactus-panel-header cactus-page-header">
     <div>
       <strong>Duplicate check</strong>
       <p class="txt-subtle margin-none">
@@ -43,7 +43,7 @@
       <div class="grid gap-half">
         <% candidates.each do |candidate| %>
           <article class="panel border flex flex-column gap-half">
-            <div class="flex flex-wrap align-center justify-between gap-half">
+            <div class="cactus-section__header">
               <strong>
                 <%= link_to "##{candidate['number']} #{candidate['title']}", card_path(candidate["number"]), class: "txt-link" %>
               </strong>

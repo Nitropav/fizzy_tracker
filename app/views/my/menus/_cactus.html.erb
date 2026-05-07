@@ -13,6 +13,10 @@
     <%= filter_place_menu_item cactus_integrations_path, "Integrations", "clipboard" %>
   <% end %>
 
+  <% if Current.user.cactus_admin? %>
+    <%= filter_place_menu_item cactus_audit_events_path, "Audit Log", "clipboard" %>
+  <% end %>
+
   <% if Current.user.can_review_training_examples? %>
     <%= filter_place_menu_item training_examples_path, "Training Examples", "clipboard" %>
   <% end %>

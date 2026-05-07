@@ -3,7 +3,16 @@ class Cards::SelfAssignmentsController < ApplicationController
   before_action :ensure_can_claim_cactus_issues
 
   def create
+    was_assigned = @card.assignees.exists?(Current.user.id)
     if @card.toggle_assignment(Current.user)
+      AuditEvent.record(
+        action: was_assigned ? "card.self_unassigned" : "card.claimed",
+        auditable: @card,
+        metadata: {
+          card_id: @card.id,
+          assignee_id: Current.user.id
+        }
+      )
       respond_to do |format|
         format.html { redirect_back_or_to html_redirect_path, notice: "Assignment updated." }
         format.turbo_stream { render "cards/assignments/create" }

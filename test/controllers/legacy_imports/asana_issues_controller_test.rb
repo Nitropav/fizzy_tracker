@@ -8,6 +8,8 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "index shows imported issues needing structuring" do
+    record = Card::ResolutionRecord.find_by!(legacy_source: "asana", legacy_external_id: "asana-1")
+
     get legacy_imports_asana_issues_path
 
     assert_response :success
@@ -21,6 +23,8 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_match "1 attachment", response.body
     assert_match "image.png", response.body
     assert_match "Reporter added screenshot context", response.body
+    assert_select "a[href=?][data-turbo-frame=?]", card_path(record.card), "_top"
+    assert_select "a[href=?][data-turbo-frame=?]", card_path(record.card, anchor: ActionView::RecordIdentifier.dom_id(record.card, :resolution_record)), "_top", text: "Structure issue"
   end
 
   test "index can show all imported issues" do
@@ -69,6 +73,8 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_match "Structured", response.body
     assert_match "Imported Asana issue", response.body
     assert_no_match "Gate 1 missing", response.body
+    assert_match "Structured legacy issue. The Asana task is still unresolved", response.body
+    assert_select "form[action=?]", legacy_imports_asana_issue_structuring_suggestion_path(record, status: "structured"), count: 0
   end
 
   test "index shows training candidate action for fully structured imported issues" do
@@ -80,7 +86,7 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Training candidates (1)", response.body
     assert_match "Ready for training candidate", response.body
-    assert_select "form[action=?]", legacy_imports_asana_issue_training_example_path(record)
+    assert_select "form[action=?][data-turbo-frame=?]", legacy_imports_asana_issue_training_example_path(record), "_top"
     assert_match "Generate training example", response.body
   end
 
@@ -93,7 +99,7 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "Training example: Pending review", response.body
-    assert_select "a[href=?]", training_example_path(training_example), text: "Review training example"
+    assert_select "a[href=?][data-turbo-frame=?]", training_example_path(training_example), "_top", text: "Review training example"
     assert_select "form[action=?]", legacy_imports_asana_issue_training_example_path(record), count: 0
   end
 
@@ -106,7 +112,8 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Latest AI structuring suggestion", response.body
     assert_match "Generated deterministic structuring suggestions", response.body
-    assert_select "form[action=?]", apply_legacy_imports_asana_issue_structuring_suggestion_path(record, ai_run_id: ai_run.id, status: "needs_structuring")
+    assert_select "form[action=?][data-turbo-frame=?]", apply_legacy_imports_asana_issue_structuring_suggestion_path(record, ai_run_id: ai_run.id, status: "needs_structuring"), "_top"
+    assert_select "form[action=?][data-turbo-frame=?]", card_ai_run_dismissal_path(record.card, ai_run), "_top"
     assert_match "Apply suggestion", response.body
   end
 
@@ -116,7 +123,7 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
     get legacy_imports_asana_issues_path
 
     assert_response :success
-    assert_select "form[action=?]", legacy_imports_asana_issue_structuring_suggestion_path(record, status: "needs_structuring")
+    assert_select "form[action=?][data-turbo-frame=?]", legacy_imports_asana_issue_structuring_suggestion_path(record, status: "needs_structuring"), "_top"
     assert_match "Suggest structure", response.body
   end
 

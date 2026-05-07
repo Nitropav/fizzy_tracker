@@ -5,7 +5,23 @@ class Users::RolesController < ApplicationController
   before_action :ensure_permission_to_administer_user
 
   def update
-    @user.update!(role_params)
+    previous_role = @user.role
+    previous_cactus_role = @user.cactus_role
+    attributes = role_params
+    @user.update!(attributes)
+
+    AuditEvent.record(
+      action: "user.role_updated",
+      auditable: @user,
+      metadata: {
+        target_user_id: @user.id,
+        changed_fields: attributes.keys,
+        previous_role: previous_role,
+        role: @user.role,
+        previous_cactus_role: previous_cactus_role,
+        cactus_role: @user.cactus_role
+      }
+    )
 
     respond_to do |format|
       format.html { redirect_to account_settings_path }

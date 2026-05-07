@@ -14,7 +14,45 @@ class TrainingExampleExportsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Training Export History", response.body
     assert_match @export.filename, response.body
+    assert_match "Completed", response.body
     assert_select "a[href=?]", training_example_export_path(@export), text: "Download"
+  end
+
+  test "index paginates large export history" do
+    60.times do |index|
+      accounts(:"37s").training_example_exports.create!(
+        user: users(:kevin),
+        status: :completed,
+        filename: "training-examples-bulk-#{index}.jsonl",
+        example_count: 1,
+        training_example_ids: [ @training_example.id ],
+        completed_at: Time.current
+      )
+    end
+
+    get training_example_exports_path
+
+    assert_response :success
+    assert_select ".pagination-link"
+  end
+
+  test "index explains failed exports and links back to approved examples" do
+    failed_export = accounts(:"37s").training_example_exports.create!(
+      user: users(:kevin),
+      status: :failed,
+      filename: "training-examples-failed.jsonl",
+      example_count: 1,
+      training_example_ids: [ @training_example.id ],
+      error_message: "No training examples are reserved for this export.",
+      completed_at: Time.current
+    )
+
+    get training_example_exports_path
+
+    assert_response :success
+    assert_match failed_export.filename, response.body
+    assert_match "Approved examples were released and can be exported again", response.body
+    assert_select "a[href=?]", training_examples_path(status: "approved"), text: "Back to approved examples"
   end
 
   test "show downloads export jsonl" do

@@ -515,6 +515,7 @@ Status:
 - Done: non-admin menu hides generic Fizzy sections such as Tags, People, and Shortcuts.
 - Done: the project board primary action routes to structured `New issue` intake instead of generic blank card creation.
 - Done: login/account/menu/search labels now use Cactus wording on the primary web UI.
+- Done: primary Cactus role screens share a responsive Cactus layout layer for page headers, cards, action groups, forms, and tables.
 
 Tasks:
 
@@ -575,6 +576,7 @@ Status:
 - Done: intake shows Gate 1 readiness and missing-field prompts before submit.
 - Done: intake supports rich-text additional evidence and explicit multi-file evidence uploads so reporters can add screenshots, logs, files, links, and context without polluting required Gate 1 fields.
 - Done: issue detail shows all missing Gate 1 items inline while the next reporter answer remains actionable.
+- Done: reporter intake uses larger Gate 1 text areas, responsive field groups, and clear primary/draft actions.
 - Done: focused issue intake is covered by controller tests.
 
 Tasks:
@@ -609,6 +611,7 @@ Status:
 - Done: in-progress queue rows expose a direct Claim action for unassigned ready issues.
 - Done: queue rows use responsive issue cards instead of a wide table, so classification and next actions stay visible on narrow screens.
 - Done: resolve actions are only available when an issue is actually in review state.
+- Done: support queue classification and next-action panels now use the shared Cactus card/action layout.
 
 Tasks:
 
@@ -641,6 +644,7 @@ Status:
 - Done: queue and My Work `Fill/Review` actions route developers to the focused Gate 2 page.
 - Done: Gate 2 form supports root cause, fix summary, verification steps, commit SHAs, and PR URLs.
 - Done: resolving is blocked unless Gate 2 text fields are complete and code evidence exists through linked GitHub code or manual commit/PR fields.
+- Done: My Work tables and developer Gate 2 forms use responsive Cactus table/card/form styles with larger resolution text areas.
 
 Tasks:
 
@@ -674,6 +678,7 @@ Status:
 - Done: Cactus Integrations shows recent GitHub delivery status for operational visibility.
 - Done: Cactus Integrations now provides a setup checklist, required GitHub events, CT reference examples, delivery health cards, payload digests, and a dedicated failed-deliveries section.
 - Done: failed GitHub deliveries keep a payload snapshot and can be retried from the integrations UI.
+- Done: signed webhook end-to-end coverage verifies delivery recording, code link creation, issue-detail visibility, and inclusion of automatic GitHub evidence in training metadata.
 
 Tasks:
 
@@ -682,6 +687,7 @@ Tasks:
 - display linked code on issue detail; DONE
 - include code links in training context; DONE
 - add retry/idempotency behavior. DONE
+- cover webhook-to-training pipeline end to end. DONE
 
 Exit criteria:
 
@@ -706,6 +712,9 @@ Status:
 - Done: training example list links to export history and recent export batches.
 - Done: JSONL export now runs asynchronously through `TrainingExamples::ExportJob` and `TrainingExampleExport` statuses instead of blocking the request.
 - Done: export history shows pending/processing/completed/failed status and only exposes download when a batch is ready.
+- Done: export action now requires an explicit browser confirmation and explains that approved examples are reserved for the export batch.
+- Done: training example list shows recent export batch statuses without linking non-ready batches to download.
+- Done: export history is paginated for production-sized export volume.
 
 Tasks:
 
@@ -715,6 +724,8 @@ Tasks:
 - add export confirmation/status; DONE
 - add exported history; DONE
 - queue large JSONL export work and expose batch status. DONE
+- add export confirmation and safer non-ready batch UX. DONE
+- paginate export history. DONE
 
 Exit criteria:
 
@@ -728,7 +739,7 @@ Goal:
 
 Status:
 
-- In progress.
+- Done.
 - Done: Asana JSON import creates legacy issues with source, external id, original metadata, legacy status, and `needs_structuring`.
 - Done: duplicate Asana tasks are skipped by account/source/external id.
 - Done: Cactus Home, Cactus menu, and import summary link to a dedicated legacy Asana review queue.
@@ -746,6 +757,9 @@ Status:
 - Done: legacy Asana review queue is paginated so large imports are reviewed in manageable chunks instead of rendering every imported task at once.
 - Done: Asana JSON imports now run asynchronously through a queued `LegacyImports::AsanaImport` record instead of blocking the request.
 - Done: Asana import status page shows processing outcome, created/skipped/failed counts, errors, source file, project, and review links.
+- Done: repeated Asana imports are idempotent and can backfill missing imported comments, attachment metadata, and code evidence without duplicating cards.
+- Done: legacy structuring actions leave pagination frames and return to a full-page state so suggestions, applied fields, and generated training examples are visible immediately.
+- Done: unresolved Asana tasks can be structured with Gate 1 only and clearly explain that they need a real developer resolution before they can become training data.
 
 Tasks:
 
@@ -762,10 +776,13 @@ Tasks:
 - paginate the legacy Asana review queue for large imports; DONE
 - queue Asana JSON import work and expose import status/results; DONE
 - allow human review before training example generation. DONE
+- keep re-imports idempotent while backfilling source context; DONE
+- handle unresolved legacy tasks separately from resolved training candidates; DONE
 
 Exit criteria:
 
 - old Asana tasks can become structured Cactus issues or training candidates.
+- Browser QA covered suggestion generation, applying a suggestion, unresolved structured-state messaging, and generating a pending-review training example from a structured legacy candidate.
 
 ### Phase 9: AI Assistance
 
@@ -851,6 +868,7 @@ Status:
 - Done: signed but invalid/failed GitHub deliveries are recorded as failed deliveries so admins can inspect and retry them from Integrations.
 - Done: GitHub integrations page documents webhook security and error behavior for admins.
 - Done: webhook hardening is covered by controller tests.
+- Done: GitHub webhook-to-training pipeline is covered by integration tests.
 - Done: production email/password login path is standardized with generic credential errors, safe missing-parameter handling, 12-character password policy for new/reset passwords, password confirmation for signup/reset, reset-session invalidation, and consistent join-code onboarding policy.
 - Done: production login/onboarding behavior is covered by session, password reset, signup, join-code, identity, signup model, mailer, and flat JSON API tests.
 - Done: full happy-path integration coverage verifies issue intake -> Gate 1 -> triage -> claim -> Gate 2 -> resolve -> training review -> JSONL export.
@@ -859,17 +877,25 @@ Status:
 - Done: Training Examples index uses the shared pagination helper and has controller coverage for large review/export lists.
 - Done: Asana JSON import is queued in ActiveJob and has model/job/controller coverage for success, duplicates, invalid JSON, per-task failures, and account scoping.
 - Done: JSONL training export is queued in ActiveJob, reserves approved examples to avoid duplicate batches, stores the generated file, supports repeat download, and releases reserved examples on failure.
+- Done: failed Asana imports now have explicit user-facing recovery states, account-scoped retry for the same uploaded JSON file, and guidance for corrected re-imports after partial task failures.
+- Done: failed JSONL export batches explain that approved examples were released and link reviewers back to the approved examples list to re-run export after fixing the cause.
+- Done: account-scoped audit events record high-value admin, workflow, import, export, and integration actions without storing raw passwords or large issue content.
+- Done: admins can review and filter audit events from Cactus Home / Audit Log with actor, action, auditable record, request context, and safe metadata.
+- Done: audit logging is covered by model, controller, training review/export, and failed Asana import retry tests.
+- Done: Cactus bootstrap is centralized in an idempotent production-safe service used by both `db:seed` and `rails cactus:bootstrap`.
+- Done: bootstrap creates the Cactus account, owner/admin login, system user, default project, and project access without seeding old Fizzy sample data unless explicitly requested.
+- Done: production bootstrap does not print passwords, requires an initial admin password when needed, and only rotates an existing password when `CACTUS_UPDATE_ADMIN_PASSWORD=true`.
 
 Tasks:
 
 - pagination and performance for large issue volume; PARTIAL
 - async jobs for AI/import/export; PARTIAL - Asana JSON import and JSONL export are async, AI suggestions still need queue-backed execution.
-- robust error states; PARTIAL
-- audit logs;
-- webhook security; PARTIAL
+- robust error states; PARTIAL - Asana import and JSONL export failure states are covered, AI jobs and broader system errors remain.
+- audit logs; DONE for users, roles, projects, issue creation, Gate updates, triage, assignment, resolution, training review/export, Asana retry, and GitHub delivery retry.
+- webhook security; DONE for signed request validation, delivery recording, retry, idempotency, and training evidence propagation
 - production email/password login; DONE
 - backup/restore expectations;
-- seed/setup flow for new accounts/projects;
+- seed/setup flow for new accounts/projects; DONE
 - system tests for the full happy path. PARTIAL
 
 Exit criteria:
@@ -886,8 +912,8 @@ Recommended next steps from the current state:
 4. Improve issue intake UI so managers/testers do not use generic board/card screens. DONE
 5. Improve Cactus Queue assignment and claim actions. DONE
 6. Add a focused Developer Work page. DONE
-7. Finish GitHub settings UI and code-link visibility.
-8. Continue polishing training review/export. IN PROGRESS
+7. Finish GitHub settings UI and code-link visibility. DONE
+8. Continue polishing training review/export. DONE
 
 ## Definition Of Done
 
