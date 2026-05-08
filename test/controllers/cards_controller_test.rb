@@ -94,6 +94,27 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_match ERB::Util.html_escape(ai_run.output.dig("suggested_fields", "structured_summary")), response.body
   end
 
+  test "show auto-refreshes pending AI runs" do
+    card = cards(:logo)
+    ai_run = AiRun.create!(
+      account: card.account,
+      card: card,
+      user: users(:kevin),
+      run_type: "card_quality_review",
+      status: :pending,
+      input_context: {}
+    )
+    anchor = ActionView::RecordIdentifier.dom_id(card, :resolution_record)
+
+    get card_path(card)
+
+    assert_response :success
+    assert_match "Training quality review is queued.", response.body
+    assert_match "This card will update automatically", response.body
+    assert_select "[data-controller=?][data-auto-refresh-key-value=?][data-auto-refresh-anchor-value=?]",
+      "auto-refresh", ai_run.id, anchor
+  end
+
   test "show renders duplicate suggestion controls" do
     card = cards(:logo)
     Ai::DuplicateIssueSuggestionService.new(card, user: users(:kevin)).suggest

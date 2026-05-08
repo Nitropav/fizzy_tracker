@@ -508,11 +508,12 @@ Status:
 - Done for the primary Cactus navigation surface.
 - Done: Cactus-focused home screen at `/cactus_home`.
 - Done: root path now opens Cactus Home instead of the generic activity feed.
-- Done: dedicated Cactus menu section with Cactus Home, Cactus Queue, My Work, Projects, and admin pipeline links.
+- Done: dedicated Cactus menu section with Cactus Home, Cactus Queue, My Work, Projects, and operations pipeline links.
 - Done: moved Cactus-specific links out of generic Settings.
 - Done: primary Cactus screens link back to Cactus Home instead of generic Fizzy home.
 - Done: visible board navigation labels now use Project terminology where safe.
 - Done: non-admin menu hides generic Fizzy sections such as Tags, People, and Shortcuts.
+- Done: non-admin menu hides Account Settings because user management is admin-only.
 - Done: the project board primary action routes to structured `New issue` intake instead of generic blank card creation.
 - Done: login/account/menu/search labels now use Cactus wording on the primary web UI.
 - Done: primary Cactus role screens share a responsive Cactus layout layer for page headers, cards, action groups, forms, and tables.
@@ -543,6 +544,7 @@ Status:
 - Done: Account Settings can update each user's Cactus role.
 - Done: backend guards protect Cactus Queue, My Work, Training Examples, Dashboard, Integrations, Asana import, triage, assignment, claim, Gate 1, Gate 2, and resolve actions.
 - Done: Cactus navigation/home hides actions the current role cannot use.
+- Done: role-based QA now covers reporter, developer, support, reviewer, and admin home/menu visibility.
 - Done: project creation, project settings, project columns, publication, and webhook configuration are restricted to Cactus project/admin roles.
 - Done: reporter-facing issue detail hides internal developer-only Gate 2, code evidence, and AI review controls.
 - Done: role enforcement is covered by controller/model tests.
@@ -806,6 +808,7 @@ Status:
 - Done: card detail shows duplicate candidates with score, reason, project, workflow state, and direct issue links without changing the issue.
 - Done: applying any structuring suggestion only fills blank structured fields, respects the user's role permissions, and does not overwrite existing human-entered data.
 - Done: AI suggestions can be explicitly dismissed without deleting audit history; dismissed/applied suggestions stop showing as active suggestions.
+- Done: queued AI suggestion/review blocks auto-refresh the current page and keep users anchored near the relevant card/legacy issue section until the result is available.
 
 Tasks:
 
@@ -872,6 +875,7 @@ Status:
 - Done: production email/password login path is standardized with generic credential errors, safe missing-parameter handling, 12-character password policy for new/reset passwords, password confirmation for signup/reset, reset-session invalidation, and consistent join-code onboarding policy.
 - Done: production login/onboarding behavior is covered by session, password reset, signup, join-code, identity, signup model, mailer, and flat JSON API tests.
 - Done: full happy-path integration coverage verifies issue intake -> Gate 1 -> triage -> claim -> Gate 2 -> resolve -> training review -> JSONL export.
+- Done: legacy Asana end-to-end integration coverage verifies JSON import -> legacy structuring -> triage -> developer claim -> Gate 2 -> resolve -> training review -> JSONL export.
 - Done: legacy Asana review queue uses the shared pagination helper and has controller coverage for large imported task volumes.
 - Done: Cactus Queue uses the shared pagination helper and has controller coverage for large issue volumes.
 - Done: Training Examples index uses the shared pagination helper and has controller coverage for large review/export lists.
@@ -885,11 +889,13 @@ Status:
 - Done: Cactus bootstrap is centralized in an idempotent production-safe service used by both `db:seed` and `rails cactus:bootstrap`.
 - Done: bootstrap creates the Cactus account, owner/admin login, system user, default project, and project access without seeding old Fizzy sample data unless explicitly requested.
 - Done: production bootstrap does not print passwords, requires an initial admin password when needed, and only rotates an existing password when `CACTUS_UPDATE_ADMIN_PASSWORD=true`.
+- Done: AI suggestion actions are queue-backed; web requests create pending `AiRun` records, enqueue `Ai::RunJob`, and keep completed/failed output on the run for later review.
+- Done: queued AI UI states no longer require manual refresh; pending cards/list rows use bounded auto-refresh to surface completed suggestions/reviews.
 
 Tasks:
 
 - pagination and performance for large issue volume; PARTIAL
-- async jobs for AI/import/export; PARTIAL - Asana JSON import and JSONL export are async, AI suggestions still need queue-backed execution.
+- async jobs for AI/import/export; DONE for Asana JSON import, JSONL export, and AI suggestion/review runs.
 - robust error states; PARTIAL - Asana import and JSONL export failure states are covered, AI jobs and broader system errors remain.
 - audit logs; DONE for users, roles, projects, issue creation, Gate updates, triage, assignment, resolution, training review/export, Asana retry, and GitHub delivery retry.
 - webhook security; DONE for signed request validation, delivery recording, retry, idempotency, and training evidence propagation

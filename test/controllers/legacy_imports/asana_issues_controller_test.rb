@@ -35,6 +35,16 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_match "Imported Asana issue", response.body
   end
 
+  test "index keeps pagination frame when current filter has no records" do
+    Card::ResolutionRecord.where(legacy_source: "asana").update_all(needs_structuring: false)
+
+    get legacy_imports_asana_issues_path(status: "needs_structuring")
+
+    assert_response :success
+    assert_match "No legacy Asana issues found for this filter.", response.body
+    assert_select "turbo-frame[id=?]", "legacy_asana_issues-pagination-contents-1"
+  end
+
   test "index paginates large legacy imports" do
     with_current_user :kevin do
       60.times do |index|
@@ -115,6 +125,27 @@ class LegacyImports::AsanaIssuesControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?][data-turbo-frame=?]", apply_legacy_imports_asana_issue_structuring_suggestion_path(record, ai_run_id: ai_run.id, status: "needs_structuring"), "_top"
     assert_select "form[action=?][data-turbo-frame=?]", card_ai_run_dismissal_path(record.card, ai_run), "_top"
     assert_match "Apply suggestion", response.body
+  end
+
+  test "index auto-refreshes pending structuring suggestions" do
+    record = Card::ResolutionRecord.find_by!(legacy_source: "asana", legacy_external_id: "asana-2")
+    ai_run = AiRun.create!(
+      account: record.card.account,
+      card: record.card,
+      user: users(:kevin),
+      run_type: "legacy_issue_structuring",
+      status: :pending,
+      input_context: {}
+    )
+    anchor = ActionView::RecordIdentifier.dom_id(record.card, :legacy_asana_issue)
+
+    get legacy_imports_asana_issues_path
+
+    assert_response :success
+    assert_match "Legacy structuring suggestion is queued.", response.body
+    assert_match "This page will update automatically", response.body
+    assert_select "[data-controller=?][data-auto-refresh-key-value=?][data-auto-refresh-anchor-value=?]",
+      "auto-refresh", ai_run.id, anchor
   end
 
   test "index shows suggest structure action for incomplete imported issues" do

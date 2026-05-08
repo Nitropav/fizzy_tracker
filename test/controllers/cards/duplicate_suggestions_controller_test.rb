@@ -7,13 +7,25 @@ class Cards::DuplicateSuggestionsControllerTest < ActionDispatch::IntegrationTes
   end
 
   test "create generates duplicate suggestion run" do
-    assert_difference -> { @card.ai_runs.duplicate_issue_suggestions.count }, +1 do
-      post card_duplicate_suggestion_path(@card)
+    assert_enqueued_with(job: Ai::RunJob) do
+      assert_difference -> { @card.ai_runs.duplicate_issue_suggestions.count }, +1 do
+        post card_duplicate_suggestion_path(@card)
+      end
     end
 
     assert_redirected_to card_path(@card, anchor: ActionView::RecordIdentifier.dom_id(@card, :resolution_record))
-    assert_equal "Duplicate issue check completed.", flash[:notice]
-    assert @card.ai_runs.duplicate_issue_suggestions.latest_first.first.completed?
+    assert_equal "Duplicate issue check queued.", flash[:notice]
+    assert @card.ai_runs.duplicate_issue_suggestions.latest_first.first.pending?
+  end
+
+  test "queued duplicate suggestion completes in background job" do
+    perform_enqueued_jobs do
+      post card_duplicate_suggestion_path(@card)
+    end
+
+    ai_run = @card.ai_runs.duplicate_issue_suggestions.latest_first.first
+    assert ai_run.completed?
+    assert_includes [ "candidates_found", "no_candidates" ], ai_run.output["status"]
   end
 
   test "reporter cannot create duplicate suggestion" do

@@ -1,4 +1,5 @@
 <% latest_duplicate_run = card.ai_runs.duplicate_issue_suggestions.completed.latest_first.detect(&:active_suggestion?) %>
+<% pending_duplicate_run = card.ai_runs.duplicate_issue_suggestions.pending.latest_first.first %>
 <% candidates = Array(latest_duplicate_run&.output&.fetch("candidates", [])) %>
 
 <section class="card__cactus-panel panel flex flex-column gap-half txt-small">
@@ -12,6 +13,15 @@
 
     <%= button_to "Find similar issues", card_duplicate_suggestion_path(card), class: "btn txt-small" %>
   </div>
+
+  <% if pending_duplicate_run %>
+    <p class="txt-subtle margin-none"
+      data-controller="auto-refresh"
+      data-auto-refresh-key-value="<%= pending_duplicate_run.id %>"
+      data-auto-refresh-anchor-value="<%= dom_id(card, :resolution_record) %>">
+      Duplicate check is queued. This card will update automatically when the background job finishes.
+    </p>
+  <% end %>
 
   <% if latest_duplicate_run %>
     <p class="txt-subtle margin-none">

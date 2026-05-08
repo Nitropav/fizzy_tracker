@@ -26,9 +26,9 @@
     <% end %>
   </nav>
 
-  <% if @records.any? %>
-    <div class="flex flex-column gap">
-      <%= with_manual_pagination :legacy_asana_issues, @page do %>
+  <div class="flex flex-column gap">
+    <%= with_manual_pagination :legacy_asana_issues, @page do %>
+      <% if @records.any? %>
         <% @records.each do |record| %>
           <% card = record.card %>
           <% existing_training_example = card.training_examples.reject(&:rejected?).max_by(&:created_at) %>
@@ -37,8 +37,9 @@
           <% structuring_blockers = record.legacy_structuring_blockers %>
           <% training_blockers = record.legacy_training_candidate_blockers %>
           <% latest_structuring_run = card.ai_runs.legacy_issue_structurings.completed.latest_first.detect(&:active_suggestion?) %>
+          <% pending_structuring_run = card.ai_runs.legacy_issue_structurings.pending.latest_first.first %>
 
-          <article class="panel border flex flex-column gap">
+          <article id="<%= dom_id(card, :legacy_asana_issue) %>" class="panel border flex flex-column gap">
             <header class="flex flex-wrap align-start justify-between gap">
               <div class="flex flex-column gap-half">
                 <%= link_to "##{card.number} #{card.title}", card, class: "txt-link txt-large", data: { turbo_frame: "_top" } %>
@@ -149,6 +150,16 @@
               </div>
             </section>
 
+            <% if pending_structuring_run %>
+              <section class="panel border txt-small"
+                data-controller="auto-refresh"
+                data-auto-refresh-key-value="<%= pending_structuring_run.id %>"
+                data-auto-refresh-anchor-value="<%= dom_id(card, :legacy_asana_issue) %>">
+                <strong>Legacy structuring suggestion is queued.</strong>
+                <span class="txt-subtle">This page will update automatically when the background job finishes.</span>
+              </section>
+            <% end %>
+
             <% if latest_structuring_run %>
               <% suggested_fields = latest_structuring_run.output.fetch("suggested_fields", {}) %>
               <section class="panel flex flex-column gap-half txt-small">
@@ -202,14 +213,14 @@
             <% end %>
           </article>
         <% end %>
+      <% else %>
+        <section class="panel border txt-small">
+          <strong>No legacy Asana issues found for this filter.</strong>
+          <p class="txt-subtle margin-block-end-none">
+            Import an Asana JSON export or switch filters to see already structured legacy issues.
+          </p>
+        </section>
       <% end %>
-    </div>
-  <% else %>
-    <section class="panel border txt-small">
-      <strong>No legacy Asana issues found for this filter.</strong>
-      <p class="txt-subtle margin-block-end-none">
-        Import an Asana JSON export or switch filters to see already structured legacy issues.
-      </p>
-    </section>
-  <% end %>
+    <% end %>
+  </div>
 </section>

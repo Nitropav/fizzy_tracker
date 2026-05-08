@@ -7,13 +7,25 @@ class Cards::StructuringSuggestionsControllerTest < ActionDispatch::IntegrationT
   end
 
   test "create generates issue structuring suggestion" do
-    assert_difference -> { @card.ai_runs.issue_structurings.count }, +1 do
-      post card_structuring_suggestion_path(@card)
+    assert_enqueued_with(job: Ai::RunJob) do
+      assert_difference -> { @card.ai_runs.issue_structurings.count }, +1 do
+        post card_structuring_suggestion_path(@card)
+      end
     end
 
     assert_redirected_to card_path(@card, anchor: ActionView::RecordIdentifier.dom_id(@card, :resolution_record))
-    assert_equal "Issue structuring suggestion generated.", flash[:notice]
-    assert @card.ai_runs.issue_structurings.latest_first.first.completed?
+    assert_equal "Issue structuring suggestion queued.", flash[:notice]
+    assert @card.ai_runs.issue_structurings.latest_first.first.pending?
+  end
+
+  test "queued issue structuring suggestion completes in background job" do
+    perform_enqueued_jobs do
+      post card_structuring_suggestion_path(@card)
+    end
+
+    ai_run = @card.ai_runs.issue_structurings.latest_first.first
+    assert ai_run.completed?
+    assert_equal "suggested", ai_run.output["status"]
   end
 
   test "apply fills only blank fields from suggestion" do

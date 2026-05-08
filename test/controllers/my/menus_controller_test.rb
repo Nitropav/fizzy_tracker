@@ -26,6 +26,13 @@ class My::MenusControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{cactus_queues_path}']", text: /Cactus Queue/
   end
 
+  test "show includes account settings for admins" do
+    get my_menu_path
+
+    assert_response :success
+    assert_select "a[href='#{account_settings_path}']", text: /Account Settings/
+  end
+
   test "show uses cactus-first labels" do
     get my_menu_path
 
@@ -51,6 +58,7 @@ class My::MenusControllerTest < ActionDispatch::IntegrationTest
     get my_menu_path
 
     assert_response :success
+    assert_select "a[href='#{account_settings_path}']", count: 0
     assert_no_match "Tags", response.body
     assert_no_match "People", response.body
     assert_no_match "Shortcuts", response.body

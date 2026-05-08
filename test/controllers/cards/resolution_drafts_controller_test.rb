@@ -7,13 +7,25 @@ class Cards::ResolutionDraftsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create generates resolution draft and redirects back to Gate 2 page" do
-    assert_difference -> { @card.ai_runs.resolution_drafts.count }, +1 do
-      post card_resolution_draft_path(@card), params: { return_to: "gate_two" }
+    assert_enqueued_with(job: Ai::RunJob) do
+      assert_difference -> { @card.ai_runs.resolution_drafts.count }, +1 do
+        post card_resolution_draft_path(@card), params: { return_to: "gate_two" }
+      end
     end
 
     assert_redirected_to edit_card_resolution_record_path(@card)
-    assert_equal "Resolution draft generated.", flash[:notice]
-    assert @card.ai_runs.resolution_drafts.latest_first.first.completed?
+    assert_equal "Resolution draft queued.", flash[:notice]
+    assert @card.ai_runs.resolution_drafts.latest_first.first.pending?
+  end
+
+  test "queued resolution draft completes in background job" do
+    perform_enqueued_jobs do
+      post card_resolution_draft_path(@card), params: { return_to: "gate_two" }
+    end
+
+    ai_run = @card.ai_runs.resolution_drafts.latest_first.first
+    assert ai_run.completed?
+    assert_equal "suggested", ai_run.output["status"]
   end
 
   test "apply fills only blank Gate 2 fields from draft" do

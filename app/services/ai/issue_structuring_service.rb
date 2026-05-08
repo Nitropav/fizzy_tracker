@@ -5,26 +5,34 @@ module Ai
       @user = user
     end
 
-    def suggest
-      AiRun.create!(
+    def suggest(ai_run: nil)
+      run = ai_run || AiRun.create!(
         account: card.account,
         card: card,
         user: user,
         run_type: "issue_structuring",
         input_context: context,
         metadata: metadata
-      ).tap do |run|
-        run.complete!(output: deterministic_output, metadata: { "completed_by" => "deterministic" })
-      rescue StandardError => error
-        run.fail!(error: error.message, metadata: { "error_class" => error.class.name })
-      end
+      )
+
+      refresh_queued_run!(run) if ai_run
+      run.complete!(output: deterministic_output, metadata: { "completed_by" => "deterministic" })
+      run
+    rescue StandardError => error
+      run&.fail!(error: error.message, metadata: { "error_class" => error.class.name })
+      run
     end
 
     private
       attr_reader :card, :user
 
       def context
-        @context ||= CardContextBuilder.new(card).build
+        @context ||= @ai_run&.input_context.presence || CardContextBuilder.new(card).build
+      end
+
+      def refresh_queued_run!(run)
+        @ai_run = run
+        run.update!(input_context: context, metadata: run.metadata.merge(metadata))
       end
 
       def record_context

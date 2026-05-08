@@ -2,6 +2,9 @@
 <% can_view_internal_issue_data = Current.user.can_view_cactus_internal_issue_data? %>
 <% can_manage_issue_structuring_suggestions = Current.user.can_update_cactus_gate_one? || Current.user.can_update_cactus_classification? %>
 <% latest_issue_structuring_run = card.ai_runs.issue_structurings.completed.latest_first.detect(&:active_suggestion?) if can_manage_issue_structuring_suggestions %>
+<% pending_issue_structuring_run = card.ai_runs.issue_structurings.pending.latest_first.first if can_manage_issue_structuring_suggestions %>
+<% pending_quality_review_run = card.ai_runs.card_quality_reviews.pending.latest_first.first if can_view_internal_issue_data %>
+<% ai_refresh_anchor = dom_id(card, :resolution_record) %>
 
 <section id="<%= dom_id(card, :resolution_record) %>" class="card__resolution-record flex flex-column gap margin-block-start">
   <header class="cactus-page-header">
@@ -31,6 +34,16 @@
     </div>
   </header>
 
+  <% if pending_quality_review_run %>
+    <div class="card__cactus-panel panel txt-small"
+      data-controller="auto-refresh"
+      data-auto-refresh-key-value="<%= pending_quality_review_run.id %>"
+      data-auto-refresh-anchor-value="<%= ai_refresh_anchor %>">
+      <strong>Training quality review is queued.</strong>
+      <span class="txt-subtle">This card will update automatically when the background job finishes.</span>
+    </div>
+  <% end %>
+
   <% if can_view_internal_issue_data && (latest_review = card.ai_runs.card_quality_reviews.completed.latest_first.first) %>
     <div class="card__cactus-panel panel txt-small">
       <strong>Latest quality review:</strong>
@@ -44,6 +57,16 @@
 
   <% if can_view_internal_issue_data %>
     <%= render "cards/resolution_records/duplicate_suggestion", card: card %>
+  <% end %>
+
+  <% if pending_issue_structuring_run %>
+    <section class="card__cactus-panel panel txt-small"
+      data-controller="auto-refresh"
+      data-auto-refresh-key-value="<%= pending_issue_structuring_run.id %>"
+      data-auto-refresh-anchor-value="<%= ai_refresh_anchor %>">
+      <strong>Issue structuring suggestion is queued.</strong>
+      <span class="txt-subtle">This card will update automatically when the background job finishes.</span>
+    </section>
   <% end %>
 
   <% if latest_issue_structuring_run %>

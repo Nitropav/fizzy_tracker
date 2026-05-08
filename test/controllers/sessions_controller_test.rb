@@ -7,7 +7,10 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
+    assert_select "input[type=email][name=email_address][autocomplete=username]"
+    assert_select "input[type=email][name=email_address][autocomplete='username webauthn']", count: 0
     assert_select "input[type=password][name=password]"
+    assert_no_match "Sign in with a passkey", response.body
   end
 
   test "new redirects authenticated users" do

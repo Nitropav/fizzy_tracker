@@ -3,13 +3,9 @@ class LegacyImports::AsanaStructuringSuggestionsController < ApplicationControll
   before_action :set_resolution_record
 
   def create
-    ai_run = Ai::LegacyIssueStructuringService.new(@resolution_record.card).suggest
+    Ai::RunScheduler.enqueue!(card: @resolution_record.card, user: Current.user, run_type: "legacy_issue_structuring")
 
-    if ai_run.failed?
-      redirect_to legacy_imports_asana_issues_path(status: "needs_structuring"), alert: "Legacy structuring suggestion failed: #{ai_run.output['error']}"
-    else
-      redirect_to legacy_imports_asana_issues_path(status: status_filter), notice: "Legacy structuring suggestion generated."
-    end
+    redirect_to legacy_imports_asana_issues_path(status: status_filter), notice: "Legacy structuring suggestion queued."
   end
 
   def apply

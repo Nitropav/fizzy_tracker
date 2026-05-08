@@ -9,12 +9,23 @@ class LegacyImports::AsanaStructuringSuggestionsControllerTest < ActionDispatch:
   end
 
   test "create generates legacy structuring suggestion" do
-    assert_difference -> { @record.card.ai_runs.legacy_issue_structurings.count }, +1 do
-      post legacy_imports_asana_issue_structuring_suggestion_path(@record)
+    assert_enqueued_with(job: Ai::RunJob) do
+      assert_difference -> { @record.card.ai_runs.legacy_issue_structurings.count }, +1 do
+        post legacy_imports_asana_issue_structuring_suggestion_path(@record)
+      end
     end
 
     assert_redirected_to legacy_imports_asana_issues_path(status: "needs_structuring")
-    assert_equal "Legacy structuring suggestion generated.", flash[:notice]
+    assert_equal "Legacy structuring suggestion queued.", flash[:notice]
+
+    ai_run = @record.card.ai_runs.legacy_issue_structurings.latest_first.first
+    assert ai_run.pending?
+  end
+
+  test "queued legacy structuring suggestion completes in background job" do
+    perform_enqueued_jobs do
+      post legacy_imports_asana_issue_structuring_suggestion_path(@record)
+    end
 
     ai_run = @record.card.ai_runs.legacy_issue_structurings.latest_first.first
     assert ai_run.completed?

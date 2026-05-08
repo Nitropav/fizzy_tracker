@@ -3,13 +3,9 @@ class Cards::StructuringSuggestionsController < ApplicationController
   before_action :ensure_can_manage_issue_structuring_suggestions
 
   def create
-    ai_run = Ai::IssueStructuringService.new(@card).suggest
+    Ai::RunScheduler.enqueue!(card: @card, user: Current.user, run_type: "issue_structuring")
 
-    if ai_run.failed?
-      redirect_to @card, alert: "Issue structuring suggestion failed: #{ai_run.output['error']}"
-    else
-      redirect_to card_path(@card, anchor: resolution_record_anchor), notice: "Issue structuring suggestion generated."
-    end
+    redirect_to card_path(@card, anchor: resolution_record_anchor), notice: "Issue structuring suggestion queued."
   end
 
   def apply

@@ -6,26 +6,34 @@ module Ai
       @client = client
     end
 
-    def review
-      AiRun.create!(
+    def review(ai_run: nil)
+      run = ai_run || AiRun.create!(
         account: card.account,
         card: card,
         user: user,
         run_type: "card_quality_review",
         input_context: context,
         metadata: metadata
-      ).tap do |run|
-        run.complete!(output: review_output, metadata: completion_metadata)
-      rescue StandardError => error
-        run.fail!(error: error.message, metadata: { "error_class" => error.class.name })
-      end
+      )
+
+      refresh_queued_run!(run) if ai_run
+      run.complete!(output: review_output, metadata: completion_metadata)
+      run
+    rescue StandardError => error
+      run&.fail!(error: error.message, metadata: { "error_class" => error.class.name })
+      run
     end
 
     private
       attr_reader :card, :user, :client
 
       def context
-        @context ||= CardContextBuilder.new(card).build
+        @context ||= @ai_run&.input_context.presence || CardContextBuilder.new(card).build
+      end
+
+      def refresh_queued_run!(run)
+        @ai_run = run
+        run.update!(input_context: context, metadata: run.metadata.merge(metadata))
       end
 
       def review_output

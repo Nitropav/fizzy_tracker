@@ -3,13 +3,9 @@ class Cards::ResolutionDraftsController < ApplicationController
   before_action :ensure_can_update_cactus_gate_two
 
   def create
-    ai_run = Ai::ResolutionDraftService.new(@card).suggest
+    Ai::RunScheduler.enqueue!(card: @card, user: Current.user, run_type: "resolution_draft")
 
-    if ai_run.failed?
-      redirect_to redirect_path, alert: "Resolution draft failed: #{ai_run.output['error']}"
-    else
-      redirect_to redirect_path, notice: "Resolution draft generated."
-    end
+    redirect_to redirect_path, notice: "Resolution draft queued."
   end
 
   def apply

@@ -8,12 +8,26 @@ class Cards::AiReviewsControllerTest < ActionDispatch::IntegrationTest
   test "create" do
     card = cards(:logo)
 
-    assert_difference -> { card.ai_runs.count }, +1 do
-      post card_ai_review_path(card)
+    assert_enqueued_with(job: Ai::RunJob) do
+      assert_difference -> { card.ai_runs.count }, +1 do
+        post card_ai_review_path(card)
+      end
     end
 
     assert_redirected_to card
+    assert_equal "Training quality review queued.", flash[:notice]
+    assert card.ai_runs.last.pending?
+  end
+
+  test "queued review completes in background job" do
+    card = cards(:logo)
+
+    perform_enqueued_jobs do
+      post card_ai_review_path(card)
+    end
+
     assert card.ai_runs.last.completed?
+    assert_equal "needs_work", card.ai_runs.last.output["status"]
   end
 
   test "create as json" do
@@ -21,8 +35,9 @@ class Cards::AiReviewsControllerTest < ActionDispatch::IntegrationTest
 
     post card_ai_review_path(card), as: :json
 
-    assert_response :created
-    assert_equal "needs_work", @response.parsed_body["status"]
+    assert_response :accepted
+    assert_equal "pending", @response.parsed_body["status"]
+    assert_equal "card_quality_review", @response.parsed_body["run_type"]
   end
 
   test "create cannot review inaccessible account card" do

@@ -1,4 +1,5 @@
 <% latest_resolution_draft_run = card.ai_runs.resolution_drafts.completed.latest_first.detect(&:active_suggestion?) %>
+<% pending_resolution_draft_run = card.ai_runs.resolution_drafts.pending.latest_first.first %>
 <% suggested_fields = latest_resolution_draft_run&.output&.fetch("suggested_fields", {}) || {} %>
 
 <section class="card__cactus-panel panel flex flex-column gap-half txt-small">
@@ -28,6 +29,15 @@
       <% end %>
     </div>
   </div>
+
+  <% if pending_resolution_draft_run %>
+    <p class="txt-subtle margin-none"
+      data-controller="auto-refresh"
+      data-auto-refresh-key-value="<%= pending_resolution_draft_run.id %>"
+      data-auto-refresh-anchor-value="<%= dom_id(card, :resolution_record) %>">
+      Resolution draft is queued. This page will update automatically when the background job finishes.
+    </p>
+  <% end %>
 
   <% if latest_resolution_draft_run %>
     <div class="flex flex-column gap-half">

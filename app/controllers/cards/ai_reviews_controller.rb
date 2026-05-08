@@ -2,20 +2,20 @@ class Cards::AiReviewsController < ApplicationController
   include CardScoped
 
   def create
-    @ai_run = Ai::CardQualityReviewService.new(@card).review
+    @ai_run = Ai::RunScheduler.enqueue!(card: @card, user: Current.user, run_type: "card_quality_review")
 
     respond_to do |format|
-      format.html { redirect_to @card, flash_for_ai_run }
-      format.json { render json: @ai_run.output, status: @ai_run.failed? ? :unprocessable_entity : :created }
+      format.html { redirect_to @card, notice: "Training quality review queued." }
+      format.json { render json: queued_payload, status: :accepted }
     end
   end
 
   private
-    def flash_for_ai_run
-      if @ai_run.failed?
-        { alert: "Training quality review failed: #{@ai_run.output['error']}" }
-      else
-        { notice: "Training quality review completed." }
-      end
+    def queued_payload
+      {
+        "id" => @ai_run.id,
+        "status" => @ai_run.status,
+        "run_type" => @ai_run.run_type
+      }
     end
 end

@@ -3,13 +3,9 @@ class Cards::DuplicateSuggestionsController < ApplicationController
   before_action :ensure_can_view_internal_issue_data
 
   def create
-    ai_run = Ai::DuplicateIssueSuggestionService.new(@card).suggest
+    Ai::RunScheduler.enqueue!(card: @card, user: Current.user, run_type: "duplicate_issue_suggestion")
 
-    if ai_run.failed?
-      redirect_to card_path(@card, anchor: resolution_record_anchor), alert: "Duplicate issue check failed: #{ai_run.output['error']}"
-    else
-      redirect_to card_path(@card, anchor: resolution_record_anchor), notice: "Duplicate issue check completed."
-    end
+    redirect_to card_path(@card, anchor: resolution_record_anchor), notice: "Duplicate issue check queued."
   end
 
   private
