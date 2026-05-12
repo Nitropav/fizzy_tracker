@@ -11,14 +11,16 @@ class Cactus::BootstrapperTest < ActiveSupport::TestCase
         assert_difference -> { Identity.count }, +1 do
           assert_difference -> { User.count }, +2 do
             assert_difference -> { Board.count }, +1 do
-              result = Cactus::Bootstrapper.new(
-                account_name: "Bootstrap Cactus",
-                external_account_id: external_account_id,
-                default_project_name: "Bootstrap Bugs",
-                admin_name: "Bootstrap Admin",
-                admin_email: email,
-                admin_password: "SecurePassword123!"
-              ).run
+              assert_difference -> { Column.count }, +1 do
+                result = Cactus::Bootstrapper.new(
+                  account_name: "Bootstrap Cactus",
+                  external_account_id: external_account_id,
+                  default_project_name: "Bootstrap Bugs",
+                  admin_name: "Bootstrap Admin",
+                  admin_email: email,
+                  admin_password: "SecurePassword123!"
+                ).run
+              end
             end
           end
         end
@@ -35,6 +37,7 @@ class Cactus::BootstrapperTest < ActiveSupport::TestCase
     assert_predicate result.admin_user, :verified?
     assert_predicate result.account.system_user, :present?
     assert result.project.accesses.exists?(user: result.admin_user, involvement: "watching")
+    assert result.project.columns.exists?(name: "In Progress")
     assert result.admin_user.identity.authenticate("SecurePassword123!")
     assert_equal "/#{external_account_id}", result.account.slug
     assert result.created_account
@@ -59,14 +62,17 @@ class Cactus::BootstrapperTest < ActiveSupport::TestCase
       assert_no_difference -> { Identity.count } do
         assert_no_difference -> { User.count } do
           assert_no_difference -> { Board.count } do
-            second_result = bootstrapper.run
-            assert_equal first_result.account, second_result.account
-            assert_equal first_result.admin_user, second_result.admin_user
-            assert_equal first_result.project, second_result.project
-            assert_not second_result.created_account
-            assert_not second_result.created_admin_identity
-            assert_not second_result.created_admin_user
-            assert_not second_result.created_project
+            assert_no_difference -> { Column.count } do
+              second_result = bootstrapper.run
+              assert_equal first_result.account, second_result.account
+              assert_equal first_result.admin_user, second_result.admin_user
+              assert_equal first_result.project, second_result.project
+              assert_not second_result.created_account
+              assert_not second_result.created_admin_identity
+              assert_not second_result.created_admin_user
+              assert_not second_result.created_project
+              assert first_result.project.columns.exists?(name: "In Progress")
+            end
           end
         end
       end

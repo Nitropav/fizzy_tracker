@@ -5,6 +5,7 @@ module Cactus
     DEFAULT_DEVELOPMENT_ADMIN_PASSWORD = "CactusAdmin123!".freeze
     DEFAULT_ACCOUNT_NAME = "Cactus Bug Tracker".freeze
     DEFAULT_PROJECT_NAME = "Cactus Product Bugs".freeze
+    DEFAULT_PROJECT_COLUMNS = [ "In Progress" ].freeze
     DEFAULT_ADMIN_NAME = "Cactus Admin".freeze
     DEFAULT_ADMIN_EMAIL = "admin@cactus.local".freeze
 
@@ -153,8 +154,15 @@ module Cactus
           access.account = account
           access.involvement = "watching"
         end
+        ensure_default_columns(project)
 
         { project: project, created_project: created_project }
+      end
+
+      def ensure_default_columns(project)
+        DEFAULT_PROJECT_COLUMNS.each do |name|
+          project.columns.find_or_create_by!(name: name)
+        end
       end
   end
 end

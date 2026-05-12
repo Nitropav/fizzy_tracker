@@ -23,9 +23,7 @@
         <%= button_to "Export #{@approved_export_count} approved JSONL",
           export_training_examples_path,
           class: "btn btn--reversed",
-          data: {
-            turbo_confirm: "Queue a JSONL export for #{@approved_export_count} approved #{'example'.pluralize(@approved_export_count)}? The selected examples will be reserved for this export batch."
-          } %>
+          form: { data: { turbo: false } } %>
       <% else %>
         <span class="btn" aria-disabled="true">No approved examples to export</span>
       <% end %>
@@ -36,6 +34,9 @@
     <article class="panel border flex flex-column gap-half">
       <span class="txt-small txt-subtle">Approved for export</span>
       <strong class="txt-large"><%= @approved_export_count %></strong>
+      <% if @approved_export_count.positive? %>
+        <span class="txt-small txt-subtle">Export queues a JSONL batch and reserves approved examples for that batch.</span>
+      <% end %>
     </article>
 
     <article class="panel border flex flex-column gap-half">

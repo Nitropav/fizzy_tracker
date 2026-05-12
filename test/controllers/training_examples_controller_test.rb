@@ -66,9 +66,10 @@ class TrainingExamplesControllerTest < ActionDispatch::IntegrationTest
     get training_examples_path
 
     assert_response :success
-    assert_match "Queue a JSONL export", response.body
+    assert_match "Export queues a JSONL batch", response.body
     assert_match training_example_export.filename, response.body
     assert_match "Pending", response.body
+    assert_select "form[action=?][data-turbo=?]", export_training_examples_path, "false"
     assert_select "a[href=?]", training_example_exports_path, text: "View history"
   end
 

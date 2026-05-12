@@ -248,6 +248,26 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Mark resolved", response.body
   end
 
+  test "show replaces generic done action for cactus workflow cards" do
+    card = cards(:logo)
+    card.create_resolution_record!(
+      problem_description: "Logo is unreadable",
+      reproduction_steps: "Open the card",
+      expected_behavior: "Logo should be readable",
+      actual_behavior: "Logo is too small",
+      environment_context: "Fizzy card page",
+      root_cause: "Image sizing used the wrong max width",
+      fix_summary: "Adjusted the card image layout",
+      verification_steps: "Opened the card and confirmed the logo is readable"
+    )
+
+    get card_path(card)
+
+    assert_response :success
+    assert_no_match "Mark as Done", response.body
+    assert_select "a[href=?][data-turbo-frame=?]", edit_card_resolution_record_path(card), "_top", text: "Use Cactus resolution"
+  end
+
   test "show links pending training example after resolution" do
     card = cards(:logo)
     card.create_resolution_record!(
